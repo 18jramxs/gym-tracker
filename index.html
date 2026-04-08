@@ -271,17 +271,19 @@ body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkM
     <div class="fisico-title">Peso corporal</div>
     <div class="registro-info" id="peso-info">Una vez por semana</div>
     <div class="registro-row">
-      <input type="number" inputmode="decimal" class="registro-input" id="peso-input" placeholder="kg (ej. 78.5)" step="0.1">
+      <input type="number" inputmode="decimal" class="registro-input" id="peso-input" placeholder="kg" step="0.1">
       <button class="registro-btn" id="peso-btn" onclick="savePeso()">Guardar</button>
     </div>
   </div>
 
   <!-- CALORÍAS -->
   <div class="fisico-section">
-    <div class="fisico-title">Calorías de hoy</div>
-    <div class="registro-info" id="cal-info-date"></div>
+    <div class="fisico-title">Calorías</div>
+    <div class="registro-row" style="margin-bottom:8px">
+      <input type="date" id="cal-date-input" class="date-input" style="flex:1" onchange="renderCalSection()">
+    </div>
     <div class="registro-row">
-      <input type="number" inputmode="numeric" class="registro-input" id="cal-input" placeholder="ej. 500">
+      <input type="number" inputmode="numeric" class="registro-input" id="cal-input" placeholder="kcal">
       <button class="registro-btn" onclick="saveCal()">Guardar</button>
     </div>
     <div class="semana-card" id="semana-resumen"></div>
@@ -335,7 +337,7 @@ body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkM
 <!-- NAV -->
 <nav class="bottom-nav">
   <button class="nav-btn active" onclick="showScreen('entreno',this)">
-    <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="6" cy="12" r="2"/><circle cx="18" cy="12" r="2"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/></svg></span>
+    <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="10" width="3" height="4" rx="1"/><rect x="19" y="10" width="3" height="4" rx="1"/><rect x="5" y="8" width="3" height="8" rx="1"/><rect x="16" y="8" width="3" height="8" rx="1"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>
     Entreno
   </button>
   <button class="nav-btn" onclick="showScreen('historial',this)">
@@ -351,7 +353,7 @@ body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkM
     Físico
   </button>
   <button class="nav-btn" onclick="showScreen('ajustes',this)">
-    <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></span>
+    <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span>
     Ajustes
   </button>
 </nav>
@@ -530,10 +532,10 @@ function renderExercises() {
         </div>
         <div class="ex-input-group">
           <span class="ex-label">Hoy</span>
-          <input class="ex-input" placeholder="Peso (kg)" type="number" inputmode="decimal"
+          <input class="ex-input" placeholder="kg" type="number" inputmode="decimal"
             value="${sessionState[ex].peso}" ${done?'disabled':''}
             data-ex="${ex}" data-field="peso" oninput="updateState(this)">
-          <input class="ex-input" placeholder="Series (ej. 4x10)" style="margin-top:4px"
+          <input class="ex-input" placeholder="series" style="margin-top:4px"
             value="${sessionState[ex].series}" ${done?'disabled':''}
             data-ex="${ex}" data-field="series" oninput="updateState(this)">
         </div>
@@ -758,6 +760,8 @@ let selectedEtapaOpt = null;
 
 function initFisico() {
   renderEtapa();
+  const calDateInput = document.getElementById('cal-date-input');
+  if (!calDateInput.value) calDateInput.value = todayStr();
   renderPesoSection();
   renderCalSection();
   renderFisicoCharts();
@@ -874,18 +878,17 @@ function savePeso() {
 function renderCalSection() {
   const f = getFisico();
   const cals = f.calorias || {};
-  const today = todayStr();
+  const dateInput = document.getElementById('cal-date-input');
+  if (!dateInput.value) dateInput.value = todayStr();
+  const selectedDate = dateInput.value;
   const sign = getEtapaSign();
   const input = document.getElementById('cal-input');
-  const info = document.getElementById('cal-info-date');
 
-  info.textContent = formatDate(today);
-  if (cals[today] !== undefined) {
-    input.value = Math.abs(cals[today]);
+  if (cals[selectedDate] !== undefined) {
+    input.value = Math.abs(cals[selectedDate]);
   } else {
     input.value = '';
   }
-  input.placeholder = sign > 0 ? 'ej. +300' : 'ej. 500 (déficit)';
 
   renderSemanaResumen();
 }
@@ -895,9 +898,10 @@ function saveCal() {
   if (isNaN(raw)) { showToast('Valor inválido'); return; }
   const sign = getEtapaSign();
   const val = Math.abs(raw) * sign;
+  const selectedDate = document.getElementById('cal-date-input').value || todayStr();
   const f = getFisico();
   if (!f.calorias) f.calorias = {};
-  f.calorias[todayStr()] = val;
+  f.calorias[selectedDate] = val;
   if (f.pendingEtapa) activatePendingEtapa();
   saveFisico(f);
   renderCalSection();
