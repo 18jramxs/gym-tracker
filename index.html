@@ -392,7 +392,11 @@ function saveFisico(d){localStorage.setItem('gymtracker_fisico',JSON.stringify(d
 function todayStr(){return new Date().toISOString().split('T')[0];}
 function formatDate(str){if(!str)return '';const[y,m,d]=str.split('-');return`${d}/${m}/${y}`;}
 function weekKey(dateStr){const d=new Date(dateStr+'T12:00:00');const day=d.getDay()||7;d.setDate(d.getDate()-day+1);return d.toISOString().split('T')[0];}
-function daysBetween(a,b){return Math.round((new Date(b)-new Date(a))/(1000*60*60*24));}
+function daysBetween(a,b){
+  const da=new Date(a+'T12:00:00');
+  const db=new Date(b+'T12:00:00');
+  return Math.round((db-da)/(1000*60*60*24));
+}
 function safeId(ex){return 'card-'+ex.replace(/[^a-zA-Z0-9]/g,c=>'_'+c.charCodeAt(0)+'_');}
 function getStartDate(period,etapaStart){
   const d=new Date();
@@ -659,8 +663,11 @@ function renderEtapa(){
   datesEl.style.display='grid';
   document.getElementById('etapa-inicio-input').value=etapa.fechaInicio||'';
   document.getElementById('etapa-fin-input').value=etapa.fechaFin||'';
-  const dias=etapa.fechaInicio?daysBetween(etapa.fechaInicio,etapa.fechaFin||todayStr())+'d':'—';
-  meta.innerHTML=`<span><span>Duración</span><strong>${dias}</strong></span>`;
+  // Duración: desde inicio hasta hoy (si activa) o hasta fin (si finalizada)
+  const hasta=etapa.fechaFin||todayStr();
+  const dias=etapa.fechaInicio?daysBetween(etapa.fechaInicio,hasta)+1:'—';
+  const estado=etapa.fechaFin?'Finalizada':'Activa';
+  meta.innerHTML=`<span><span>Días</span><strong>${dias}</strong></span><span><span>Estado</span><strong>${estado}</strong></span>`;
   if(f.pendingEtapa){pending.style.display='block';pending.textContent='Próxima: '+(labels[f.pendingEtapa]||f.pendingEtapa)+' — esperando primer registro';}
   else{pending.style.display='none';}
 }
@@ -668,9 +675,11 @@ function renderEtapa(){
 function saveEtapaDates(){
   const f=getFisico();
   if(!f.etapa)return;
-  f.etapa.fechaInicio=document.getElementById('etapa-inicio-input').value||f.etapa.fechaInicio;
-  f.etapa.fechaFin=document.getElementById('etapa-fin-input').value||undefined;
-  if(!f.etapa.fechaFin)delete f.etapa.fechaFin;
+  const inicio=document.getElementById('etapa-inicio-input').value;
+  const fin=document.getElementById('etapa-fin-input').value;
+  if(inicio)f.etapa.fechaInicio=inicio;
+  if(fin)f.etapa.fechaFin=fin;
+  else delete f.etapa.fechaFin;
   saveFisico(f);
   renderEtapa();
   renderFisicoCharts();
@@ -819,14 +828,31 @@ function renderFisicoCharts(){
     options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#555',font:{size:10}},grid:{color:'#1e1e1e'}},y:{ticks:{color:'#555',font:{size:10}},grid:{color:'#1e1e1e'}}}}
   });
 
-  // GRASA CHART — gramos de grasa por día
+  // GRASA CHART — acumulado progresivo
   const cals=f.calorias||{};
-  const calEntries=Object.entries(cals).filter(([d])=>d>=startDate&&d<=today).sort(([a],[b])=>a.localeCompare(b));
-  const grasaVals=calEntries.map(([,v])=>parseFloat((v/7700*1000).toFixed(1)));
-  const pointColors=grasaVals.map(v=>v<0?'#f87171':'#4ade80');
 
-  // Total etapa
-  const etapaEntries=etapaStart?Object.entries(cals).filter(([d])=>d>=etapaStart&&d<=today):calEntries;
+  // Para acumulado: si hay etapa, siempre acumular desde inicio de etapa
+  // pero solo mostrar los puntos del período seleccionado
+  const acumStart=etapaStart||startDate;
+  const allCalEntries=Object.entries(cals).filter(([d])=>d>=acumStart&&d<=today).sort(([a],[b])=>a.localeCompare(b));
+
+  // Calcular acumulado desde inicio de etapa para todos los días
+  let runningAcum=0;
+  const acumMap={};
+  allCalEntries.forEach(([d,v])=>{
+    runningAcum+=v/7700*1000;
+    acumMap[d]=parseFloat(runningAcum.toFixed(1));
+  });
+
+  // Solo mostrar días dentro del período seleccionado
+  const visibleEntries=allCalEntries.filter(([d])=>d>=startDate);
+  const grasaVals=visibleEntries.map(([d])=>acumMap[d]);
+  const pointColors=grasaVals.map(v=>v<0?'#f87171':'#4ade80');
+  const lastVal=grasaVals.length?grasaVals[grasaVals.length-1]:0;
+  const lineColor=lastVal<0?'rgba(248,113,113,0.7)':'rgba(74,222,128,0.7)';
+
+  // Total etapa (siempre desde inicio de etapa)
+  const etapaEntries=etapaStart?Object.entries(cals).filter(([d])=>d>=etapaStart&&d<=today):allCalEntries;
   const totalEtapaKcal=etapaEntries.reduce((acc,[,v])=>acc+v,0);
   const totalGrasaEtapa=(totalEtapaKcal/7700*1000).toFixed(0);
   const grasaTotalCard=document.getElementById('grasa-total-card');
@@ -844,11 +870,11 @@ function renderFisicoCharts(){
   calChart=new Chart(document.getElementById('cal-chart').getContext('2d'),{
     type:'line',
     data:{
-      labels:calEntries.map(([d])=>formatDate(d)),
+      labels:visibleEntries.map(([d])=>formatDate(d)),
       datasets:[{
         data:grasaVals,
-        borderColor:'rgba(224,224,224,0.6)',
-        backgroundColor:'rgba(224,224,224,0.05)',
+        borderColor:lineColor,
+        backgroundColor:lineColor.replace('0.7','0.06'),
         borderWidth:2,
         pointBackgroundColor:pointColors,
         pointBorderColor:pointColors,
@@ -859,7 +885,7 @@ function renderFisicoCharts(){
     },
     options:{
       responsive:true,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>(ctx.parsed.y>0?'+':'')+ctx.parsed.y+' g'}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>(ctx.parsed.y>0?'+':'')+ctx.parsed.y+' g acum.'}}},
       scales:{
         x:{ticks:{color:'#555',font:{size:10}},grid:{color:'#1e1e1e'}},
         y:{ticks:{color:'#555',font:{size:10},callback:v=>(v>0?'+':'')+v+'g'},grid:{color:'#1e1e1e'}}
