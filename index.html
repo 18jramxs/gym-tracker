@@ -255,6 +255,9 @@ body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkM
 
   <div class="fisico-section">
     <div class="fisico-title">Peso corporal</div>
+    <div class="registro-row" style="margin-bottom:8px">
+      <input type="date" id="peso-date-input" class="date-input" style="flex:1" onchange="renderPesoSection()">
+    </div>
     <div class="registro-info" id="peso-info">Una vez por semana</div>
     <div class="registro-row">
       <input type="number" inputmode="decimal" class="registro-input" id="peso-input" placeholder="kg" step="0.1">
@@ -630,10 +633,11 @@ function initFisico(){
   renderEtapa();
   const calDateInput=document.getElementById('cal-date-input');
   if(!calDateInput.value)calDateInput.value=todayStr();
+  const pesoDateInput=document.getElementById('peso-date-input');
+  if(!pesoDateInput.value)pesoDateInput.value=todayStr();
   renderPesoSection();
   renderCalSection();
   renderFisicoCharts();
-  // init sign from etapa
   const f=getFisico();
   const tipo=f.etapa?.tipo||'deficit';
   calSign=tipo==='deficit'?-1:1;
@@ -717,19 +721,32 @@ function updateSignBtn(){
 function renderPesoSection(){
   const f=getFisico();
   const pesos=f.pesos||{};
-  const thisWeek=weekKey(todayStr());
-  const already=pesos[thisWeek]!==undefined;
+  const dateInput=document.getElementById('peso-date-input');
+  if(!dateInput.value)dateInput.value=todayStr();
+  const selectedWeek=weekKey(dateInput.value);
+  const already=pesos[selectedWeek]!==undefined;
   const btn=document.getElementById('peso-btn');
   const input=document.getElementById('peso-input');
   const info=document.getElementById('peso-info');
-  if(already){btn.disabled=true;input.disabled=true;input.value=pesos[thisWeek];info.textContent='Ya registrado esta semana ('+pesos[thisWeek]+' kg)';}
-  else{btn.disabled=false;input.disabled=false;input.value='';info.textContent='Una vez por semana';}
+  if(already){
+    input.value=pesos[selectedWeek];
+    info.textContent='Semana del '+formatDate(selectedWeek)+' → '+pesos[selectedWeek]+' kg (editable)';
+    btn.textContent='Actualizar';
+    btn.disabled=false;input.disabled=false;
+  } else {
+    input.value='';
+    info.textContent='Sin registro esta semana';
+    btn.textContent='Guardar';
+    btn.disabled=false;input.disabled=false;
+  }
 }
 function savePeso(){
   const val=parseFloat(document.getElementById('peso-input').value);
   if(!val||val<20||val>300){showToast('Peso inválido');return;}
   const f=getFisico();if(!f.pesos)f.pesos={};
-  f.pesos[weekKey(todayStr())]=val;
+  const dateInput=document.getElementById('peso-date-input');
+  const selectedWeek=weekKey(dateInput.value||todayStr());
+  f.pesos[selectedWeek]=val;
   if(f.pendingEtapa)activatePendingEtapa();
   saveFisico(f);renderPesoSection();renderFisicoCharts();showToast('Peso guardado ✓');
 }
