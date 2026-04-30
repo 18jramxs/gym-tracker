@@ -34,7 +34,7 @@
   --radius-xs:8px;
 }
 html{background:var(--bg);}
-body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;font-size:15px;min-height:100vh;padding-bottom:80px;-webkit-font-smoothing:antialiased;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;font-size:15px;min-height:100vh;padding-bottom:96px;-webkit-font-smoothing:antialiased;}
 
 /* MESH BACKGROUND */
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(74,158,255,0.08) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(48,209,88,0.05) 0%,transparent 50%),radial-gradient(ellipse at 50% 50%,rgba(10,10,15,1) 0%,transparent 100%);pointer-events:none;z-index:0;}
@@ -46,10 +46,12 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .icon-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--text2);padding:6px 12px;border-radius:20px;font-size:13px;cursor:pointer;backdrop-filter:var(--glass);-webkit-backdrop-filter:var(--glass);}
 
 /* NAV */
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,0.8);backdrop-filter:var(--glass);-webkit-backdrop-filter:var(--glass);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom);}
-.nav-btn{flex:1;background:none;border:none;color:var(--text3);padding:10px 4px 8px;font-size:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:color 0.2s;letter-spacing:0.2px;}
-.nav-btn.active{color:var(--accent);}
+.bottom-nav{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:420px;background:rgba(18,18,28,0.88);backdrop-filter:blur(28px) saturate(200%);-webkit-backdrop-filter:blur(28px) saturate(200%);border:1px solid rgba(255,255,255,0.13);border-radius:28px;display:flex;z-index:100;padding:5px;box-shadow:0 8px 32px rgba(0,0,0,0.45),0 1px 0 rgba(255,255,255,0.06) inset;gap:2px;}
+.nav-btn{flex:1;background:none;border:none;color:var(--text3);padding:8px 4px 7px;font-size:9.5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:color 0.2s;letter-spacing:0.2px;border-radius:22px;position:relative;z-index:1;}
+.nav-btn.active{color:#fff;}
 .nav-icon svg{display:block;}
+.nav-indicator{position:absolute;inset:0;border-radius:22px;background:rgba(255,255,255,0.11);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.15);transition:opacity 0.2s;opacity:0;z-index:-1;}
+.nav-btn.active .nav-indicator{opacity:1;}
 
 /* SCREENS */
 .screen{display:none;padding:16px 16px 8px;animation:screenIn 0.3s ease;}
@@ -241,13 +243,18 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .toast.green{border-color:rgba(48,209,88,0.4);color:var(--green);}
 
 .empty-state{text-align:center;color:var(--text3);padding:40px 20px;font-size:14px;}
+
+/* CAROUSEL */
+.corpo-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.2);cursor:pointer;transition:all 0.2s;flex-shrink:0;}
+.corpo-dot.active{background:var(--accent);width:16px;border-radius:3px;}
+#corpo-carousel::-webkit-scrollbar,#chart-carousel::-webkit-scrollbar{display:none;}
+.corpo-slide{flex-shrink:0;}
 </style>
 </head>
 <body>
 
 <div class="header">
   <h1>GYM TRACKER</h1>
-  <button class="icon-btn" onclick="exportJSON()">Export</button>
 </div>
 
 <!-- ENTRENO -->
@@ -316,6 +323,21 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 <!-- FÍSICO -->
 <div id="screen-fisico" class="screen">
 
+  <!-- PERFIL -->
+  <div class="fisico-card" style="margin-bottom:10px;">
+    <div style="padding:16px 18px;display:flex;align-items:center;gap:14px;">
+      <div style="width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,rgba(74,158,255,0.3),rgba(48,209,88,0.2));border:1.5px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--text);flex-shrink:0;">J</div>
+      <div style="flex:1;">
+        <div style="font-size:16px;font-weight:700;color:var(--text);letter-spacing:0.2px;">Jose Ramos Apolo</div>
+        <div id="profile-meta" style="font-size:12px;color:var(--text3);margin-top:2px;">178 cm · <span id="profile-age"></span></div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:2px;">Peso actual</div>
+        <div id="profile-peso" style="font-size:17px;font-weight:700;color:var(--accent);">—</div>
+      </div>
+    </div>
+  </div>
+
   <!-- ETAPA -->
   <div class="fisico-card">
     <div class="section-header">
@@ -340,42 +362,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         </div>
         <button class="etapa-confirm" onclick="confirmEtapa()">Confirmar</button>
       </div>
-    </div>
-  </div>
-
-  <!-- PESO CORPORAL -->
-  <div class="fisico-card">
-    <div class="section-header">
-      <div class="section-icon green"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#30d158" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 4-4"/></svg></div>
-      <div><div class="section-title-text">Peso corporal</div><div class="section-subtitle">Una vez por semana</div></div>
-    </div>
-    <div class="section-body">
-      <div class="fisico-row" style="margin-bottom:8px"><input type="date" id="peso-date-input" class="date-input" style="flex:1" onchange="renderPesoSection()"></div>
-      <div class="fisico-info" id="peso-info"></div>
-      <div class="fisico-row">
-        <input type="number" inputmode="decimal" class="fisico-input" id="peso-input" placeholder="kg" step="0.1">
-        <button class="fisico-btn" id="peso-btn" onclick="savePeso()">Guardar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MEDIDAS -->
-  <div class="fisico-card">
-    <div class="section-header">
-      <div class="section-icon purple"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#bf5af2" stroke-width="2" stroke-linecap="round"><path d="M2 12h20M2 12l4-4M2 12l4 4M22 12l-4-4M22 12l-4 4"/></svg></div>
-      <div><div class="section-title-text">Medidas corporales</div><div class="section-subtitle">Una vez al mes</div></div>
-    </div>
-    <div class="section-body">
-      <div class="fisico-row" style="margin-bottom:8px"><input type="date" id="medidas-date-input" class="date-input" style="flex:1" onchange="renderMedidasSection()"></div>
-      <div class="fisico-info" id="medidas-info"></div>
-      <div class="medidas-grid">
-        <div class="medida-group"><div class="medida-lbl">Cintura (cm)</div><input type="number" inputmode="decimal" class="medida-input" id="m-cintura" placeholder="cm" step="0.1"></div>
-        <div class="medida-group"><div class="medida-lbl">Cadera (cm)</div><input type="number" inputmode="decimal" class="medida-input" id="m-cadera" placeholder="cm" step="0.1"></div>
-        <div class="medida-group"><div class="medida-lbl">Pecho (cm)</div><input type="number" inputmode="decimal" class="medida-input" id="m-pecho" placeholder="cm" step="0.1"></div>
-        <div class="medida-group"><div class="medida-lbl">Brazo (cm)</div><input type="number" inputmode="decimal" class="medida-input" id="m-brazo" placeholder="cm" step="0.1"></div>
-        <div class="medida-group"><div class="medida-lbl">Muslo (cm)</div><input type="number" inputmode="decimal" class="medida-input" id="m-muslo" placeholder="cm" step="0.1"></div>
-      </div>
-      <button class="fisico-btn full" onclick="saveMedidas()">Guardar medidas</button>
     </div>
   </div>
 
@@ -411,31 +397,96 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     </div>
   </div>
 
-  <!-- EVOLUCIÓN -->
-  <div class="fisico-card">
-    <div class="section-header">
-      <div class="section-icon blue"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4a9eff" stroke-width="2" stroke-linecap="round"><polyline points="4 18 9 13 13 16 20 7"/></svg></div>
-      <div><div class="section-title-text">Evolución</div><div class="section-subtitle">Gráficas de progreso</div></div>
+  <!-- CARRUSEL CORPORAL -->
+  <div class="fisico-card" style="margin-bottom:10px;overflow:hidden;">
+    <div class="section-header" style="padding-bottom:6px;">
+      <div class="section-icon green"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#30d158" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="7" r="3"/><path d="M5 21v-2a7 7 0 0114 0v2"/></svg></div>
+      <div style="flex:1"><div class="section-title-text">Datos corporales</div><div class="section-subtitle">Desliza para cambiar</div></div>
+      <div style="display:flex;gap:5px;padding-right:2px;" id="corpo-dots">
+        <div class="corpo-dot active" onclick="goCorpoSlide(0)"></div>
+        <div class="corpo-dot" onclick="goCorpoSlide(1)"></div>
+        <div class="corpo-dot" onclick="goCorpoSlide(2)"></div>
+      </div>
     </div>
-    <div class="section-body">
+    <div id="corpo-carousel" style="display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:0;" onscroll="onCorpoScroll()">
+      <!-- SLIDE 0: % GRASA -->
+      <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;padding:0 14px 16px;">
+        <div style="text-align:center;padding:10px 0 14px;">
+          <div style="font-size:42px;font-weight:800;color:var(--accent);letter-spacing:-1px;" id="bf-val">—</div>
+          <div style="font-size:13px;color:var(--text2);margin-top:2px;">% grasa corporal</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px;" id="bf-method">Marina · Deurenberg · Jackson-Pollock</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:10px 13px;margin-bottom:10px;" id="bf-breakdown"></div>
+        <div style="font-size:11px;color:var(--text3);text-align:center;">Basado en las medidas más recientes</div>
+      </div>
+      <!-- SLIDE 1: PESO -->
+      <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;padding:0 14px 16px;">
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;font-weight:600;">Peso corporal · semanal</div>
+        <div class="fisico-row" style="margin-bottom:8px"><input type="date" id="peso-date-input" class="date-input" style="flex:1" onchange="renderPesoSection()"></div>
+        <div class="fisico-info" id="peso-info"></div>
+        <div class="fisico-row">
+          <input type="number" inputmode="decimal" class="fisico-input" id="peso-input" placeholder="kg" step="0.1">
+          <button class="fisico-btn" id="peso-btn" onclick="savePeso()">Guardar</button>
+        </div>
+      </div>
+      <!-- SLIDE 2: MEDIDAS -->
+      <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;padding:0 14px 16px;">
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;font-weight:600;">Medidas corporales · mensual</div>
+        <div class="fisico-row" style="margin-bottom:8px"><input type="date" id="medidas-date-input" class="date-input" style="flex:1" onchange="renderMedidasSection()"></div>
+        <div class="fisico-info" id="medidas-info"></div>
+        <div class="medidas-grid">
+          <div class="medida-group"><div class="medida-lbl">Cintura (cm)</div><input type="number" inputmode="decimal" class="medida-input" id="m-cintura" placeholder="cm" step="0.1"></div>
+          <div class="medida-group"><div class="medida-lbl">Cadera (cm)</div><input type="number" inputmode="decimal" class="medida-input" id="m-cadera" placeholder="cm" step="0.1"></div>
+          <div class="medida-group"><div class="medida-lbl">Pecho (cm)</div><input type="number" inputmode="decimal" class="medida-input" id="m-pecho" placeholder="cm" step="0.1"></div>
+          <div class="medida-group"><div class="medida-lbl">Brazo (cm)</div><input type="number" inputmode="decimal" class="medida-input" id="m-brazo" placeholder="cm" step="0.1"></div>
+          <div class="medida-group"><div class="medida-lbl">Muslo (cm)</div><input type="number" inputmode="decimal" class="medida-input" id="m-muslo" placeholder="cm" step="0.1"></div>
+          <div class="medida-group"><div class="medida-lbl">Cuello (cm)</div><input type="number" inputmode="decimal" class="medida-input" id="m-cuello" placeholder="cm" step="0.1"></div>
+        </div>
+        <button class="fisico-btn full" onclick="saveMedidas()">Guardar medidas</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EVOLUCIÓN CAROUSEL -->
+  <div class="fisico-card" style="margin-bottom:10px;overflow:hidden;">
+    <div class="section-header" style="padding-bottom:6px;">
+      <div class="section-icon blue"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4a9eff" stroke-width="2" stroke-linecap="round"><polyline points="4 18 9 13 13 16 20 7"/></svg></div>
+      <div style="flex:1"><div class="section-title-text">Evolución</div><div class="section-subtitle">Desliza entre gráficas</div></div>
+      <div style="display:flex;gap:5px;padding-right:2px;" id="chart-dots">
+        <div class="corpo-dot active" onclick="goChartSlide(0)"></div>
+        <div class="corpo-dot" onclick="goChartSlide(1)"></div>
+        <div class="corpo-dot" onclick="goChartSlide(2)"></div>
+        <div class="corpo-dot" onclick="goChartSlide(3)"></div>
+      </div>
+    </div>
+    <div style="padding:0 14px 8px;">
       <div class="pill-row" id="period-btns-fisico">
         <button class="pill-btn" onclick="setFisicoPeriod('semana',this)">Semana</button>
         <button class="pill-btn active" onclick="setFisicoPeriod('mes',this)">Mes</button>
         <button class="pill-btn" onclick="setFisicoPeriod('anual',this)">Año</button>
         <button class="pill-btn" onclick="setFisicoPeriod('etapa',this)">Etapa</button>
       </div>
-      <div class="chart-card"><div class="chart-card-label">Peso corporal (kg)</div><canvas id="peso-chart" height="160"></canvas></div>
-      <div class="chart-card">
+    </div>
+    <div id="chart-carousel" style="display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;" onscroll="onChartScroll()">
+      <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;padding:0 14px 16px;">
+        <div class="chart-card-label">Peso corporal (kg)</div>
+        <canvas id="peso-chart" height="180"></canvas>
+      </div>
+      <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;padding:0 14px 16px;">
         <div class="chart-card-label">Grasa acumulada (g)</div>
         <div class="grasa-total-bar" id="grasa-total-card" style="display:none"><span class="grasa-total-lbl">Total etapa</span><span class="grasa-total-val" id="grasa-total-val">—</span></div>
-        <canvas id="cal-chart" height="160"></canvas>
+        <canvas id="cal-chart" height="180"></canvas>
       </div>
-      <div class="chart-card">
+      <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;padding:0 14px 16px;">
+        <div class="chart-card-label">% Grasa corporal</div>
+        <canvas id="bf-chart" height="180"></canvas>
+      </div>
+      <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;padding:0 14px 16px;">
         <div class="chart-card-label">Medidas corporales (cm)</div>
         <select class="medida-select" id="medida-chart-select" onchange="renderMedidasChart()">
           <option value="cintura">Cintura</option><option value="cadera">Cadera</option><option value="pecho">Pecho</option><option value="brazo">Brazo</option><option value="muslo">Muslo</option>
         </select>
-        <canvas id="medidas-chart" height="160"></canvas>
+        <canvas id="medidas-chart" height="180"></canvas>
       </div>
     </div>
   </div>
@@ -472,19 +523,19 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 <nav class="bottom-nav">
   <button class="nav-btn active" onclick="showScreen('entreno',this)">
     <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="10" width="3" height="4" rx="1"/><rect x="19" y="10" width="3" height="4" rx="1"/><rect x="5" y="8" width="3" height="8" rx="1"/><rect x="16" y="8" width="3" height="8" rx="1"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>Entreno
-  </button>
+  <span class="nav-indicator"></span></button>
   <button class="nav-btn" onclick="showScreen('historial',this)">
     <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="14" y2="17"/></svg></span>Historial
-  </button>
+  <span class="nav-indicator"></span></button>
   <button class="nav-btn" onclick="showScreen('progreso',this)">
     <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><polyline points="4 18 9 13 13 16 20 7"/></svg></span>Progreso
-  </button>
+  <span class="nav-indicator"></span></button>
   <button class="nav-btn" onclick="showScreen('fisico',this)">
     <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="7" r="3"/><path d="M5 21v-2a7 7 0 0114 0v2"/></svg></span>Físico
-  </button>
+  <span class="nav-indicator"></span></button>
   <button class="nav-btn" onclick="showScreen('ajustes',this)">
     <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span>Ajustes
-  </button>
+  <span class="nav-indicator"></span></button>
 </nav>
 
 <div class="toast" id="toast"></div>
@@ -507,7 +558,7 @@ const SERIES={
 const DAY_LABELS={lunes:'Lunes · Torso',martes:'Martes · Pierna',jueves:'Jueves · Torso',viernes:'Viernes · Torso',sabado:'Sábado · Pierna'};
 const PIERNA_DAYS=['martes','sabado'];
 const SINGLE_REF=['ABS'];
-const MEDIDA_FIELDS=['cintura','cadera','pecho','brazo','muslo'];
+const MEDIDA_FIELDS=['cintura','cadera','pecho','brazo','muslo','cuello'];
 
 function getSeries(day,ex){const s=SERIES[day];if(!s)return 3;return s[ex]!==undefined?s[ex]:(s.default||3);}
 
@@ -753,11 +804,133 @@ function renderProgress(){
 }
 
 // FÍSICO
+
+// BODY FAT CALCULATION
+const ALTURA_M = 1.78;
+const DOB = new Date('2004-01-18');
+function getAge(){const today=new Date();let age=today.getFullYear()-DOB.getFullYear();const m=today.getMonth()-DOB.getMonth();if(m<0||(m===0&&today.getDate()<DOB.getDate()))age--;return age;}
+
+function calcBodyFat(peso,medidas){
+  if(!peso||!medidas)return null;
+  const cintura=medidas.cintura,cuello=medidas.cuello,pecho=medidas.pecho,muslo=medidas.muslo;
+  const altura_cm=ALTURA_M*100;
+  const age=getAge();
+  const results=[];
+
+  // 1. US Navy (needs cintura + cuello + height)
+  if(cintura&&cuello){
+    const navy=495/(1.0324-0.19077*Math.log10(cintura-cuello)+0.15456*Math.log10(altura_cm))-450;
+    if(navy>3&&navy<50)results.push({name:'Marina EE.UU.',val:parseFloat(navy.toFixed(1)),weight:3});
+  }
+
+  // 2. Deurenberg (needs BMI + age)
+  const bmi=peso/(ALTURA_M*ALTURA_M);
+  const deurenberg=(1.20*bmi)+(0.23*age)-16.2;
+  if(deurenberg>3&&deurenberg<50)results.push({name:'Deurenberg',val:parseFloat(deurenberg.toFixed(1)),weight:2});
+
+  // 3. Jackson-Pollock 3 (pecho + cintura/abdomen + muslo for men)
+  if(pecho&&cintura&&muslo){
+    const sum3=pecho+cintura+muslo;
+    const density=1.10938-(0.0008267*sum3)+(0.0000016*sum3*sum3)-(0.0002574*age);
+    const jp=(495/density)-450;
+    if(jp>3&&jp<50)results.push({name:'Jackson-Pollock',val:parseFloat(jp.toFixed(1)),weight:2});
+  }
+
+  if(!results.length)return null;
+  const totalWeight=results.reduce((a,r)=>a+r.weight,0);
+  const avg=results.reduce((a,r)=>a+r.val*r.weight,0)/totalWeight;
+  return {avg:parseFloat(avg.toFixed(1)),methods:results};
+}
+
+function renderBodyFat(){
+  const f=getFisico();const pesos=f.pesos||{};const medidas=f.medidas||{};
+  const latestWeek=Object.keys(pesos).sort().reverse()[0];
+  const latestMonth=Object.keys(medidas).sort().reverse()[0];
+  const pw=latestWeek?pesos[latestWeek]:null;
+  const med=latestMonth?medidas[latestMonth]:null;
+  const result=calcBodyFat(pw,med);
+  const valEl=document.getElementById('bf-val');
+  const breakEl=document.getElementById('bf-breakdown');
+  if(!result){
+    valEl.textContent='—';
+    breakEl.innerHTML='<div style="font-size:12px;color:var(--text3);text-align:center;padding:4px 0">Necesitas peso + medidas registradas</div>';
+    return;
+  }
+  valEl.textContent=result.avg+'%';
+  // Color by range (men)
+  const bf=result.avg;
+  let cat,col;
+  if(bf<6){cat='Esencial';col='#ff9f0a';}
+  else if(bf<14){cat='Atlético';col='#30d158';}
+  else if(bf<18){cat='Fitness';col='#30d158';}
+  else if(bf<25){cat='Promedio';col='#ffd60a';}
+  else{cat='Sobrepeso grasa';col='#ff453a';}
+  valEl.style.color=col;
+  breakEl.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-size:12px;color:var(--text2);">Categoría</span><span style="font-size:13px;font-weight:600;color:${col}">${cat}</span></div>`+
+    result.methods.map(m=>`<div style="display:flex;justify-content:space-between;padding:3px 0;border-top:1px solid var(--border);"><span style="font-size:12px;color:var(--text3)">${m.name}</span><span style="font-size:12px;color:var(--text2);font-weight:500">${m.val}%</span></div>`).join('');
+}
+
+function renderBfChart(){
+  const f=getFisico();const pesos=f.pesos||{};const medidas=f.medidas||{};
+  const etapaStart=f.etapa?.fechaInicio;const startDate=getStartDate(currentFisicoPeriod,etapaStart);
+  const months=Object.keys(medidas).filter(mk=>(mk+'-01')>=startDate).sort();
+  const labels=[],vals=[];
+  months.forEach(mk=>{
+    const med=medidas[mk];
+    const wk=Object.keys(pesos).filter(w=>w.slice(0,7)<=mk).sort().reverse()[0];
+    const pw=wk?pesos[wk]:null;
+    const res=calcBodyFat(pw,med);
+    if(res){const[y,m]=mk.split('-');labels.push(m+'/'+y);vals.push(res.avg);}
+  });
+  if(window._bfChart)window._bfChart.destroy();
+  window._bfChart=new Chart(document.getElementById('bf-chart').getContext('2d'),{
+    type:'line',data:{labels,datasets:[{data:vals,borderColor:'#4a9eff',backgroundColor:'rgba(74,158,255,0.08)',borderWidth:2,pointBackgroundColor:'#4a9eff',pointRadius:4,tension:0.35,fill:true}]},
+    options:{...cOpts,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.parsed.y+'%'}}}}
+  });
+}
+
+// CAROUSEL LOGIC
+function goCorpoSlide(idx){
+  const c=document.getElementById('corpo-carousel');
+  c.scrollTo({left:c.offsetWidth*idx,behavior:'smooth'});
+  updateCorporDots(idx);
+}
+function onCorpoScroll(){
+  const c=document.getElementById('corpo-carousel');
+  const idx=Math.round(c.scrollLeft/c.offsetWidth);
+  updateCorporDots(idx);
+}
+function updateCorporDots(idx){
+  document.querySelectorAll('#corpo-dots .corpo-dot').forEach((d,i)=>d.classList.toggle('active',i===idx));
+}
+function goChartSlide(idx){
+  const c=document.getElementById('chart-carousel');
+  c.scrollTo({left:c.offsetWidth*idx,behavior:'smooth'});
+  updateChartDots(idx);
+}
+function onChartScroll(){
+  const c=document.getElementById('chart-carousel');
+  const idx=Math.round(c.scrollLeft/c.offsetWidth);
+  updateChartDots(idx);
+}
+function updateChartDots(idx){
+  document.querySelectorAll('#chart-dots .corpo-dot').forEach((d,i)=>d.classList.toggle('active',i===idx));
+}
+
+function renderProfileMeta(){
+  const age=getAge();
+  document.getElementById('profile-age').textContent=age+' años';
+  const f=getFisico();const pesos=f.pesos||{};
+  const latestWeek=Object.keys(pesos).sort().reverse()[0];
+  const pw=latestWeek?pesos[latestWeek]:null;
+  document.getElementById('profile-peso').textContent=pw?pw+' kg':'—';
+}
+
 function initFisico(){
   renderEtapa();
   ['cal-date-input','peso-date-input','medidas-date-input'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.value)el.value=todayStr();});
   const f=getFisico();calSign=(f.etapa?.tipo||'deficit')==='deficit'?-1:1;updateSignBtn();
-  renderPesoSection();renderMedidasSection();renderMacros();renderCalSection();renderFisicoCharts();renderMedidasChart();
+  renderProfileMeta();renderPesoSection();renderMedidasSection();renderMacros();renderCalSection();renderFisicoCharts();renderMedidasChart();renderBodyFat();renderBfChart();
 }
 
 function renderEtapa(){
@@ -868,6 +1041,7 @@ const cOpts={responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{
 
 function setFisicoPeriod(p,el){currentFisicoPeriod=p;document.querySelectorAll('#period-btns-fisico .pill-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderFisicoCharts();renderMedidasChart();}
 function renderFisicoCharts(){
+  setTimeout(()=>{try{renderBfChart();}catch(e){}},50);
   const f=getFisico();const etapaStart=f.etapa?.fechaInicio;const startDate=getStartDate(currentFisicoPeriod,etapaStart);const today=todayStr();
   const pesos=f.pesos||{};
   const pesoEntries=Object.entries(pesos).filter(([wk])=>wk>=startDate).sort(([a],[b])=>a.localeCompare(b));
