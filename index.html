@@ -47,11 +47,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .icon-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--text2);padding:6px 12px;border-radius:20px;font-size:13px;cursor:pointer;backdrop-filter:var(--glass);-webkit-backdrop-filter:var(--glass);}
 
 /* NAV */
-.bottom-nav{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:420px;background:rgba(18,18,28,0.88);backdrop-filter:blur(28px) saturate(200%);-webkit-backdrop-filter:blur(28px) saturate(200%);border:1px solid rgba(255,255,255,0.13);border-radius:28px;display:flex;z-index:100;padding:5px;box-shadow:0 8px 32px rgba(0,0,0,0.45),0 1px 0 rgba(255,255,255,0.06) inset;gap:2px;}
-.nav-btn{flex:1;background:none;border:none;color:var(--text3);padding:8px 4px 7px;font-size:9.5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:color 0.2s;letter-spacing:0.2px;border-radius:22px;position:relative;z-index:1;}
+.bottom-nav{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:420px;background:rgba(18,18,28,0.88);backdrop-filter:blur(28px) saturate(200%);-webkit-backdrop-filter:blur(28px) saturate(200%);border:1px solid rgba(255,255,255,0.13);border-radius:100px;display:flex;z-index:100;padding:5px;box-shadow:0 8px 32px rgba(0,0,0,0.45),0 1px 0 rgba(255,255,255,0.06) inset;gap:2px;}
+.nav-btn{flex:1;background:none;border:none;color:var(--text3);padding:8px 4px 7px;font-size:9.5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:color 0.2s;letter-spacing:0.2px;border-radius:100px;position:relative;z-index:1;}
 .nav-btn.active{color:#fff;}
 .nav-icon svg{display:block;}
-.nav-indicator{position:absolute;inset:0;border-radius:22px;background:rgba(255,255,255,0.11);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.15);transition:opacity 0.2s;opacity:0;z-index:-1;}
+.nav-indicator{position:absolute;inset:0;border-radius:100px;background:rgba(255,255,255,0.11);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.15);transition:opacity 0.2s;opacity:0;z-index:-1;}
 .nav-btn.active .nav-indicator{opacity:1;}
 
 /* SCREENS */
@@ -250,12 +250,43 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .corpo-dot.active{background:var(--accent);width:16px;border-radius:3px;}
 #corpo-carousel::-webkit-scrollbar,#chart-carousel::-webkit-scrollbar{display:none;}
 .corpo-slide{flex-shrink:0;}
+
+/* EMOM & TEST CARDS */
+.emom-card{background:rgba(74,158,255,0.08);border:1px solid rgba(74,158,255,0.3);border-radius:var(--radius);overflow:hidden;margin-bottom:0;}
+.emom-header{display:flex;align-items:center;padding:10px 14px;background:rgba(74,158,255,0.1);border-bottom:1px solid rgba(74,158,255,0.2);gap:10px;}
+.emom-badge{background:rgba(74,158,255,0.2);color:#4a9eff;border:1px solid rgba(74,158,255,0.4);border-radius:6px;font-size:10px;font-weight:700;padding:2px 8px;letter-spacing:1px;}
+.test-card{background:rgba(255,214,10,0.06);border:1px solid rgba(255,214,10,0.3);border-radius:var(--radius);overflow:hidden;margin-bottom:0;}
+.test-header{display:flex;align-items:center;padding:10px 14px;background:rgba(255,214,10,0.08);border-bottom:1px solid rgba(255,214,10,0.2);gap:10px;}
+.test-badge{background:rgba(255,214,10,0.15);color:#ffd60a;border:1px solid rgba(255,214,10,0.4);border-radius:6px;font-size:10px;font-weight:700;padding:2px 8px;letter-spacing:1px;}
+.emom-body{padding:12px 14px;}
+.emom-field{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
+.emom-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:var(--text3);}
+.emom-total{background:rgba(74,158,255,0.1);border:1px solid rgba(74,158,255,0.2);border-radius:var(--radius-xs);padding:8px 12px;display:flex;justify-content:space-between;align-items:center;margin-top:4px;}
+.emom-total-lbl{font-size:12px;color:var(--text2);}
+.emom-total-val{font-size:18px;font-weight:700;color:#4a9eff;}
+.test-body{padding:12px 14px;}
+.test-goal-bar{background:rgba(255,214,10,0.08);border:1px solid rgba(255,214,10,0.2);border-radius:var(--radius-xs);padding:10px 13px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;}
+.test-goal-lbl{font-size:12px;color:var(--text2);}
+.test-goal-pct{font-size:20px;font-weight:800;color:#ffd60a;}
+
+/* DOMINADAS PROGRESS */
+.dom-progress-section{margin-bottom:16px;}
+.dom-goal-card{background:rgba(255,214,10,0.07);border:1px solid rgba(255,214,10,0.25);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;}
+.dom-goal-info{display:flex;flex-direction:column;gap:3px;}
+.dom-goal-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;}
+.dom-goal-val{font-size:22px;font-weight:800;color:#ffd60a;}
+.dom-goal-sub{font-size:12px;color:var(--text2);}
+.dom-pct{font-size:32px;font-weight:800;}
+.dom-tabs{display:flex;gap:6px;margin-bottom:12px;}
+.dom-tab{flex:1;background:var(--bg-card);border:1px solid var(--border);color:var(--text2);padding:8px 4px;border-radius:var(--radius-sm);font-size:11px;cursor:pointer;text-align:center;font-weight:500;transition:all 0.18s;}
+.dom-tab.active{background:rgba(74,158,255,0.15);border-color:var(--accent);color:var(--accent);}
+
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>GYM TRACKER</h1>
+  <h1>GYM TRACKER <span style="color:#ffd60a;-webkit-text-fill-color:#ffd60a;">jo$e</span></h1>
 </div>
 
 <!-- ENTRENO -->
@@ -415,7 +446,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <div style="text-align:center;padding:10px 0 14px;">
           <div style="font-size:42px;font-weight:800;color:var(--accent);letter-spacing:-1px;" id="bf-val">—</div>
           <div style="font-size:13px;color:var(--text2);margin-top:2px;">% grasa corporal</div>
-          <div style="font-size:11px;color:var(--text3);margin-top:4px;" id="bf-method">Marina · Deurenberg · Jackson-Pollock</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px;" id="bf-method">Método Marina EE.UU. (±3-4%)</div>
         </div>
         <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:10px 13px;margin-bottom:10px;" id="bf-breakdown"></div>
         <div style="font-size:11px;color:var(--text3);text-align:center;">Basado en las medidas más recientes</div>
@@ -499,11 +530,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   <div class="settings-group">
     <div class="settings-group-title">Datos</div>
     <div class="settings-row" onclick="exportJSON()">
-      <div class="settings-row-icon" style="background:rgba(74,158,255,0.15)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4a9eff" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+      <div class="settings-row-icon" style="background:rgba(74,158,255,0.15)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4a9eff" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
       <span>Exportar backup (JSON)</span>
     </div>
     <div class="settings-row" onclick="document.getElementById('import-file').click()">
-      <div class="settings-row-icon" style="background:rgba(48,209,88,0.15)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#30d158" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+      <div class="settings-row-icon" style="background:rgba(48,209,88,0.15)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#30d158" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
       <span>Importar backup (JSON)</span>
     </div>
     <div class="settings-row" onclick="exportCSV()">
@@ -591,6 +622,287 @@ function getStartDate(period,etapaStart){
 function parseSeries(str){if(!str)return[];return str.trim().split(/[\s,]+/).reduce((acc,p)=>{const m=p.match(/^(\d+)x(\d+)$/i);if(m)acc.push({series:parseInt(m[1]),reps:parseInt(m[2])});return acc;},[]);}
 function calc1RM(peso,seriesStr){if(!peso||!seriesStr)return null;const w=parseFloat(peso);if(!w)return null;const parsed=parseSeries(seriesStr);if(!parsed.length)return null;return parseFloat(Math.max(...parsed.map(({reps})=>w*(1+reps/30))).toFixed(1));}
 
+
+// ── DOMINADAS SPECIAL LOGIC ──────────────────────────────────────
+const DOM_GOAL = 17;
+
+function isFirstFridayOfMonth(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  const dow = d.getDay(); // 5 = friday
+  if (dow !== 5) return false;
+  const day = d.getDate();
+  return day <= 7; // first friday = day 1-7
+}
+
+function isLunes(day) { return day === 'lunes'; }
+function isViernes(day) { return day === 'viernes'; }
+
+function getDomMode(day, dateStr) {
+  if (isLunes(day)) return 'emom';
+  if (isViernes(day) && isFirstFridayOfMonth(dateStr)) return 'test';
+  return 'normal';
+}
+
+function renderEMOMCard(ex, sessionState, currentDay, currentSessionDate) {
+  const state = sessionState[ex] || {emomReps:'', emomMins:'', done:false};
+  const refs = getLastNByExercise('DOMINADAS_EMOM', 1, currentSessionDate);
+  let refHtml = refs.length
+    ? `<div class="ex-label">Última vez · ${formatDate(refs[0].date)}</div><div class="ex-ref-val">${refs[0].emomReps||'—'} reps/min · ${refs[0].emomMins||'—'} min · ${refs[0].emomTotal||'—'} total</div>`
+    : `<div class="ex-label">Referencia</div><div class="ex-ref-val empty">Sin datos previos</div>`;
+  const total = (parseInt(state.emomReps)||0) * (parseInt(state.emomMins)||0);
+  const id = safeId(ex);
+  const card = document.createElement('div');
+  card.className = 'emom-card' + (state.done ? ' exercise-card done' : '');
+  card.id = id;
+  card.style.animation = 'screenIn 0.25s ease both';
+  card.innerHTML = `
+    <div class="emom-header">
+      <span class="ex-name" style="color:#4a9eff;">EMOM</span>
+      <span class="emom-badge">DOMINADAS</span>
+    </div>
+    <div class="emom-body">
+      <div style="margin-bottom:10px;">${refHtml}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div class="emom-field">
+          <span class="emom-lbl">Reps por minuto</span>
+          <input class="ex-input" type="number" inputmode="numeric" placeholder="ej. 6"
+            value="${state.emomReps||''}" ${state.done?'disabled':''}
+            oninput="updateEmomState('${ex}','emomReps',this.value)">
+        </div>
+        <div class="emom-field">
+          <span class="emom-lbl">Minutos completados</span>
+          <input class="ex-input" type="number" inputmode="numeric" placeholder="ej. 4"
+            value="${state.emomMins||''}" ${state.done?'disabled':''}
+            oninput="updateEmomState('${ex}','emomMins',this.value)">
+        </div>
+      </div>
+      <div class="emom-total">
+        <span class="emom-total-lbl">Total reps</span>
+        <span class="emom-total-val" id="emom-total-${id}">${total||'—'}</span>
+      </div>
+      <button class="save-btn" style="margin-top:10px;padding:10px;font-size:13px;" 
+        onclick="completeEMOM('${ex}')" ${state.done?'disabled':''}>
+        ${state.done ? 'COMPLETADO ✓' : 'MARCAR COMPLETADO'}
+      </button>
+    </div>`;
+  return card;
+}
+
+function renderTestCard(ex, sessionState, currentDay, currentSessionDate) {
+  const state = sessionState[ex] || {testReps:'', done:false};
+  const refs = getLastNByExercise('DOMINADAS_TEST', 1, currentSessionDate);
+  const lastTest = refs.length ? refs[0] : null;
+  const reps = parseInt(state.testReps)||0;
+  const pct = reps > 0 ? ((reps/DOM_GOAL)*100).toFixed(2) : null;
+  const pctColor = pct >= 100 ? '#30d158' : '#ffd60a';
+  let refHtml = lastTest
+    ? `<div class="ex-label">Último test · ${formatDate(lastTest.date)}</div><div class="ex-ref-val">${lastTest.testReps||'—'} reps</div>`
+    : `<div class="ex-label">Referencia</div><div class="ex-ref-val empty">Sin tests anteriores</div>`;
+  const id = safeId(ex);
+  const card = document.createElement('div');
+  card.className = 'test-card' + (state.done ? ' exercise-card done' : '');
+  card.id = id;
+  card.style.animation = 'screenIn 0.25s ease both';
+  card.innerHTML = `
+    <div class="test-header">
+      <span class="ex-name" style="color:#ffd60a;">TEST</span>
+      <span class="test-badge">DOMINADAS · Obj. ${DOM_GOAL}</span>
+    </div>
+    <div class="test-body">
+      <div style="margin-bottom:10px;">${refHtml}</div>
+      <div class="emom-field">
+        <span class="emom-lbl">Reps máximas (un tirón)</span>
+        <input class="ex-input" type="number" inputmode="numeric" placeholder="ej. 13"
+          value="${state.testReps||''}" ${state.done?'disabled':''}
+          oninput="updateTestState('${ex}',this.value)">
+      </div>
+      <div class="test-goal-bar" id="test-goal-bar-${id}">
+        <span class="test-goal-lbl">Objetivo ${DOM_GOAL} reps</span>
+        <span class="test-goal-pct" style="color:${pctColor}">${pct ? pct+'%' : '—'}</span>
+      </div>
+      <button class="save-btn" style="margin-top:10px;padding:10px;font-size:13px;background:linear-gradient(135deg,#ffd60a,#ff9f0a);color:#111;"
+        onclick="completeTest('${ex}')" ${state.done?'disabled':''}>
+        ${state.done ? 'COMPLETADO ✓' : 'GUARDAR TEST'}
+      </button>
+    </div>`;
+  return card;
+}
+
+function updateEmomState(ex, field, val) {
+  if(!sessionState[ex]) sessionState[ex] = {emomReps:'',emomMins:'',done:false};
+  sessionState[ex][field] = val;
+  // Update total display
+  const id = safeId(ex);
+  const totalEl = document.getElementById('emom-total-'+id);
+  if(totalEl) {
+    const r = parseInt(sessionState[ex].emomReps)||0;
+    const m = parseInt(sessionState[ex].emomMins)||0;
+    totalEl.textContent = (r&&m) ? r*m : '—';
+  }
+}
+
+function updateTestState(ex, val) {
+  if(!sessionState[ex]) sessionState[ex] = {testReps:'',done:false};
+  sessionState[ex].testReps = val;
+  const id = safeId(ex);
+  const barEl = document.getElementById('test-goal-bar-'+id);
+  if(barEl) {
+    const reps = parseInt(val)||0;
+    const pct = reps > 0 ? ((reps/DOM_GOAL)*100).toFixed(2) : null;
+    const pctColor = pct >= 100 ? '#30d158' : '#ffd60a';
+    barEl.querySelector('.test-goal-pct').textContent = pct ? pct+'%' : '—';
+    barEl.querySelector('.test-goal-pct').style.color = pctColor;
+  }
+}
+
+function completeEMOM(ex) {
+  if(!sessionState[ex]) return;
+  sessionState[ex].done = true;
+  const id = safeId(ex);
+  const card = document.getElementById(id);
+  if(card) { card.style.opacity='0.35'; }
+  updateProgress();
+}
+
+function completeTest(ex) {
+  if(!sessionState[ex]) return;
+  sessionState[ex].done = true;
+  updateProgress();
+  renderExercises();
+}
+
+// ── DOMINADAS PROGRESS ───────────────────────────────────────────
+let domTab = 'test';
+
+function isDominadas(ex) {
+  return ['DOMINADAS','DOMINADAS_EMOM','DOMINADAS_TEST'].includes(ex) || ex === 'DOMINADAS';
+}
+
+function renderDominadasProgress() {
+  const container = document.getElementById('dom-progress-container');
+  if(!container) return;
+  const data = getData();
+
+  // Collect all dominadas data
+  const tests = [];
+  const emoms = [];
+  const fuerza = [];
+
+  data.forEach(s => {
+    s.exercises.forEach(e => {
+      if(e.name === 'DOMINADAS') {
+        // Check session type
+        const mode = getDomMode(s.day, s.date);
+        if(mode === 'emom' && (e.emomReps||e.emomMins)) {
+          emoms.push({date:s.date, reps:parseInt(e.emomReps)||0, mins:parseInt(e.emomMins)||0, total:(parseInt(e.emomReps)||0)*(parseInt(e.emomMins)||0)});
+        } else if(mode === 'test' && e.testReps) {
+          tests.push({date:s.date, reps:parseInt(e.testReps)||0});
+        } else if(mode === 'normal' && e.peso) {
+          fuerza.push({date:s.date, peso:parseFloat(e.peso), series:e.series});
+        }
+      }
+    });
+  });
+
+  tests.sort((a,b)=>a.date.localeCompare(b.date));
+  emoms.sort((a,b)=>a.date.localeCompare(b.date));
+  fuerza.sort((a,b)=>a.date.localeCompare(b.date));
+
+  const lastTest = tests.length ? tests[tests.length-1] : null;
+  const pct = lastTest ? ((lastTest.reps/DOM_GOAL)*100).toFixed(2) : null;
+  const pctColor = pct >= 100 ? '#30d158' : '#ffd60a';
+
+  container.innerHTML = `
+    <div class="dom-goal-card">
+      <div class="dom-goal-info">
+        <div class="dom-goal-lbl">Objetivo oposición</div>
+        <div class="dom-goal-val">${DOM_GOAL} reps</div>
+        <div class="dom-goal-sub">Último test: ${lastTest ? lastTest.reps+' reps · '+formatDate(lastTest.date) : 'Sin datos'}</div>
+      </div>
+      <div class="dom-pct" style="color:${pctColor}">${pct ? pct+'%' : '—'}</div>
+    </div>
+    <div class="dom-tabs">
+      <button class="dom-tab ${domTab==='test'?'active':''}" onclick="switchDomTab('test',this)">Tests</button>
+      <button class="dom-tab ${domTab==='emom'?'active':''}" onclick="switchDomTab('emom',this)">EMOM</button>
+      <button class="dom-tab ${domTab==='fuerza'?'active':''}" onclick="switchDomTab('fuerza',this)">Fuerza</button>
+    </div>
+    <div id="dom-chart-wrap" class="chart-card">
+      <div class="chart-card-label" id="dom-chart-label">—</div>
+      <canvas id="dom-chart" height="180"></canvas>
+    </div>`;
+
+  renderDomChart(tests, emoms, fuerza);
+}
+
+function switchDomTab(tab, el) {
+  domTab = tab;
+  document.querySelectorAll('.dom-tab').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  const data = getData();
+  const tests=[], emoms=[], fuerza=[];
+  data.forEach(s=>s.exercises.forEach(e=>{
+    if(e.name==='DOMINADAS'){
+      const mode=getDomMode(s.day,s.date);
+      if(mode==='emom'&&(e.emomReps||e.emomMins))emoms.push({date:s.date,reps:parseInt(e.emomReps)||0,mins:parseInt(e.emomMins)||0,total:(parseInt(e.emomReps)||0)*(parseInt(e.emomMins)||0)});
+      else if(mode==='test'&&e.testReps)tests.push({date:s.date,reps:parseInt(e.testReps)||0});
+      else if(mode==='normal'&&e.peso)fuerza.push({date:s.date,peso:parseFloat(e.peso),series:e.series});
+    }
+  }));
+  tests.sort((a,b)=>a.date.localeCompare(b.date));
+  emoms.sort((a,b)=>a.date.localeCompare(b.date));
+  fuerza.sort((a,b)=>a.date.localeCompare(b.date));
+  renderDomChart(tests,emoms,fuerza);
+}
+
+let domChart = null;
+function renderDomChart(tests, emoms, fuerza) {
+  if(domChart) domChart.destroy();
+  const ctx = document.getElementById('dom-chart');
+  if(!ctx) return;
+  const label = document.getElementById('dom-chart-label');
+
+  const baseOpts = {responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#636366',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#636366',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}}}};
+
+  if(domTab === 'test') {
+    label.textContent = 'Test máximo (reps)';
+    const goalLine = tests.map(()=>DOM_GOAL);
+    domChart = new Chart(ctx, {
+      type:'line',
+      data:{
+        labels:tests.map(t=>formatDate(t.date)),
+        datasets:[
+          {data:tests.map(t=>t.reps),borderColor:'#ffd60a',backgroundColor:'rgba(255,214,10,0.08)',borderWidth:2,pointBackgroundColor:'#ffd60a',pointRadius:5,tension:0.3,fill:true,label:'Reps'},
+          {data:goalLine,borderColor:'rgba(255,69,58,0.6)',backgroundColor:'transparent',borderWidth:1.5,borderDash:[5,4],pointRadius:0,label:'Objetivo'}
+        ]
+      },
+      options:{...baseOpts,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.dataset.label==='Objetivo'?'Objetivo: '+DOM_GOAL:ctx.parsed.y+' reps'}}}}
+    });
+  } else if(domTab === 'emom') {
+    label.textContent = 'EMOM — Minutos y total reps';
+    domChart = new Chart(ctx, {
+      type:'bar',
+      data:{
+        labels:emoms.map(e=>formatDate(e.date)),
+        datasets:[
+          {data:emoms.map(e=>e.total),backgroundColor:'rgba(74,158,255,0.6)',borderRadius:4,label:'Total reps'},
+          {data:emoms.map(e=>e.mins),backgroundColor:'rgba(48,209,88,0.5)',borderRadius:4,label:'Minutos'}
+        ]
+      },
+      options:{...baseOpts,plugins:{legend:{display:true,labels:{color:'#aeaeb2',font:{size:11}}},tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+ctx.parsed.y}}}}
+    });
+  } else {
+    label.textContent = 'Fuerza — Peso máximo (kg)';
+    domChart = new Chart(ctx, {
+      type:'line',
+      data:{
+        labels:fuerza.map(f=>formatDate(f.date)),
+        datasets:[{data:fuerza.map(f=>f.peso),borderColor:'#bf5af2',backgroundColor:'rgba(191,90,242,0.08)',borderWidth:2,pointBackgroundColor:'#bf5af2',pointRadius:4,tension:0.35,fill:true}]
+      },
+      options:{...baseOpts,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.parsed.y+'kg'}}}}
+    });
+  }
+}
+
 // KEY FIX: search by exercise name across ALL sessions, not by day equivalence
 function getLastNByExercise(exerciseName, n, beforeDate){
   const data=getData();
@@ -622,8 +934,10 @@ function onDateChange(){
 function loadExistingSession(){
   const existing=getData().find(s=>s.date===currentSessionDate&&s.day===currentDay);
   if(existing){existing.exercises.forEach(e=>{
-    sessionState[e.name]={peso:e.peso||'',series:e.series||'',done:e.done||false};
-    serieChecks[e.name]=e.done?getSeries(currentDay,e.name):(e.seriesDone||0);
+    const mode=e.name==='DOMINADAS'?getDomMode(currentDay,currentSessionDate):'normal';
+    if(mode==='emom')sessionState[e.name]={emomReps:e.emomReps||'',emomMins:e.emomMins||'',done:e.done||false};
+    else if(mode==='test')sessionState[e.name]={testReps:e.testReps||'',done:e.done||false};
+    else{sessionState[e.name]={peso:e.peso||'',series:e.series||'',done:e.done||false};serieChecks[e.name]=e.done?getSeries(currentDay,e.name):(e.seriesDone||0);}
   });}
 }
 function captureInputs(){
@@ -642,6 +956,19 @@ function renderExercises(){
   const exercises=ROUTINE[currentDay]||[];
   list.innerHTML='';
   exercises.forEach((ex,idx)=>{
+    // Special DOMINADAS handling
+    if(ex === 'DOMINADAS') {
+      const mode = getDomMode(currentDay, currentSessionDate);
+      if(mode === 'emom') {
+        if(!sessionState[ex])sessionState[ex]={emomReps:'',emomMins:'',done:false};
+        list.appendChild(renderEMOMCard(ex, sessionState, currentDay, currentSessionDate));
+        return;
+      } else if(mode === 'test') {
+        if(!sessionState[ex])sessionState[ex]={testReps:'',done:false};
+        list.appendChild(renderTestCard(ex, sessionState, currentDay, currentSessionDate));
+        return;
+      }
+    }
     if(!sessionState[ex])sessionState[ex]={peso:'',series:'',done:false};
     if(serieChecks[ex]===undefined)serieChecks[ex]=0;
 
@@ -731,7 +1058,13 @@ function updateProgress(){
 }
 function saveSession(){
   if(!currentDay)return;captureInputs();
-  const session={date:currentSessionDate,day:currentDay,exercises:ROUTINE[currentDay].map(ex=>({name:ex,peso:sessionState[ex]?.peso||'',series:sessionState[ex]?.series||'',done:sessionState[ex]?.done||false,seriesDone:serieChecks[ex]||0}))};
+  const session={date:currentSessionDate,day:currentDay,exercises:ROUTINE[currentDay].map(ex=>{
+    const st=sessionState[ex]||{};
+    const mode=ex==='DOMINADAS'?getDomMode(currentDay,currentSessionDate):'normal';
+    if(mode==='emom')return{name:ex,emomReps:st.emomReps||'',emomMins:st.emomMins||'',emomTotal:(parseInt(st.emomReps)||0)*(parseInt(st.emomMins)||0),done:st.done||false};
+    if(mode==='test')return{name:ex,testReps:st.testReps||'',done:st.done||false};
+    return{name:ex,peso:st.peso||'',series:st.series||'',done:st.done||false,seriesDone:serieChecks[ex]||0};
+  })};
   const data=getData();const idx=data.findIndex(s=>s.date===session.date&&s.day===session.day);
   if(idx>=0)data[idx]=session;else data.push(session);
   saveData(data);checkPR(session);showToast('Sesión guardada ✓');populateProgressSelect();
@@ -784,6 +1117,16 @@ function setProgressPeriod(p,el){currentProgressPeriod=p;document.querySelectorA
 function renderProgress(){
   const ex=document.getElementById('progress-ex-select').value;
   const statsEl=document.getElementById('progress-stats'),chartEl=document.getElementById('chart-container'),emptyEl=document.getElementById('progress-empty'),controls=document.getElementById('progress-controls');
+  // Show dominadas special section
+  let domContainer=document.getElementById('dom-progress-container');
+  if(ex==='DOMINADAS'){
+    statsEl.style.display='none';chartEl.style.display='none';emptyEl.style.display='none';controls.style.display='none';
+    if(!domContainer){domContainer=document.createElement('div');domContainer.id='dom-progress-container';document.getElementById('screen-progreso').appendChild(domContainer);}
+    domContainer.style.display='block';
+    renderDominadasProgress();
+    return;
+  }
+  if(domContainer)domContainer.style.display='none';
   if(!ex){statsEl.style.display='none';chartEl.style.display='none';emptyEl.style.display='block';controls.style.display='none';return;}
   const startDate=getStartDate(currentProgressPeriod,null);
   const allData=getData().filter(s=>s.exercises.some(e=>e.name===ex&&e.peso)&&s.date>=startDate).sort((a,b)=>a.date.localeCompare(b.date));
@@ -813,34 +1156,13 @@ function getAge(){const today=new Date();let age=today.getFullYear()-DOB.getFull
 
 function calcBodyFat(peso,medidas){
   if(!peso||!medidas)return null;
-  const cintura=medidas.cintura,cuello=medidas.cuello,pecho=medidas.pecho,muslo=medidas.muslo;
+  const cintura=medidas.cintura,cuello=medidas.cuello;
   const altura_cm=ALTURA_M*100;
-  const age=getAge();
-  const results=[];
-
-  // 1. US Navy (needs cintura + cuello + height)
-  if(cintura&&cuello){
-    const navy=495/(1.0324-0.19077*Math.log10(cintura-cuello)+0.15456*Math.log10(altura_cm))-450;
-    if(navy>3&&navy<50)results.push({name:'Marina EE.UU.',val:parseFloat(navy.toFixed(1)),weight:3});
-  }
-
-  // 2. Deurenberg (needs BMI + age)
-  const bmi=peso/(ALTURA_M*ALTURA_M);
-  const deurenberg=(1.20*bmi)+(0.23*age)-16.2;
-  if(deurenberg>3&&deurenberg<50)results.push({name:'Deurenberg',val:parseFloat(deurenberg.toFixed(1)),weight:2});
-
-  // 3. Jackson-Pollock 3 (pecho + cintura/abdomen + muslo for men)
-  if(pecho&&cintura&&muslo){
-    const sum3=pecho+cintura+muslo;
-    const density=1.10938-(0.0008267*sum3)+(0.0000016*sum3*sum3)-(0.0002574*age);
-    const jp=(495/density)-450;
-    if(jp>3&&jp<50)results.push({name:'Jackson-Pollock',val:parseFloat(jp.toFixed(1)),weight:2});
-  }
-
-  if(!results.length)return null;
-  const totalWeight=results.reduce((a,r)=>a+r.weight,0);
-  const avg=results.reduce((a,r)=>a+r.val*r.weight,0)/totalWeight;
-  return {avg:parseFloat(avg.toFixed(1)),methods:results};
+  if(!cintura||!cuello)return null;
+  const navy=495/(1.0324-0.19077*Math.log10(cintura-cuello)+0.15456*Math.log10(altura_cm))-450;
+  if(navy<3||navy>50)return null;
+  const val=parseFloat(navy.toFixed(1));
+  return {avg:val,methods:[{name:'Marina EE.UU.',val,weight:1}]};
 }
 
 function renderBodyFat(){
