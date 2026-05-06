@@ -252,18 +252,18 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .corpo-slide{flex-shrink:0;}
 
 /* EMOM & TEST CARDS */
-.emom-card{background:rgba(74,158,255,0.08);border:1px solid rgba(74,158,255,0.3);border-radius:var(--radius);overflow:hidden;margin-bottom:0;}
-.emom-header{display:flex;align-items:center;padding:10px 14px;background:rgba(74,158,255,0.1);border-bottom:1px solid rgba(74,158,255,0.2);gap:10px;}
-.emom-badge{background:rgba(74,158,255,0.2);color:#4a9eff;border:1px solid rgba(74,158,255,0.4);border-radius:6px;font-size:10px;font-weight:700;padding:2px 8px;letter-spacing:1px;}
+.emom-card{background:rgba(255,214,10,0.06);border:1px solid rgba(255,214,10,0.3);border-radius:var(--radius);overflow:hidden;margin-bottom:0;}
+.emom-header{display:flex;align-items:center;padding:10px 14px;background:rgba(255,214,10,0.08);border-bottom:1px solid rgba(255,214,10,0.2);gap:10px;}
+.emom-badge{background:rgba(255,214,10,0.15);color:#ffd60a;border:1px solid rgba(255,214,10,0.4);border-radius:6px;font-size:10px;font-weight:700;padding:2px 8px;letter-spacing:1px;}
 .test-card{background:rgba(255,214,10,0.06);border:1px solid rgba(255,214,10,0.3);border-radius:var(--radius);overflow:hidden;margin-bottom:0;}
 .test-header{display:flex;align-items:center;padding:10px 14px;background:rgba(255,214,10,0.08);border-bottom:1px solid rgba(255,214,10,0.2);gap:10px;}
 .test-badge{background:rgba(255,214,10,0.15);color:#ffd60a;border:1px solid rgba(255,214,10,0.4);border-radius:6px;font-size:10px;font-weight:700;padding:2px 8px;letter-spacing:1px;}
 .emom-body{padding:12px 14px;}
 .emom-field{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
 .emom-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:var(--text3);}
-.emom-total{background:rgba(74,158,255,0.1);border:1px solid rgba(74,158,255,0.2);border-radius:var(--radius-xs);padding:8px 12px;display:flex;justify-content:space-between;align-items:center;margin-top:4px;}
+.emom-total{background:rgba(255,214,10,0.08);border:1px solid rgba(255,214,10,0.2);border-radius:var(--radius-xs);padding:8px 12px;display:flex;justify-content:space-between;align-items:center;margin-top:4px;}
 .emom-total-lbl{font-size:12px;color:var(--text2);}
-.emom-total-val{font-size:18px;font-weight:700;color:#4a9eff;}
+.emom-total-val{font-size:18px;font-weight:700;color:#ffd60a;}
 .test-body{padding:12px 14px;}
 .test-goal-bar{background:rgba(255,214,10,0.08);border:1px solid rgba(255,214,10,0.2);border-radius:var(--radius-xs);padding:10px 13px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;}
 .test-goal-lbl{font-size:12px;color:var(--text2);}
@@ -286,7 +286,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 <body>
 
 <div class="header">
-  <h1>GYM TRACKER <span style="color:#ffd60a;-webkit-text-fill-color:#ffd60a;">jo$e</span></h1>
+  <h1>GYM TRACKER&nbsp;&nbsp;<span style="color:#ffd60a;-webkit-text-fill-color:#ffd60a;">jo$e</span></h1>
 </div>
 
 <!-- ENTRENO -->
@@ -382,6 +382,13 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <button class="etapa-change-btn" onclick="toggleEtapaSelector()">Cambiar</button>
       </div>
       <div class="etapa-meta" id="etapa-meta"></div>
+      <div id="etapa-dates-display" style="display:none;margin-bottom:10px;">
+        <div style="display:flex;gap:18px;margin-bottom:8px;">
+          <div class="etapa-meta-item"><div class="etapa-meta-lbl">Inicio</div><div class="etapa-meta-val" id="etapa-inicio-text">—</div></div>
+          <div class="etapa-meta-item"><div class="etapa-meta-lbl">Fin</div><div class="etapa-meta-val" id="etapa-fin-text">Activa</div></div>
+        </div>
+        <button onclick="toggleEtapaEdit()" style="background:rgba(255,255,255,0.07);border:1px solid var(--border);color:var(--text2);border-radius:20px;padding:5px 12px;font-size:11px;cursor:pointer;" id="etapa-edit-btn">Editar fechas</button>
+      </div>
       <div class="etapa-dates" id="etapa-dates" style="display:none">
         <div class="etapa-date-group"><div class="etapa-date-lbl">Inicio</div><input type="date" class="etapa-date-input" id="etapa-inicio-input" onchange="saveEtapaDates()"></div>
         <div class="etapa-date-group"><div class="etapa-date-lbl">Fin (vacío = activa)</div><input type="date" class="etapa-date-input" id="etapa-fin-input" onchange="saveEtapaDates()"></div>
@@ -422,7 +429,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <div class="fisico-row" style="margin-bottom:8px"><input type="date" id="cal-date-input" class="date-input" style="flex:1" onchange="renderCalSection()"></div>
       <div class="fisico-row">
         <button class="sign-btn neg" id="cal-sign-btn" onclick="toggleCalSign()">−</button>
-        <input type="number" inputmode="numeric" class="fisico-input" id="cal-input" placeholder="kcal">
+        <input type="number" inputmode="numeric" class="fisico-input" id="cal-input" placeholder="kcal" style="min-width:0;">
         <button class="fisico-btn" onclick="saveCal()">Guardar</button>
       </div>
       <div class="semana-card" id="semana-resumen"></div>
@@ -440,9 +447,9 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <div class="corpo-dot" onclick="goCorpoSlide(2)"></div>
       </div>
     </div>
-    <div id="corpo-carousel" style="display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:0;" onscroll="onCorpoScroll()">
+    <div id="corpo-carousel" style="display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:0;width:100%;" onscroll="onCorpoScroll()">
       <!-- SLIDE 0: % GRASA -->
-      <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;padding:0 14px 16px;">
+      <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;width:100%;box-sizing:border-box;padding:0 14px 16px;">
         <div style="text-align:center;padding:10px 0 14px;">
           <div style="font-size:42px;font-weight:800;color:var(--accent);letter-spacing:-1px;" id="bf-val">—</div>
           <div style="font-size:13px;color:var(--text2);margin-top:2px;">% grasa corporal</div>
@@ -452,7 +459,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <div style="font-size:11px;color:var(--text3);text-align:center;">Basado en las medidas más recientes</div>
       </div>
       <!-- SLIDE 1: PESO -->
-      <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;padding:0 14px 16px;">
+      <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;width:100%;box-sizing:border-box;padding:0 14px 16px;">
         <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;font-weight:600;">Peso corporal · semanal</div>
         <div class="fisico-row" style="margin-bottom:8px"><input type="date" id="peso-date-input" class="date-input" style="flex:1" onchange="renderPesoSection()"></div>
         <div class="fisico-info" id="peso-info"></div>
@@ -462,7 +469,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         </div>
       </div>
       <!-- SLIDE 2: MEDIDAS -->
-      <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;padding:0 14px 16px;">
+      <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;width:100%;box-sizing:border-box;padding:0 14px 16px;">
         <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;font-weight:600;">Medidas corporales · mensual</div>
         <div class="fisico-row" style="margin-bottom:8px"><input type="date" id="medidas-date-input" class="date-input" style="flex:1" onchange="renderMedidasSection()"></div>
         <div class="fisico-info" id="medidas-info"></div>
@@ -500,20 +507,20 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       </div>
     </div>
     <div id="chart-carousel" style="display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;" onscroll="onChartScroll()">
-      <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;padding:0 14px 16px;">
+      <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;width:100%;box-sizing:border-box;padding:0 14px 16px;">
         <div class="chart-card-label">Peso corporal (kg)</div>
         <canvas id="peso-chart" height="180"></canvas>
       </div>
-      <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;padding:0 14px 16px;">
+      <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;width:100%;box-sizing:border-box;padding:0 14px 16px;">
         <div class="chart-card-label">Grasa acumulada (g)</div>
         <div class="grasa-total-bar" id="grasa-total-card" style="display:none"><span class="grasa-total-lbl">Total etapa</span><span class="grasa-total-val" id="grasa-total-val">—</span></div>
         <canvas id="cal-chart" height="180"></canvas>
       </div>
-      <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;padding:0 14px 16px;">
+      <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;width:100%;box-sizing:border-box;padding:0 14px 16px;">
         <div class="chart-card-label">% Grasa corporal</div>
         <canvas id="bf-chart" height="180"></canvas>
       </div>
-      <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;padding:0 14px 16px;">
+      <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;width:100%;box-sizing:border-box;padding:0 14px 16px;">
         <div class="chart-card-label">Medidas corporales (cm)</div>
         <select class="medida-select" id="medida-chart-select" onchange="renderMedidasChart()">
           <option value="cintura">Cintura</option><option value="cadera">Cadera</option><option value="pecho">Pecho</option><option value="brazo">Brazo</option><option value="muslo">Muslo</option>
@@ -530,11 +537,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   <div class="settings-group">
     <div class="settings-group-title">Datos</div>
     <div class="settings-row" onclick="exportJSON()">
-      <div class="settings-row-icon" style="background:rgba(74,158,255,0.15)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4a9eff" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+      <div class="settings-row-icon" style="background:rgba(74,158,255,0.15)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4a9eff" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 14 12 9 7 14"/><line x1="12" y1="9" x2="12" y2="21"/></svg></div>
       <span>Exportar backup (JSON)</span>
     </div>
     <div class="settings-row" onclick="document.getElementById('import-file').click()">
-      <div class="settings-row-icon" style="background:rgba(48,209,88,0.15)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#30d158" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+      <div class="settings-row-icon" style="background:rgba(48,209,88,0.15)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#30d158" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
       <span>Importar backup (JSON)</span>
     </div>
     <div class="settings-row" onclick="exportCSV()">
@@ -657,7 +664,7 @@ function renderEMOMCard(ex, sessionState, currentDay, currentSessionDate) {
   card.style.animation = 'screenIn 0.25s ease both';
   card.innerHTML = `
     <div class="emom-header">
-      <span class="ex-name" style="color:#4a9eff;">EMOM</span>
+      <span class="ex-name" style="color:#ffd60a;">EMOM</span>
       <span class="emom-badge">DOMINADAS</span>
     </div>
     <div class="emom-body">
@@ -667,13 +674,13 @@ function renderEMOMCard(ex, sessionState, currentDay, currentSessionDate) {
           <span class="emom-lbl">Reps por minuto</span>
           <input class="ex-input" type="number" inputmode="numeric" placeholder="ej. 6"
             value="${state.emomReps||''}" ${state.done?'disabled':''}
-            oninput="updateEmomState('${ex}','emomReps',this.value)">
+            oninput="updateEmomState('${ex}','emomReps',this.value)" placeholder="">
         </div>
         <div class="emom-field">
           <span class="emom-lbl">Minutos completados</span>
           <input class="ex-input" type="number" inputmode="numeric" placeholder="ej. 4"
             value="${state.emomMins||''}" ${state.done?'disabled':''}
-            oninput="updateEmomState('${ex}','emomMins',this.value)">
+            oninput="updateEmomState('${ex}','emomMins',this.value)" placeholder="">
         </div>
       </div>
       <div class="emom-total">
@@ -681,8 +688,8 @@ function renderEMOMCard(ex, sessionState, currentDay, currentSessionDate) {
         <span class="emom-total-val" id="emom-total-${id}">${total||'—'}</span>
       </div>
       <button class="save-btn" style="margin-top:10px;padding:10px;font-size:13px;" 
-        onclick="completeEMOM('${ex}')" ${state.done?'disabled':''}>
-        ${state.done ? 'COMPLETADO ✓' : 'MARCAR COMPLETADO'}
+        onclick="completeEMOM('${ex}')">
+        ${state.done ? 'REABRIR' : 'MARCAR COMPLETADO'}
       </button>
     </div>`;
   return card;
@@ -714,15 +721,15 @@ function renderTestCard(ex, sessionState, currentDay, currentSessionDate) {
         <span class="emom-lbl">Reps máximas (un tirón)</span>
         <input class="ex-input" type="number" inputmode="numeric" placeholder="ej. 13"
           value="${state.testReps||''}" ${state.done?'disabled':''}
-          oninput="updateTestState('${ex}',this.value)">
+          oninput="updateTestState('${ex}',this.value)" placeholder="">
       </div>
       <div class="test-goal-bar" id="test-goal-bar-${id}">
         <span class="test-goal-lbl">Objetivo ${DOM_GOAL} reps</span>
         <span class="test-goal-pct" style="color:${pctColor}">${pct ? pct+'%' : '—'}</span>
       </div>
       <button class="save-btn" style="margin-top:10px;padding:10px;font-size:13px;background:linear-gradient(135deg,#ffd60a,#ff9f0a);color:#111;"
-        onclick="completeTest('${ex}')" ${state.done?'disabled':''}>
-        ${state.done ? 'COMPLETADO ✓' : 'GUARDAR TEST'}
+        onclick="completeTest('${ex}')">
+        ${state.done ? 'REABRIR' : 'GUARDAR TEST'}
       </button>
     </div>`;
   return card;
@@ -757,18 +764,16 @@ function updateTestState(ex, val) {
 
 function completeEMOM(ex) {
   if(!sessionState[ex]) return;
-  sessionState[ex].done = true;
-  const id = safeId(ex);
-  const card = document.getElementById(id);
-  if(card) { card.style.opacity='0.35'; }
+  sessionState[ex].done = !sessionState[ex].done;
+  renderExercises();
   updateProgress();
 }
 
 function completeTest(ex) {
   if(!sessionState[ex]) return;
-  sessionState[ex].done = true;
-  updateProgress();
+  sessionState[ex].done = !sessionState[ex].done;
   renderExercises();
+  updateProgress();
 }
 
 // ── DOMINADAS PROGRESS ───────────────────────────────────────────
@@ -791,14 +796,12 @@ function renderDominadasProgress() {
   data.forEach(s => {
     s.exercises.forEach(e => {
       if(e.name === 'DOMINADAS') {
-        // Check session type
-        const mode = getDomMode(s.day, s.date);
-        if(mode === 'emom' && (e.emomReps||e.emomMins)) {
+        if(e.emomReps||e.emomMins) {
           emoms.push({date:s.date, reps:parseInt(e.emomReps)||0, mins:parseInt(e.emomMins)||0, total:(parseInt(e.emomReps)||0)*(parseInt(e.emomMins)||0)});
-        } else if(mode === 'test' && e.testReps) {
+        } else if(e.testReps) {
           tests.push({date:s.date, reps:parseInt(e.testReps)||0});
-        } else if(mode === 'normal' && e.peso) {
-          fuerza.push({date:s.date, peso:parseFloat(e.peso), series:e.series});
+        } else if(e.peso && !e.emomReps && !e.testReps) {
+          // legacy fuerza data — skip (cleaned up)
         }
       }
     });
@@ -842,10 +845,8 @@ function switchDomTab(tab, el) {
   const tests=[], emoms=[], fuerza=[];
   data.forEach(s=>s.exercises.forEach(e=>{
     if(e.name==='DOMINADAS'){
-      const mode=getDomMode(s.day,s.date);
-      if(mode==='emom'&&(e.emomReps||e.emomMins))emoms.push({date:s.date,reps:parseInt(e.emomReps)||0,mins:parseInt(e.emomMins)||0,total:(parseInt(e.emomReps)||0)*(parseInt(e.emomMins)||0)});
-      else if(mode==='test'&&e.testReps)tests.push({date:s.date,reps:parseInt(e.testReps)||0});
-      else if(mode==='normal'&&e.peso)fuerza.push({date:s.date,peso:parseFloat(e.peso),series:e.series});
+      if(e.emomReps||e.emomMins)emoms.push({date:s.date,reps:parseInt(e.emomReps)||0,mins:parseInt(e.emomMins)||0,total:(parseInt(e.emomReps)||0)*(parseInt(e.emomMins)||0)});
+      else if(e.testReps)tests.push({date:s.date,reps:parseInt(e.testReps)||0});
     }
   }));
   tests.sort((a,b)=>a.date.localeCompare(b.date));
@@ -1271,6 +1272,15 @@ function renderEtapa(){
   const estado=etapa.fechaFin?'Finalizada':'Activa';
   subtitle.textContent=estado+' · '+dias+(dias!=='—'?' días':'');
   meta.innerHTML=`<div class="etapa-meta-item"><div class="etapa-meta-lbl">Días</div><div class="etapa-meta-val">${dias}</div></div><div class="etapa-meta-item"><div class="etapa-meta-lbl">Estado</div><div class="etapa-meta-val">${estado}</div></div>`;
+  const dispEl=document.getElementById('etapa-dates-display');
+  const iniText=document.getElementById('etapa-inicio-text');
+  const finText=document.getElementById('etapa-fin-text');
+  if(dispEl)dispEl.style.display='block';
+  if(iniText)iniText.textContent=etapa.fechaInicio?formatDate(etapa.fechaInicio):'—';
+  if(finText)finText.textContent=etapa.fechaFin?formatDate(etapa.fechaFin):'Activa';
+  // Sync inputs
+  document.getElementById('etapa-inicio-input').value=etapa.fechaInicio||'';
+  document.getElementById('etapa-fin-input').value=etapa.fechaFin||'';
 }
 function saveEtapaDates(){
   const f=getFisico();if(!f.etapa)return;
@@ -1279,6 +1289,13 @@ function saveEtapaDates(){
   if(inicio)f.etapa.fechaInicio=inicio;
   if(fin)f.etapa.fechaFin=fin;else delete f.etapa.fechaFin;
   saveFisico(f);renderEtapa();renderFisicoCharts();
+}
+function toggleEtapaEdit(){
+  const datesEl=document.getElementById('etapa-dates');
+  const btn=document.getElementById('etapa-edit-btn');
+  const open=datesEl.style.display==='grid';
+  datesEl.style.display=open?'none':'grid';
+  if(btn)btn.textContent=open?'Editar fechas':'Cerrar edición';
 }
 function toggleEtapaSelector(){const sel=document.getElementById('etapa-selector');sel.classList.toggle('open');selectedEtapaOpt=null;['deficit','mantenimiento','volumen'].forEach(e=>document.getElementById('eopt-'+e).classList.remove('sel'));}
 function selectEtapaOpt(tipo){selectedEtapaOpt=tipo;['deficit','mantenimiento','volumen'].forEach(e=>document.getElementById('eopt-'+e).classList.toggle('sel',e===tipo));}
@@ -1411,6 +1428,21 @@ function exportCSV(){const rows=[['Fecha','Día','Ejercicio','Peso (kg)','Series
 function clearAllData(){if(!confirm('¿Seguro? Se borrarán TODOS los datos.'))return;localStorage.removeItem('gymtracker_v2');localStorage.removeItem('gymtracker_fisico');sessionState={};serieChecks={};currentDay=null;document.getElementById('exercise-list').innerHTML='';document.getElementById('save-btn').style.display='none';document.getElementById('done-count').textContent='';document.getElementById('ref-day-label').textContent='Selecciona un día';document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('selected'));showToast('Datos borrados');}
 
 function showToast(msg,green){const t=document.getElementById('toast');t.textContent=msg;t.className='toast'+(green?' green':'');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400);}
+
+// Clean up old DOMINADAS data (peso/series format) — keep only emom/test entries
+(function cleanOldDominadasData(){
+  const data = getData();
+  let changed = false;
+  data.forEach(s => {
+    s.exercises.forEach(e => {
+      if(e.name === 'DOMINADAS' && (e.peso !== undefined || e.series !== undefined) && e.emomReps === undefined && e.testReps === undefined) {
+        delete e.peso; delete e.series; delete e.seriesDone;
+        changed = true;
+      }
+    });
+  });
+  if(changed) saveData(data);
+})();
 
 document.getElementById('session-date-input').value=todayStr();
 populateProgressSelect();
