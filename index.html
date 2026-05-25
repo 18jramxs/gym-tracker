@@ -336,15 +336,7 @@ pointer-events:none;z-index:0;}
   <div class="chart-wrap" id="activity-wrap">
     <div class="chart-lbl" id="activity-map-lbl">Actividad desde inicio de etapa</div>
     <div class="activity-map" id="activity-map"></div>
-    <div style="display:flex;gap:4px;align-items:center;margin-top:8px;">
-      <span style="font-size:11px;color:var(--text3)">Menos</span>
-      <div style="width:10px;height:10px;border-radius:2px;background:rgba(255,255,255,0.06)"></div>
-      <div style="width:10px;height:10px;border-radius:2px;background:rgba(41,121,255,0.3)"></div>
-      <div style="width:10px;height:10px;border-radius:2px;background:rgba(41,121,255,0.6)"></div>
-      <div style="width:10px;height:10px;border-radius:2px;background:rgba(79,142,247,1)"></div>
-      <span style="font-size:11px;color:var(--text3)">Más</span>
     </div>
-  </div>
   <div id="prog-empty" class="empty-state">Selecciona un ejercicio para ver su progreso</div>
 </div>
 
@@ -865,55 +857,58 @@ function renderProgress(){
   progChart=new Chart(document.getElementById("prog-chart").getContext("2d"),{type:"line",data:{labels:allData.map(s=>fmtDate(s.date)),datasets:[{data:vals,borderColor:chartColors.border,backgroundColor:chartColors.bg,borderWidth:2,pointBackgroundColor:chartColors.border,pointRadius:4,tension:0.35,fill:true}]},options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.parsed.y.toFixed(1)+"kg"}}},scales:{x:{ticks:{color:"#444",font:{size:10}},grid:{color:"rgba(255,255,255,0.04)"}},y:{ticks:{color:"#444",font:{size:10}},grid:{color:"rgba(255,255,255,0.04)"}}}}});
 }
 
-// Activity map overrides: {date: true=trained, false=rest}
+// Activity map
 let actOverrides={};
+let actViewMonth=null; // 'YYYY-MM'
 function loadActOverrides(){try{actOverrides=JSON.parse(localStorage.getItem('gt_act_ov')||'{}');}catch{actOverrides={};}}
 function saveActOverrides(){localStorage.setItem('gt_act_ov',JSON.stringify(actOverrides));}
 
+function changeActMonth(delta){
+  if(!actViewMonth){const n=new Date();actViewMonth=n.toISOString().slice(0,7);}
+  const [y,m]=actViewMonth.split('-').map(Number);
+  const d=new Date(y,m-1+delta,1);
+  actViewMonth=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  renderActivityMap();
+}
+
 function renderActivityMap(){
   loadActOverrides();
-  const map=document.getElementById("activity-map");if(!map)return;
-  const f=getFisico();const etapaStart=f.etapa?.fechaInicio;
+  const map=document.getElementById('activity-map');if(!map)return;
   const data=getData();
-  const lbl=document.getElementById("activity-map-lbl");
   const trainedDates=new Set(data.map(s=>s.date));
   const today=todayStr();
-
-  let startDate;
-  if(etapaStart){startDate=etapaStart;if(lbl)lbl.textContent="Actividad desde inicio de etapa";}
-  else{const allDates=data.map(s=>s.date).sort();startDate=allDates.length?allDates[0]:null;if(!startDate){const d=new Date();d.setDate(d.getDate()-84);startDate=d.toISOString().split("T")[0];}if(lbl)lbl.textContent="Actividad desde primer entreno";}
-
-  const startD=new Date(startDate+"T12:00:00");
-  const dow=startD.getDay()||7;startD.setDate(startD.getDate()-dow+1);
-  const endD=new Date(today+"T12:00:00");
-
-  const cells=[];const cur=new Date(startD);
-  while(cur<=endD){
-    const ds=cur.toISOString().split("T")[0];
+  if(!actViewMonth){const n=new Date();actViewMonth=n.toISOString().slice(0,7);}
+  const [y,m]=actViewMonth.split('-').map(Number);
+  const monthNames=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const lbl=document.getElementById('activity-map-lbl');
+  if(lbl)lbl.textContent=monthNames[m-1]+' '+y;
+  // Days in month
+  const daysInMonth=new Date(y,m,0).getDate();
+  // First day of month (0=Sun..6=Sat) → convert to Mon-based
+  const firstDow=new Date(y,m-1,1).getDay();
+  const firstMon=firstDow===0?6:firstDow-1; // 0=Mon..6=Sun
+  // Build cells: empty padding + days
+  const cells=[];
+  for(let i=0;i<firstMon;i++)cells.push({ds:null,type:'empty'});
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     const isFuture=ds>today;
-    let trained;
-    if(actOverrides[ds]!==undefined)trained=actOverrides[ds];
-    else trained=trainedDates.has(ds);
-    cells.push({ds,trained,isFuture});
-    cur.setDate(cur.getDate()+1);
+    let type;
+    if(isFuture)type='future';
+    else if(actOverrides[ds]!==undefined)type=actOverrides[ds]?'trained':'rest';
+    else type=trainedDates.has(ds)?'trained':'rest';
+    cells.push({ds,type});
   }
-  const rem=cells.length%7;if(rem>0)for(let i=0;i<7-rem;i++)cells.push({ds:null,trained:false,isFuture:true});
-
-  const numWeeks=Math.max(1,cells.length/7);
+  // Pad to complete weeks
+  const rem=cells.length%7;if(rem>0)for(let i=0;i<7-rem;i++)cells.push({ds:null,type:'empty'});
+  const numWeeks=cells.length/7;
   map.style.gridTemplateColumns=`repeat(${numWeeks},1fr)`;
-  map.innerHTML=cells.map(({ds,trained,isFuture})=>{
-    if(!ds)return`<div class="act-cell future"></div>`;
-    if(isFuture)return`<div class="act-cell future"></div>`;
-    const cls=trained?" trained":" rest";
-    const title=fmtDate(ds)+(trained?" · Entrenado":" · Descanso");
-    return`<div class="act-cell${cls}" title="${title}" onclick="toggleActDay('${ds}')"></div>`;
-  }).join("");
+  map.innerHTML=cells.map(({ds,type})=>`<div class="act-cell ${type}" ${ds&&type!=='future'?`onclick="toggleActDay('${ds}')" title="${fmtDate(ds)}"`:''} ></div>`).join('');
 }
 
 function toggleActDay(ds){
   loadActOverrides();
   const data=getData();const trainedDates=new Set(data.map(s=>s.date));
-  // current state
   const current=actOverrides[ds]!==undefined?actOverrides[ds]:trainedDates.has(ds);
   actOverrides[ds]=!current;
   saveActOverrides();
