@@ -23,10 +23,10 @@
   --text:#f0f0f0;
   --text2:#888;
   --text3:#444;
-  --blue:#4f8ef7;
+  --blue:#2979ff;
   --blue2:#6ea8ff;
-  --blue-bg:rgba(79,142,247,0.12);
-  --blue-glow:rgba(79,142,247,0.2);
+  --blue-bg:rgba(41,121,255,0.13);
+  --blue-glow:rgba(41,121,255,0.22);
   --green:#22c55e;
   --green-bg:rgba(34,197,94,0.1);
   --red:#ef4444;
@@ -35,7 +35,7 @@
   --amber-bg:rgba(255,214,10,0.1);
   --purple:#a78bfa;
   --cyan:#22d3ee;
-  --glass:blur(24px) saturate(180%);
+  --glass:blur(28px) saturate(200%);
   --r:16px;--r-sm:10px;--r-xs:8px;
 }
 html,body{background:var(--bg);}
@@ -57,7 +57,7 @@ pointer-events:none;z-index:0;}
 .bottom-nav{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);width:calc(100% - 28px);max-width:400px;background:rgba(12,12,18,0.92);backdrop-filter:blur(30px) saturate(200%);-webkit-backdrop-filter:blur(30px) saturate(200%);border:1px solid rgba(255,255,255,0.1);border-radius:100px;display:flex;z-index:100;padding:5px;box-shadow:0 8px 40px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,255,255,0.05);gap:2px;}
 .nav-btn{flex:1;background:none;border:none;color:var(--text3);padding:8px 4px 7px;font-size:9.5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;border-radius:100px;position:relative;z-index:1;transition:color 0.2s;letter-spacing:0.2px;}
 .nav-btn.active{color:#fff;}
-.nav-indicator{position:absolute;inset:0;border-radius:100px;background:rgba(79,142,247,0.15);border:1px solid rgba(79,142,247,0.25);box-shadow:0 0 14px rgba(79,142,247,0.15);opacity:0;transition:opacity 0.2s;z-index:-1;}
+.nav-indicator{position:absolute;inset:0;border-radius:100px;background:rgba(41,121,255,0.15);border:1px solid rgba(41,121,255,0.25);box-shadow:0 0 14px rgba(41,121,255,0.15);opacity:0;transition:opacity 0.2s;z-index:-1;}
 .nav-btn.active .nav-indicator{opacity:1;}
 .nav-icon svg{display:block;}
 
@@ -76,7 +76,7 @@ pointer-events:none;z-index:0;}
 /* DAY GRID */
 .day-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:12px;}
 .day-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--text2);padding:11px 2px;border-radius:var(--r-sm);font-size:12px;font-weight:500;cursor:pointer;text-align:center;transition:all 0.18s;}
-.day-btn.selected{background:var(--blue-bg);border-color:var(--blue);color:var(--blue2);font-weight:600;box-shadow:0 0 16px var(--blue-glow);}
+.day-btn.selected{background:var(--blue-bg);border-color:var(--blue);color:#82b4ff;font-weight:600;box-shadow:0 0 16px var(--blue-glow);}
 .day-btn:active{transform:scale(0.94);}
 
 /* SESSION INFO */
@@ -95,7 +95,7 @@ pointer-events:none;z-index:0;}
 .ex-name{flex:1;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;}
 .dots-row{display:flex;gap:5px;align-items:center;flex-shrink:0;}
 .dot{width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.15);background:transparent;cursor:pointer;position:relative;flex-shrink:0;transition:all 0.15s;}
-.dot.on{background:var(--blue);border-color:var(--blue);box-shadow:0 0 10px rgba(79,142,247,0.5);}
+.dot.on{background:var(--blue);border-color:var(--blue);box-shadow:0 0 10px rgba(41,121,255,0.5);}
 .dot.on::after{content:"";position:absolute;width:7px;height:7px;background:#fff;border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);}
 .dot:active{transform:scale(1.2);}
 .dot.pop{animation:popIn 0.22s ease;}
@@ -109,7 +109,7 @@ pointer-events:none;z-index:0;}
 .ex-input:focus{border-color:var(--blue);}
 .ex-input::placeholder{color:var(--text3);}
 .ex-input:disabled{opacity:0.3;pointer-events:none;}
-.save-btn{width:100%;background:var(--blue);color:white;border:none;border-radius:var(--r);padding:14px;font-size:15px;font-weight:600;cursor:pointer;margin-top:14px;letter-spacing:0.3px;box-shadow:0 4px 20px rgba(79,142,247,0.3);}
+.save-btn{width:100%;background:var(--blue);color:white;border:none;border-radius:var(--r);padding:14px;font-size:15px;font-weight:600;cursor:pointer;margin-top:14px;letter-spacing:0.3px;box-shadow:0 4px 20px rgba(41,121,255,0.3);}
 .save-btn:active{opacity:0.85;transform:scale(0.99);}
 
 /* EMOM / TEST */
@@ -127,13 +127,13 @@ pointer-events:none;z-index:0;}
 /* HISTORY */
 .hist-tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;}
 .hist-tab{background:var(--bg-card);border:1px solid var(--border);color:var(--text2);padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all 0.18s;font-weight:500;}
-.hist-tab.active{background:var(--blue-bg);border-color:var(--blue);color:var(--blue2);font-weight:600;}
+.hist-tab.active{background:var(--blue-bg);border-color:var(--blue);color:#82b4ff;font-weight:600;}
 .hist-session{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;overflow:hidden;}
 .hist-hdr{padding:10px 13px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
 .hist-date{font-size:14px;font-weight:600;color:var(--text);}
 .hist-meta{display:flex;gap:8px;align-items:center;margin-top:2px;}
 .hist-chip{font-size:11px;color:var(--text3);background:rgba(255,255,255,0.04);border-radius:4px;padding:1px 6px;}
-.hist-chip.blue{color:var(--blue2);background:var(--blue-bg);}
+.hist-chip.blue{color:#82b4ff;background:var(--blue-bg);}
 .hist-chip.green{color:var(--green);background:var(--green-bg);}
 .hist-body{padding:8px 13px 10px;display:none;border-top:1px solid var(--border);}
 .hist-body.open{display:block;}
@@ -155,17 +155,17 @@ pointer-events:none;z-index:0;}
 .stat-lbl{font-size:10px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:0.4px;}
 .pill-row{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
 .pill{background:var(--bg-card);border:1px solid var(--border);color:var(--text2);padding:5px 13px;border-radius:20px;font-size:12px;cursor:pointer;flex-shrink:0;transition:all 0.18s;font-weight:500;}
-.pill.active{background:var(--blue-bg);border-color:var(--blue);color:var(--blue2);font-weight:600;}
+.pill.active{background:var(--blue-bg);border-color:var(--blue);color:#82b4ff;font-weight:600;}
 .metric-row{display:flex;gap:6px;margin-bottom:10px;}
 .metric-btn{flex:1;background:var(--bg-card);border:1px solid var(--border);color:var(--text2);padding:9px;border-radius:var(--r-sm);font-size:12px;cursor:pointer;text-align:center;transition:all 0.18s;font-weight:500;}
-.metric-btn.active{background:var(--blue-bg);border-color:var(--blue);color:var(--blue2);}
+.metric-btn.active{background:var(--blue-bg);border-color:var(--blue);color:#82b4ff;}
 
 /* ACTIVITY MAP */
 .activity-map{width:100%;display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,1fr);gap:3px;}
 .act-cell{border-radius:3px;background:rgba(255,255,255,0.06);aspect-ratio:1;}
-.act-cell.l1{background:rgba(79,142,247,0.25);}
-.act-cell.l2{background:rgba(79,142,247,0.5);}
-.act-cell.l3{background:rgba(79,142,247,0.75);}
+.act-cell.l1{background:rgba(41,121,255,0.25);}
+.act-cell.l2{background:rgba(41,121,255,0.5);}
+.act-cell.l3{background:rgba(41,121,255,0.75);}
 .act-cell.l4{background:var(--blue);}
 
 /* DOM PROGRESS */
@@ -176,7 +176,7 @@ pointer-events:none;z-index:0;}
 .dom-pct{font-size:32px;font-weight:800;}
 .dom-tabs{display:flex;gap:6px;margin-bottom:10px;}
 .dom-tab{flex:1;background:var(--bg-card);border:1px solid var(--border);color:var(--text2);padding:8px 4px;border-radius:var(--r-sm);font-size:11px;cursor:pointer;text-align:center;font-weight:500;transition:all 0.18s;}
-.dom-tab.active{background:var(--blue-bg);border-color:var(--blue);color:var(--blue2);}
+.dom-tab.active{background:var(--blue-bg);border-color:var(--blue);color:#82b4ff;}
 
 /* FÍSICO */
 .fisico-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden;}
@@ -190,7 +190,7 @@ pointer-events:none;z-index:0;}
 .f-input:focus{border-color:var(--blue);}
 .f-input:disabled{opacity:0.3;pointer-events:none;}
 .f-input::placeholder{color:var(--text3);font-size:13px;font-weight:400;}
-.f-btn{background:var(--blue);color:white;border:none;border-radius:var(--r-sm);padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0;box-shadow:0 3px 12px rgba(79,142,247,0.25);}
+.f-btn{background:var(--blue);color:white;border:none;border-radius:var(--r-sm);padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0;box-shadow:0 3px 12px rgba(41,121,255,0.25);}
 .f-btn:disabled{opacity:0.35;pointer-events:none;}
 .f-btn.full{width:100%;padding:12px;}
 .f-info{font-size:12px;color:var(--text3);margin-bottom:8px;}
@@ -203,7 +203,7 @@ pointer-events:none;z-index:0;}
 .m-input{background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-xs);color:var(--text);font-size:14px;font-weight:500;padding:7px 10px;outline:none;-webkit-appearance:none;width:100%;text-align:center;}
 .macros-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
 .macro-item{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 7px;text-align:center;}
-.macro-val{font-size:22px;font-weight:700;color:var(--blue2);}
+.macro-val{font-size:22px;font-weight:700;color:#82b4ff;}
 .macro-unit{font-size:11px;color:var(--text3);}
 .macro-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.4px;margin-top:3px;}
 .etapa-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:0.6px;}
@@ -217,8 +217,8 @@ pointer-events:none;z-index:0;}
 .etapa-meta-val{font-size:15px;font-weight:600;}
 .etapa-opt-row{display:flex;gap:7px;margin-bottom:9px;}
 .etapa-opt-btn{flex:1;padding:10px 4px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--bg-input);color:var(--text2);font-size:13px;cursor:pointer;transition:all 0.18s;font-weight:500;}
-.etapa-opt-btn.sel{border-color:var(--blue);color:var(--blue2);background:var(--blue-bg);}
-.etapa-confirm{width:100%;background:var(--blue);color:white;border:none;border-radius:var(--r-sm);padding:11px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 3px 12px rgba(79,142,247,0.25);}
+.etapa-opt-btn.sel{border-color:var(--blue);color:#82b4ff;background:var(--blue-bg);}
+.etapa-confirm{width:100%;background:var(--blue);color:white;border:none;border-radius:var(--r-sm);padding:11px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 3px 12px rgba(41,121,255,0.25);}
 .etapa-selector{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;margin-top:9px;display:none;}
 .etapa-selector.open{display:block;}
 .change-btn{background:var(--bg-input);border:1px solid var(--border);color:var(--text2);border-radius:20px;padding:5px 13px;font-size:12px;cursor:pointer;font-weight:500;}
@@ -257,7 +257,7 @@ pointer-events:none;z-index:0;}
 .profile-sub{font-size:12px;color:var(--text3);margin-top:2px;}
 .profile-peso{text-align:right;}
 .profile-peso-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:2px;}
-.profile-peso-val{font-size:17px;font-weight:700;color:var(--blue2);}
+.profile-peso-val{font-size:17px;font-weight:700;color:#82b4ff;}
 
 /* TOAST */
 .toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%) translateY(14px);background:rgba(15,15,20,0.95);backdrop-filter:var(--glass);border:1px solid var(--border2);color:var(--text);padding:9px 18px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;transition:all 0.25s;z-index:999;pointer-events:none;white-space:nowrap;}
@@ -339,8 +339,8 @@ pointer-events:none;z-index:0;}
     <div style="display:flex;gap:4px;align-items:center;margin-top:8px;">
       <span style="font-size:11px;color:var(--text3)">Menos</span>
       <div style="width:10px;height:10px;border-radius:2px;background:rgba(255,255,255,0.06)"></div>
-      <div style="width:10px;height:10px;border-radius:2px;background:rgba(79,142,247,0.3)"></div>
-      <div style="width:10px;height:10px;border-radius:2px;background:rgba(79,142,247,0.6)"></div>
+      <div style="width:10px;height:10px;border-radius:2px;background:rgba(41,121,255,0.3)"></div>
+      <div style="width:10px;height:10px;border-radius:2px;background:rgba(41,121,255,0.6)"></div>
       <div style="width:10px;height:10px;border-radius:2px;background:rgba(79,142,247,1)"></div>
       <span style="font-size:11px;color:var(--text3)">Más</span>
     </div>
@@ -366,7 +366,7 @@ pointer-events:none;z-index:0;}
 
   <div class="fisico-card">
     <div class="sec-hdr">
-      <div class="sec-icon" style="background:var(--blue-bg)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--blue2)" stroke-width="2" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+      <div class="sec-icon" style="background:var(--blue-bg)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#82b4ff" stroke-width="2" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
       <div><div class="sec-title">Etapa actual</div><div class="sec-sub" id="etapa-sub">Sin configurar</div></div>
     </div>
     <div class="sec-body">
@@ -471,7 +471,7 @@ pointer-events:none;z-index:0;}
 
   <div class="fisico-card" style="overflow:hidden;">
     <div class="sec-hdr" style="padding-bottom:6px;">
-      <div class="sec-icon" style="background:var(--blue-bg)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--blue2)" stroke-width="2" stroke-linecap="round"><polyline points="4 18 9 13 13 16 20 7"/></svg></div>
+      <div class="sec-icon" style="background:var(--blue-bg)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#82b4ff" stroke-width="2" stroke-linecap="round"><polyline points="4 18 9 13 13 16 20 7"/></svg></div>
       <div style="flex:1"><div class="sec-title">Evolución</div><div class="sec-sub">Desliza entre gráficas</div></div>
       <div style="display:flex;gap:5px;" id="chart-dots">
         <div class="corpo-dot active" onclick="goChart(0)"></div>
@@ -502,7 +502,7 @@ pointer-events:none;z-index:0;}
   <div class="sett-group">
     <div class="sett-group-title">Datos</div>
     <div class="sett-row" onclick="exportJSON()">
-      <div class="sett-icon" style="background:var(--blue-bg)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--blue2)" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><line x1="12" y1="3" x2="12" y2="15"/><polyline points="17 8 12 3 7 8"/></svg></div>
+      <div class="sett-icon" style="background:var(--blue-bg)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#82b4ff" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><line x1="12" y1="3" x2="12" y2="15"/><polyline points="17 8 12 3 7 8"/></svg></div>
       <span>Exportar backup (JSON)</span>
     </div>
     <div class="sett-row" onclick="document.getElementById('import-file').click()">
@@ -798,7 +798,7 @@ function checkPR(session){
   session.exercises.forEach(ex=>{
     if(!ex.peso)return;const nW=parseFloat(ex.peso);
     const prev=data.filter(s=>s.date<session.date).flatMap(s=>s.exercises).filter(e=>e.name===ex.name&&e.peso).map(e=>parseFloat(e.peso));
-    if(prev.length&&nW>Math.max(...prev))setTimeout(()=>showToast("🏆 PR en "+ex.name+"!","ok"),800);
+    if(prev.length&&nW>Math.max(...prev))setTimeout(()=>showToast(" PR en "+ex.name+"!","ok"),800);
   });
 }
 
@@ -822,7 +822,7 @@ function renderHist(){
       if(!dataStr)return"";
       return`<div class="hist-ex-row"><span class="hist-ex-name">${e.name}</span><span class="hist-ex-data">${dataStr}</span></div>`;
     }).filter(Boolean).join("");
-    return`<div class="hist-session" style="animation:fadeUp 0.22s ease ${i*0.04}s both"><div class="hist-hdr" onclick="toggleHist(${i})"><div><div class="hist-date">${fmtDate(s.date)} · ${s.day.charAt(0).toUpperCase()+s.day.slice(1)}</div><div class="hist-meta"><span class="hist-chip">${done}/${s.exercises.length} completados</span>${vol>0?`<span class="hist-chip blue">${vol.toLocaleString()} kg vol</span>`:""}${hasPR?'<span class="hist-chip green">🏆 PR</span>':'' }</div></div><div class="hist-controls"><button class="del-btn" onclick="delSession(event,'${s.date}','${s.day}')">✕</button><button class="toggle-btn" id="arr-${i}">›</button></div></div><div class="hist-body" id="hb-${i}">${exRows||'<div style="color:var(--text3);font-size:13px;padding:4px 0">Sin datos registrados</div>'}</div></div>`;
+    return`<div class="hist-session" style="animation:fadeUp 0.22s ease ${i*0.04}s both"><div class="hist-hdr" onclick="toggleHist(${i})"><div><div class="hist-date">${fmtDate(s.date)} · ${s.day.charAt(0).toUpperCase()+s.day.slice(1)}</div><div class="hist-meta"><span class="hist-chip">${done}/${s.exercises.length} completados</span>${vol>0?`<span class="hist-chip blue">${vol.toLocaleString()} kg vol</span>`:""}${hasPR?'<span class="hist-chip green"> PR</span>':'' }</div></div><div class="hist-controls"><button class="del-btn" onclick="delSession(event,'${s.date}','${s.day}')">✕</button><button class="toggle-btn" id="arr-${i}">›</button></div></div><div class="hist-body" id="hb-${i}">${exRows||'<div style="color:var(--text3);font-size:13px;padding:4px 0">Sin datos registrados</div>'}</div></div>`;
   }).join("");
 }
 function toggleHist(i){const b=document.getElementById("hb-"+i);const a=document.getElementById("arr-"+i);const o=b.classList.toggle("open");if(a)a.textContent=o?"⌄":"›";}
@@ -861,66 +861,63 @@ function renderProgress(){
   document.getElementById("s-sess").textContent=allData.length;
   document.getElementById("s-last").textContent=vals[vals.length-1].toFixed(1)+"kg";
   if(progChart)progChart.destroy();
-  const chartColors={border:"#4f8ef7",bg:"rgba(79,142,247,0.08)"};
+  const chartColors={border:"#2979ff",bg:"rgba(41,121,255,0.08)"};
   progChart=new Chart(document.getElementById("prog-chart").getContext("2d"),{type:"line",data:{labels:allData.map(s=>fmtDate(s.date)),datasets:[{data:vals,borderColor:chartColors.border,backgroundColor:chartColors.bg,borderWidth:2,pointBackgroundColor:chartColors.border,pointRadius:4,tension:0.35,fill:true}]},options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.parsed.y.toFixed(1)+"kg"}}},scales:{x:{ticks:{color:"#444",font:{size:10}},grid:{color:"rgba(255,255,255,0.04)"}},y:{ticks:{color:"#444",font:{size:10}},grid:{color:"rgba(255,255,255,0.04)"}}}}});
 }
 
+// Activity map overrides: {date: true=trained, false=rest}
+let actOverrides={};
+function loadActOverrides(){try{actOverrides=JSON.parse(localStorage.getItem('gt_act_ov')||'{}');}catch{actOverrides={};}}
+function saveActOverrides(){localStorage.setItem('gt_act_ov',JSON.stringify(actOverrides));}
+
 function renderActivityMap(){
+  loadActOverrides();
   const map=document.getElementById("activity-map");if(!map)return;
   const f=getFisico();const etapaStart=f.etapa?.fechaInicio;
   const data=getData();
   const lbl=document.getElementById("activity-map-lbl");
-
-  // Determine start: etapa start or first session date or 16 weeks ago
-  let startDate;
-  if(etapaStart){
-    startDate=etapaStart;
-    if(lbl)lbl.textContent="Actividad desde inicio de etapa";
-  } else {
-    const allDates=data.map(s=>s.date).sort();
-    startDate=allDates.length?allDates[0]:null;
-    if(!startDate){
-      const d=new Date();d.setDate(d.getDate()-111);
-      startDate=d.toISOString().split("T")[0];
-    }
-    if(lbl)lbl.textContent="Actividad desde primer entreno";
-  }
-
+  const trainedDates=new Set(data.map(s=>s.date));
   const today=todayStr();
-  // Build date range: from monday of start week to today
+
+  let startDate;
+  if(etapaStart){startDate=etapaStart;if(lbl)lbl.textContent="Actividad desde inicio de etapa";}
+  else{const allDates=data.map(s=>s.date).sort();startDate=allDates.length?allDates[0]:null;if(!startDate){const d=new Date();d.setDate(d.getDate()-84);startDate=d.toISOString().split("T")[0];}if(lbl)lbl.textContent="Actividad desde primer entreno";}
+
   const startD=new Date(startDate+"T12:00:00");
-  const dow=startD.getDay()||7;startD.setDate(startD.getDate()-dow+1); // go to monday
+  const dow=startD.getDay()||7;startD.setDate(startD.getDate()-dow+1);
   const endD=new Date(today+"T12:00:00");
 
-  // Build lookup
-  const volMap={};
-  data.forEach(s=>{const v=calcVol(s.exercises);volMap[s.date]=(volMap[s.date]||0)+v;});
-
-  // Build cells: one per day from startD to endD
-  const cells=[];
-  const cur=new Date(startD);
+  const cells=[];const cur=new Date(startD);
   while(cur<=endD){
     const ds=cur.toISOString().split("T")[0];
-    const v=volMap[ds]||0;
-    const level=v>5000?4:v>2000?3:v>500?2:v>0?1:0;
-    cells.push({ds,level});
+    const isFuture=ds>today;
+    let trained;
+    if(actOverrides[ds]!==undefined)trained=actOverrides[ds];
+    else trained=trainedDates.has(ds);
+    cells.push({ds,trained,isFuture});
     cur.setDate(cur.getDate()+1);
   }
+  const rem=cells.length%7;if(rem>0)for(let i=0;i<7-rem;i++)cells.push({ds:null,trained:false,isFuture:true});
 
-  // Pad to fill complete weeks
-  const remainder=cells.length%7;
-  if(remainder>0){for(let i=0;i<7-remainder;i++)cells.push({ds:null,level:-1});}
-
-  // Number of weeks (columns)
-  const numWeeks=cells.length/7;
-
+  const numWeeks=Math.max(1,cells.length/7);
   map.style.gridTemplateColumns=`repeat(${numWeeks},1fr)`;
-  map.innerHTML=cells.map(({ds,level})=>{
-    if(level===-1)return`<div class="act-cell" style="background:transparent"></div>`;
-    const cls=level>0?` l${level}`:"";
-    const title=ds?fmtDate(ds)+(level>0?" · entrenado":""):"";
-    return`<div class="act-cell${cls}" title="${title}"></div>`;
+  map.innerHTML=cells.map(({ds,trained,isFuture})=>{
+    if(!ds)return`<div class="act-cell future"></div>`;
+    if(isFuture)return`<div class="act-cell future"></div>`;
+    const cls=trained?" trained":" rest";
+    const title=fmtDate(ds)+(trained?" · Entrenado":" · Descanso");
+    return`<div class="act-cell${cls}" title="${title}" onclick="toggleActDay('${ds}')"></div>`;
   }).join("");
+}
+
+function toggleActDay(ds){
+  loadActOverrides();
+  const data=getData();const trainedDates=new Set(data.map(s=>s.date));
+  // current state
+  const current=actOverrides[ds]!==undefined?actOverrides[ds]:trainedDates.has(ds);
+  actOverrides[ds]=!current;
+  saveActOverrides();
+  renderActivityMap();
 }
 
 // ── DOMINADAS PROGRESS ───────────────────────────────────────────
@@ -951,7 +948,7 @@ function renderDomChart(tests,emoms){
     domChartInst=new Chart(ctx,{type:"line",data:{labels:tests.map(t=>fmtDate(t.date)),datasets:[{data:tests.map(t=>t.reps),borderColor:"#ffd60a",backgroundColor:"rgba(255,214,10,0.08)",borderWidth:2,pointBackgroundColor:"#ffd60a",pointRadius:5,tension:0.3,fill:true,label:"Reps"},{data:tests.map(()=>DOM_GOAL),borderColor:"rgba(239,68,68,0.5)",backgroundColor:"transparent",borderWidth:1.5,borderDash:[5,4],pointRadius:0,label:"Objetivo"}]},options:{...baseOpts,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.parsed.y+" reps"}}}}});
   } else {
     lbl.textContent="EMOM — Minutos y total reps";
-    domChartInst=new Chart(ctx,{type:"bar",data:{labels:emoms.map(e=>fmtDate(e.date)),datasets:[{data:emoms.map(e=>e.total),backgroundColor:"rgba(79,142,247,0.6)",borderRadius:4,label:"Total reps"},{data:emoms.map(e=>e.mins),backgroundColor:"rgba(34,197,94,0.5)",borderRadius:4,label:"Minutos"}]},options:{...baseOpts,plugins:{legend:{display:true,labels:{color:"#888",font:{size:11}}},tooltip:{callbacks:{label:ctx=>ctx.dataset.label+": "+ctx.parsed.y}}}}});
+    domChartInst=new Chart(ctx,{type:"bar",data:{labels:emoms.map(e=>fmtDate(e.date)),datasets:[{data:emoms.map(e=>e.total),backgroundColor:"rgba(41,121,255,0.6)",borderRadius:4,label:"Total reps"},{data:emoms.map(e=>e.mins),backgroundColor:"rgba(34,197,94,0.5)",borderRadius:4,label:"Minutos"}]},options:{...baseOpts,plugins:{legend:{display:true,labels:{color:"#888",font:{size:11}}},tooltip:{callbacks:{label:ctx=>ctx.dataset.label+": "+ctx.parsed.y}}}}});
   }
 }
 
