@@ -48,15 +48,15 @@
   /* text */
   --text:    #ffffff;
   --text-2:  rgba(255,255,255,0.62);
-  --text-3:  rgba(255,255,255,0.48);
+  --text-3:  rgba(255,255,255,0.54);
   --text-4:  rgba(255,255,255,0.18);
 
   /* accents */
   --blue:    #2979ff;
   --blue2:   #6ea8ff;
   --blue-bg: rgba(41,121,255,0.13);
-  --green:   #1ed760;            /* Spotify-green, fitness vibe */
-  --green-bg:rgba(30,215,96,0.12);
+  --green:   #b6ff2e;            /* Volt lime — premium fitness accent */
+  --green-bg:rgba(182,255,46,0.12);
   --red:     #ff453a;
   --red-bg:  rgba(255,69,58,0.12);
   --amber:   #ffd60a;
@@ -104,12 +104,19 @@ body {
 /* big stage gradient — Apple Fitness-style mesh wash */
 body::before {
   content: "";
-  position: fixed; inset: 0;
+  position: fixed; inset: -4%;
   background:
     radial-gradient(ellipse 100% 60% at 80% -10%, rgba(41,121,255,0.18) 0%, transparent 50%),
-    radial-gradient(ellipse 80% 50% at 0% 100%, rgba(30,215,96,0.12) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 50% at 0% 100%, rgba(182,255,46,0.09) 0%, transparent 55%),
     radial-gradient(ellipse 60% 40% at 60% 110%, rgba(255,107,0,0.10) 0%, transparent 60%);
   pointer-events: none; z-index: 0;
+  animation: meshDrift 54s ease-in-out infinite alternate;
+  will-change: transform;
+}
+@keyframes meshDrift {
+  0%   { transform: translate3d(0,0,0) scale(1); }
+  50%  { transform: translate3d(-1.5%, 1%, 0) scale(1.035); }
+  100% { transform: translate3d(1%, -1.2%, 0) scale(1.015); }
 }
 body::after {
   /* very faint grain to kill banding */
@@ -194,15 +201,16 @@ body::after {
 }
 .nav-btn.active { color: #fff; }
 .nav-indicator {
-  position: absolute; inset: 0;
+  position: absolute; top: 6px; bottom: 6px; left: 0;
   border-radius: var(--r-pill);
-  background: rgba(255,255,255,0.10);
-  border: 1px solid rgba(255,255,255,0.18);
-  box-shadow: 0 0 24px rgba(255,255,255,0.05);
-  opacity: 0; transition: opacity 0.25s, transform 0.25s;
-  z-index: -1; transform: scale(0.88);
+  background: linear-gradient(160deg, rgba(255,255,255,0.14), rgba(255,255,255,0.05));
+  border: 1px solid rgba(255,255,255,0.2);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3), 0 0 16px -6px rgba(182,255,46,0.16), inset 0 1px 0 rgba(255,255,255,0.16);
+  transition: transform 0.42s var(--ease-out-soft, cubic-bezier(0.22,1,0.36,1));
+  will-change: transform;
+  pointer-events: none;
+  z-index: 0;
 }
-.nav-btn.active .nav-indicator { opacity: 1; transform: scale(1); }
 .nav-icon svg { display: block; }
 
 /* —— Screen container ——————————————————————— */
@@ -215,7 +223,9 @@ body::after {
 @keyframes pageOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-8px); } }
 @keyframes fadeUp  { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @keyframes popIn   { 0% { transform: scale(1); } 45% { transform: scale(1.35); } 100% { transform: scale(1); } }
-@keyframes flashGreen { 0% { box-shadow: 0 0 0 0 rgba(30,215,96,0); } 40% { box-shadow: 0 0 0 10px rgba(30,215,96,0.18); border-color: rgba(30,215,96,0.6);} 100% { box-shadow: 0 0 0 0 rgba(30,215,96,0); opacity: 0.35; transform: scale(0.99); } }
+@keyframes flashGreen { 0% { box-shadow: 0 0 0 0 rgba(182,255,46,0); } 40% { box-shadow: 0 0 0 10px rgba(182,255,46,0.18); border-color: rgba(182,255,46,0.6);} 100% { box-shadow: 0 0 0 0 rgba(182,255,46,0); opacity: 0.35; transform: scale(0.99); } }
+@keyframes saveFlash { 0% { box-shadow: 0 0 0 0 rgba(182,255,46,0.45); } 100% { box-shadow: 0 0 0 12px rgba(182,255,46,0); } }
+.flash-ok { animation: saveFlash 0.6s cubic-bezier(0.22,1,0.36,1); }
 @keyframes shine   { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
 
 /* —— Cards ————————————————————————————————————— */
@@ -314,7 +324,7 @@ body::after {
   font-size: 19px; font-weight: 400;
   letter-spacing: 0.5px;
   cursor: pointer; text-align: center;
-  transition: all 0.22s cubic-bezier(0.22,1,0.36,1);
+  transition: background 0.22s ease, border-color 0.22s ease, color 0.22s ease, transform 0.18s cubic-bezier(0.16,1,0.3,1);
   position: relative; overflow: hidden;
 }
 .day-btn:active { transform: scale(0.95); }
@@ -341,8 +351,14 @@ body::after {
   padding: 6px 10px; outline: none; cursor: pointer;
   font-family: inherit; color-scheme: dark;
 }
-.prog-wrap { height: 4px; background: rgba(255,255,255,0.08); border-radius: 4px; margin-top: 6px; overflow: hidden; width: 78px; }
-.prog-bar  { height: 100%; background: linear-gradient(90deg, #fff, var(--blue2)); border-radius: 4px; transition: width 0.45s cubic-bezier(0.22,1,0.36,1); }
+.prog-wrap { height: 5px; background: rgba(255,255,255,0.08); border-radius: 4px; margin-top: 6px; overflow: hidden; width: 78px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.4); }
+.prog-bar  {
+  height: 100%; width: 100%; border-radius: 4px; position: relative;
+  transform-origin: left; transform: scaleX(0);
+  background: linear-gradient(90deg, var(--blue2), var(--green));
+  transition: transform 0.55s var(--ease-out-soft, cubic-bezier(0.22,1,0.36,1)), box-shadow 0.4s ease;
+}
+.prog-bar.complete { box-shadow: 0 0 10px 1px rgba(182,255,46,0.6); }
 #done-count { font-family: var(--font-mono); font-size: 12px; color: var(--text-2); }
 
 /* —— EXERCISE CARDS ———————————————————————— */
@@ -510,7 +526,7 @@ body::after {
   padding: 8px 16px; border-radius: var(--r-pill);
   font-family: var(--font-disp); font-size: 14px; letter-spacing: 0.6px;
   cursor: pointer; white-space: nowrap; flex-shrink: 0;
-  transition: all 0.2s; text-transform: uppercase;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease; text-transform: uppercase;
 }
 .hist-tab.active { background: #fff; border-color: #fff; color: #000; font-weight: 400; }
 .hist-tab:first-child { margin-right: 6px; position: relative; }
@@ -569,8 +585,9 @@ body::after {
   border: 1px solid var(--border);
   color: var(--text-2); padding: 6px 14px; border-radius: var(--r-pill);
   font-size: 12px; font-weight: 600; cursor: pointer; flex-shrink: 0;
-  font-family: inherit; transition: all 0.18s;
+  font-family: inherit; transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.16s cubic-bezier(0.16,1,0.3,1);
 }
+.pill:active { transform: scale(0.95); }
 .pill.active { background: #fff; border-color: #fff; color: #000; }
 
 .metric-row { display: flex; gap: 6px; margin-bottom: 12px; }
@@ -591,11 +608,11 @@ body::after {
   cursor: pointer; display: flex; align-items: center; justify-content: center;
   font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.32);
   font-family: var(--font-mono);
-  transition: all 0.15s;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.15s cubic-bezier(0.16,1,0.3,1);
   position: relative;
 }
 .act-day:active { transform: scale(0.88); }
-.act-day.trained { background: var(--green); color: rgba(0,0,0,0.55); box-shadow: 0 2px 8px rgba(30,215,96,0.3); }
+.act-day.trained { background: var(--green); color: rgba(0,0,0,0.55); box-shadow: 0 2px 8px rgba(182,255,46,0.3); }
 .act-day.rest    { background: rgba(255,69,58,0.78); color: rgba(255,255,255,0.7); box-shadow: 0 2px 8px rgba(255,69,58,0.25); }
 .act-day.trained::after, .act-day.rest::after {
   content: ""; position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%);
@@ -682,7 +699,7 @@ body::after {
   line-height: 1;
 }
 .sign-btn.neg { color: var(--red); border-color: rgba(255,69,58,0.3); background: rgba(255,69,58,0.08); }
-.sign-btn.pos { color: var(--green); border-color: rgba(30,215,96,0.3); background: rgba(30,215,96,0.08); }
+.sign-btn.pos { color: var(--green); border-color: rgba(182,255,46,0.3); background: rgba(182,255,46,0.08); }
 
 .medidas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
 .m-grp { display: flex; flex-direction: column; gap: 5px; }
@@ -716,7 +733,7 @@ body::after {
 }
 .etapa-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .etapa-badge.deficit       { background: var(--red-bg);   color: var(--red);    border: 1px solid rgba(255,69,58,0.3); }
-.etapa-badge.volumen       { background: var(--green-bg); color: var(--green);  border: 1px solid rgba(30,215,96,0.3); }
+.etapa-badge.volumen       { background: var(--green-bg); color: var(--green);  border: 1px solid rgba(182,255,46,0.3); }
 .etapa-badge.mantenimiento { background: var(--amber-bg); color: var(--amber);  border: 1px solid rgba(255,214,10,0.3); }
 .etapa-badge.none          { background: rgba(255,255,255,0.04); color: var(--text-3); border: 1px solid var(--border); }
 
@@ -732,8 +749,9 @@ body::after {
   border: 1px solid var(--border);
   background: var(--bg-input);
   color: var(--text-2); font-size: 13px; font-weight: 600;
-  cursor: pointer; transition: all 0.18s; font-family: inherit;
+  cursor: pointer; transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.16s cubic-bezier(0.16,1,0.3,1); font-family: inherit;
 }
+.etapa-opt-btn:active { transform: scale(0.96); }
 .etapa-opt-btn.sel { border-color: #fff; color: #000; background: #fff; }
 .etapa-confirm {
   width: 100%; background: #fff; color: #000; border: none;
@@ -788,7 +806,7 @@ body::after {
 }
 
 /* Carousel dots */
-.corpo-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.22); cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+.corpo-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.22); cursor: pointer; transition: background 0.2s ease, transform 0.2s ease; flex-shrink: 0; }
 .corpo-dot.active { background: #fff; width: 18px; border-radius: 3px; }
 #corpo-carousel::-webkit-scrollbar, #chart-carousel::-webkit-scrollbar { display: none; }
 .corpo-slide { flex-shrink: 0; }
@@ -865,29 +883,38 @@ body::after {
   color: var(--text);
   padding: 11px 22px; border-radius: var(--r-pill);
   font-size: 13.5px; font-weight: 600;
-  opacity: 0; transition: all 0.32s cubic-bezier(0.22,1,0.36,1);
+  opacity: 0; transition: opacity 0.32s cubic-bezier(0.22,1,0.36,1), transform 0.32s cubic-bezier(0.22,1,0.36,1);
   z-index: 999; pointer-events: none; white-space: nowrap;
   box-shadow: var(--shadow-card-lg);
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-.toast.ok { border-color: rgba(30,215,96,0.5); color: var(--green); }
+.toast.ok { border-color: rgba(182,255,46,0.5); color: var(--green); }
 .empty-state { text-align: center; color: var(--text-3); padding: 48px 16px; font-size: 14px; font-family: var(--font-mono); }
 
 /* —— ETAPA MODAL ————————————————————————— */
 .modal-shroud {
   display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.7);
+  background: rgba(0,0,0,0.6);
   z-index: 200; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   align-items: flex-end;
+  opacity: 0; transition: opacity 0.3s ease;
 }
-.modal-shroud.open { display: flex; animation: fadeUp 0.22s ease both; }
+.modal-shroud.open, .modal-shroud.closing { display: flex; }
+.modal-shroud.open { opacity: 1; }
 .modal-sheet {
   width: 100%;
-  background: rgba(18,18,24,0.98);
+  background: linear-gradient(165deg, rgba(30,30,37,0.82), rgba(14,14,18,0.92));
+  backdrop-filter: var(--glass-strong);
+  -webkit-backdrop-filter: var(--glass-strong);
   border: 1px solid var(--border-2);
+  border-bottom: none;
   border-radius: var(--r-lg) var(--r-lg) 0 0;
   padding: 22px 20px 44px;
+  box-shadow: var(--shadow-card-lg);
+  transform: translateY(100%);
+  transition: transform 0.4s var(--ease-drawer);
 }
+.modal-shroud.open .modal-sheet { transform: translateY(0); }
 .modal-grab {
   width: 38px; height: 5px;
   background: rgba(255,255,255,0.18);
@@ -911,7 +938,7 @@ body::after {
   box-shadow: var(--shadow-card-lg);
   display: none;
   z-index: 110;
-  opacity: 0; transition: all 0.36s cubic-bezier(0.22,1,0.36,1);
+  opacity: 0; transition: opacity 0.36s cubic-bezier(0.22,1,0.36,1), transform 0.36s cubic-bezier(0.22,1,0.36,1);
 }
 .rest-timer.show { display: flex; opacity: 1; transform: translateX(-50%) translateY(0); align-items: center; gap: 14px; }
 .rest-ring {
@@ -1023,7 +1050,7 @@ body::after {
   margin-bottom: 10px; backdrop-filter: var(--glass);
   position: relative; overflow: hidden;
 }
-.informe-hero-card.accent-green { border-color: rgba(30,215,96,0.3); background: linear-gradient(160deg, rgba(30,215,96,0.06), rgba(255,255,255,0.03)); }
+.informe-hero-card.accent-green { border-color: rgba(182,255,46,0.3); background: linear-gradient(160deg, rgba(182,255,46,0.06), rgba(255,255,255,0.03)); }
 .informe-hero-card.accent-red   { border-color: rgba(255,69,58,0.3);  background: linear-gradient(160deg, rgba(255,69,58,0.06),  rgba(255,255,255,0.03)); }
 .informe-hero-card.accent-amber { border-color: rgba(255,214,10,0.3); background: linear-gradient(160deg, rgba(255,214,10,0.06), rgba(255,255,255,0.03)); }
 .informe-hero-card .v { font-family: var(--font-disp); font-size: 52px; line-height: 0.9; }
@@ -1150,7 +1177,7 @@ body::after {
    ═══════════════════════════════════════════════════════════════ */
 
 /* — Reusable smooth-cubic — */
-:root { --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1); --ease-pop: cubic-bezier(0.16, 1, 0.3, 1); }
+:root { --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1); --ease-pop: cubic-bezier(0.16, 1, 0.3, 1); --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1); }
 
 /* — Universal button press dampening — */
 button, .nav-btn, .day-btn, .day-chip, .open-informe, .filter-btn, .filter-pill,
@@ -1188,8 +1215,7 @@ button:not(:disabled):active, .open-informe:active, .day-btn:active, .day-chip:a
   box-shadow: 0 6px 20px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05);
 }
 
-/* — Bottom nav: indicator pops in + active icon picks up color — */
-.nav-indicator { transition: opacity 0.28s ease, transform 0.32s var(--ease-pop); }
+/* — Bottom nav: indicator slides to the active tab + icon picks up color — */
 .nav-btn { transition: color 0.28s ease, transform 0.22s var(--ease-pop); }
 .nav-btn.active { color: var(--text); }
 .nav-btn.active .nav-icon { color: #fff; filter: drop-shadow(0 0 8px rgba(120,170,255,0.4)); }
@@ -1264,7 +1290,7 @@ input:focus, select:focus, textarea:focus {
   content: "";
   position: absolute; inset: -1px;
   border-radius: var(--r-lg);
-  background: linear-gradient(135deg, rgba(41,121,255,0.25), transparent 35%, transparent 60%, rgba(30,215,96,0.18));
+  background: linear-gradient(135deg, rgba(41,121,255,0.25), transparent 35%, transparent 60%, rgba(182,255,46,0.18));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
           mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor; mask-composite: exclude;
@@ -1441,7 +1467,7 @@ input:focus, select:focus, textarea:focus {
   border-radius: 100px; overflow: hidden;
   position: relative;
 }
-.iwk-fill { height: 100%; border-radius: 100px; transition: width 0.5s var(--ease-out-soft); }
+.iwk-fill { height: 100%; border-radius: 100px; transform-origin: left; animation: barGrow 0.6s var(--ease-out-soft) both; }
 .iwk-fill.grasa { background: #ffd60a; }
 .iwk-fill.magra { background: #ef4444; }
 .iwk-fill.grasa.good { background: #ffd60a; }
@@ -1636,7 +1662,7 @@ input:focus, select:focus, textarea:focus {
     </div>
     <div>
       <div id="done-count" class="tnum" style="text-align:right;margin-bottom:4px"></div>
-      <div class="prog-wrap"><div class="prog-bar" id="prog-bar" style="width:0%"></div></div>
+      <div class="prog-wrap"><div class="prog-bar" id="prog-bar"></div></div>
     </div>
   </div>
 
@@ -1818,7 +1844,7 @@ input:focus, select:focus, textarea:focus {
 
   <div class="fisico-card" style="overflow:hidden;">
     <div class="sec-hdr" style="padding-bottom:8px;">
-      <div class="sec-icon" style="background:rgba(30,215,96,0.08);border-color:rgba(30,215,96,0.22)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="7" r="3"/><path d="M5 21v-2a7 7 0 0114 0v2"/></svg></div>
+      <div class="sec-icon" style="background:rgba(182,255,46,0.08);border-color:rgba(182,255,46,0.22)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="7" r="3"/><path d="M5 21v-2a7 7 0 0114 0v2"/></svg></div>
       <div style="flex:1"><div class="sec-title">Datos corporales</div><div class="sec-sub">Desliza para cambiar</div></div>
       <div style="display:flex;gap:6px;" id="corpo-dots">
         <div class="corpo-dot active" onclick="goCorpo(0)"></div>
@@ -1916,7 +1942,7 @@ input:focus, select:focus, textarea:focus {
       <span>Exportar backup (JSON)</span>
     </div>
     <div class="sett-row" onclick="document.getElementById('import-file').click()">
-      <div class="sett-icon" style="background:rgba(30,215,96,0.08);border-color:rgba(30,215,96,0.22)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+      <div class="sett-icon" style="background:rgba(182,255,46,0.08);border-color:rgba(182,255,46,0.22)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
       <span>Importar backup (JSON)</span>
     </div>
     <div class="sett-row" onclick="exportCSV()">
@@ -1951,20 +1977,21 @@ input:focus, select:focus, textarea:focus {
 
 <!-- ───── BOTTOM NAV ───── -->
 <nav class="bottom-nav">
+  <span class="nav-indicator" id="nav-indicator" aria-hidden="true"></span>
   <button class="nav-btn active" onclick="showScreen('entreno',this)">
-    <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="10" width="3" height="4" rx="1"/><rect x="19" y="10" width="3" height="4" rx="1"/><rect x="5" y="8" width="3" height="8" rx="1"/><rect x="16" y="8" width="3" height="8" rx="1"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>Entreno<span class="nav-indicator"></span>
+    <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="10" width="3" height="4" rx="1"/><rect x="19" y="10" width="3" height="4" rx="1"/><rect x="5" y="8" width="3" height="8" rx="1"/><rect x="16" y="8" width="3" height="8" rx="1"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>Entreno
   </button>
   <button class="nav-btn" onclick="showScreen('historial',this)">
-    <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="14" y2="17"/></svg></span>Historial<span class="nav-indicator"></span>
+    <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="14" y2="17"/></svg></span>Historial
   </button>
   <button class="nav-btn" onclick="showScreen('progreso',this)">
-    <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><polyline points="4 18 9 13 13 16 20 7"/></svg></span>Progreso<span class="nav-indicator"></span>
+    <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><polyline points="4 18 9 13 13 16 20 7"/></svg></span>Progreso
   </button>
   <button class="nav-btn" onclick="showScreen('fisico',this)">
-    <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="7" r="3"/><path d="M5 21v-2a7 7 0 0114 0v2"/></svg></span>Físico<span class="nav-indicator"></span>
+    <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="7" r="3"/><path d="M5 21v-2a7 7 0 0114 0v2"/></svg></span>Físico
   </button>
   <button class="nav-btn" onclick="showScreen('ajustes',this)">
-    <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.488.488 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 018.4 12 3.6 3.6 0 0112 8.4a3.6 3.6 0 013.6 3.6 3.6 3.6 0 01-3.6 3.6z" stroke="none" fill="currentColor"/></svg></span>Ajustes<span class="nav-indicator"></span>
+    <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.488.488 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 018.4 12 3.6 3.6 0 0112 8.4a3.6 3.6 0 013.6 3.6 3.6 3.6 0 01-3.6 3.6z" stroke="none" fill="currentColor"/></svg></span>Ajustes
   </button>
 </nav>
 
@@ -2200,7 +2227,7 @@ function renderMuscleBars(el, start, end) {
 // Entreno modal
 let volPeriod = "mes";
 function openVolModal() { renderVolModal(); document.getElementById("vol-modal").classList.add("open"); }
-function closeVolModal() { document.getElementById("vol-modal").classList.remove("open"); }
+function closeVolModal() { closeModal("vol-modal"); }
 function setVolPeriod(p, el) {}
 function renderVolModal() {
   renderFixedWeekly(document.getElementById("vol-bars"));
@@ -2511,7 +2538,9 @@ function updateProg() {
   const done = exs.filter(e => sState[e]?.done).length;
   const pct = exs.length ? (done / exs.length * 100) : 0;
   document.getElementById("done-count").textContent = currentDay ? done + " / " + exs.length : "";
-  document.getElementById("prog-bar").style.width = pct + "%";
+  const pb = document.getElementById("prog-bar");
+  pb.style.transform = "scaleX(" + (pct / 100) + ")";
+  pb.classList.toggle("complete", pct >= 100);
 }
 function saveSession() {
   if (!currentDay) return; captureInputs();
@@ -2527,6 +2556,7 @@ function saveSession() {
   saveData(data);
   clearDraft();
   checkPR(session);
+  flashSuccess(document.getElementById("save-btn"));
   showToast("Sesión guardada", "ok");
   populateProgSel(); updateStreak(); updateHeaderStage();
 }
@@ -2554,7 +2584,7 @@ function showPR(exName, newWeight, oldWeight, series) {
     `${newWeight} kg${series ? " · " + series : ""}  ·  +${(newWeight-oldWeight).toFixed(1)} kg`;
   const sh = document.getElementById("pr-shroud"); sh.classList.add("open");
   // burst some confetti
-  const colors = ["#ffd60a", "#ff6b00", "#1ed760", "#5ac8fa", "#fff"];
+  const colors = ["#ffd60a", "#ff6b00", "#b6ff2e", "#5ac8fa", "#fff"];
   for (let i = 0; i < 40; i++) {
     const c = document.createElement("div");
     c.className = "conf";
@@ -2797,7 +2827,7 @@ function renderDomChart(tests, emoms) {
     const emomDates = emoms.map(e => e.date);
     domChartInst = new Chart(ctx, { type: "bar", data: { datasets: [
       { data: toTimePoints(emomDates, emoms.map(e => e.total)), backgroundColor: "rgba(41,121,255,0.65)", borderRadius: 6, label: "Total reps" },
-      { data: toTimePoints(emomDates, emoms.map(e => e.mins)),  backgroundColor: "rgba(30,215,96,0.55)", borderRadius: 6, label: "Minutos" }
+      { data: toTimePoints(emomDates, emoms.map(e => e.mins)),  backgroundColor: "rgba(182,255,46,0.55)", borderRadius: 6, label: "Minutos" }
     ]}, options: { ...baseOpts, plugins: { legend: { display: true, labels: { color: "rgba(255,255,255,0.6)", font: { size: 11, weight: 600 } } }, tooltip: tooltipStyle() } } });
   }
 }
@@ -2841,7 +2871,7 @@ function openEtapaModal() {
   if (e) { document.getElementById("etapa-ini-input").value = e.fechaInicio || ""; document.getElementById("etapa-fin-input").value = e.fechaFin || ""; }
   document.getElementById("etapa-modal").classList.add("open");
 }
-function closeEtapaModal() { document.getElementById("etapa-modal").classList.remove("open"); }
+function closeEtapaModal() { closeModal("etapa-modal"); }
 function saveEtapaDates() {
   const f = getFisico(); if (!f.etapa) return;
   const ini = document.getElementById("etapa-ini-input").value;
@@ -2909,6 +2939,7 @@ function savePeso() {
   const f = getFisico(); if (!f.pesos) f.pesos = {};
   f.pesos[document.getElementById("peso-date").value || todayStr()] = v;
   saveFisico(f); renderPesoSection(); renderMacros(); renderFisicoCharts(); renderProfileMeta(); renderBodyFat();
+  flashSuccess(document.getElementById("peso-btn"));
   showToast("Peso guardado", "ok");
 }
 function renderMedidasSection() {
@@ -2932,6 +2963,7 @@ function saveMedidas() {
   if (!Object.keys(entry).length) { showToast("Introduce al menos una medida"); return; }
   f.medidas[mk] = entry;
   saveFisico(f); renderMedidasSection(); renderMedidasChart(); renderBodyFat(); renderProfileMeta(); renderFisicoCharts();
+  flashSuccess(document.querySelector('button[onclick*="saveMedidas"]'));
   showToast("Medidas guardadas", "ok");
 }
 function renderMacros() {
@@ -3270,7 +3302,7 @@ function openGapsModal() {
   renderGapsList();
   document.getElementById("gaps-modal").classList.add("open");
 }
-function closeGapsModal() { document.getElementById("gaps-modal").classList.remove("open"); }
+function closeGapsModal() { closeModal("gaps-modal"); }
 function renderGapsList() {
   const days = getMissingDays();
   const list = document.getElementById("gaps-list");
@@ -3330,7 +3362,9 @@ function saveCal() {
   const sd = document.getElementById("cal-date").value || todayStr();
   const f = getFisico(); if (!f.calorias) f.calorias = {};
   f.calorias[sd] = Math.abs(raw) * calSign;
-  saveFisico(f); renderCalSection(); renderFisicoCharts(); renderBodyFat(); renderProfileMeta(); showToast("Calorías guardadas", "ok");
+  saveFisico(f); renderCalSection(); renderFisicoCharts(); renderBodyFat(); renderProfileMeta();
+  flashSuccess(document.querySelector('button[onclick*="saveCal"]'));
+  showToast("Calorías guardadas", "ok");
 }
 function renderSemanaRes() {
   const f = getFisico(); const cals = f.calorias || {};
@@ -3405,7 +3439,7 @@ function renderFisicoCharts() {
   const pesos = f.pesos || {};
   const pe = Object.entries(pesos).filter(([w]) => w >= sd).sort(([a],[b]) => a.localeCompare(b));
   if (pesoChart) pesoChart.destroy();
-  pesoChart = new Chart(document.getElementById("peso-chart").getContext("2d"), buildLineConfig(pe.map(([w]) => w), pe.map(([,v]) => v), "var(--green)", "rgba(30,215,96,0.08)", "kg"));
+  pesoChart = new Chart(document.getElementById("peso-chart").getContext("2d"), buildLineConfig(pe.map(([w]) => w), pe.map(([,v]) => v), "var(--green)", "rgba(182,255,46,0.08)", "kg"));
 
   renderComposicionChart(sd);
   renderWeeklyView();
@@ -3540,13 +3574,23 @@ function onChartScroll() { const c = document.getElementById("chart-carousel"); 
 function updChartDots(idx) { document.querySelectorAll("#chart-dots .corpo-dot").forEach((d, i) => d.classList.toggle("active", i === idx)); }
 
 // ─── SCREENS ────────────────────────────────────────────────────
+function updateNavIndicator(btn) {
+  const ind = document.getElementById("nav-indicator");
+  if (!ind || !btn) return;
+  ind.style.width = btn.offsetWidth + "px";
+  ind.style.transform = "translateX(" + btn.offsetLeft + "px)";
+}
+window.addEventListener("resize", () => {
+  const active = document.querySelector(".nav-btn.active");
+  if (active) updateNavIndicator(active);
+});
 function showScreen(name, btn) {
   const cur = document.querySelector(".screen.active");
   const next = document.getElementById("screen-" + name);
   if (!next) return;
   if (cur === next) return;
   document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
-  if (btn) btn.classList.add("active");
+  if (btn) { btn.classList.add("active"); updateNavIndicator(btn); }
   if (cur) {
     cur.style.animation = "pageOut 0.18s ease forwards";
     setTimeout(() => {
@@ -3687,7 +3731,7 @@ function renderInforme() {
   const tipoLabel = { deficit: "DÉFICIT", mantenimiento: "MANTENIMIENTO", volumen: "VOLUMEN" }[etapa.tipo] || etapa.tipo.toUpperCase();
   const tipoColor = { deficit: "var(--red)", mantenimiento: "var(--amber)", volumen: "var(--green)" }[etapa.tipo] || "var(--text)";
   const tipoBg    = { deficit: "var(--red-bg)", mantenimiento: "var(--amber-bg)", volumen: "var(--green-bg)" }[etapa.tipo] || "rgba(255,255,255,0.05)";
-  const tipoBd    = { deficit: "rgba(255,69,58,0.3)", mantenimiento: "rgba(255,214,10,0.3)", volumen: "rgba(30,215,96,0.3)" }[etapa.tipo] || "var(--border)";
+  const tipoBd    = { deficit: "rgba(255,69,58,0.3)", mantenimiento: "rgba(255,214,10,0.3)", volumen: "rgba(182,255,46,0.3)" }[etapa.tipo] || "var(--border)";
 
   const heroTitle = isEnded ? "ETAPA COMPLETADA" : "ETAPA EN CURSO";
   const heroBg = etapa.tipo.toUpperCase();
@@ -4058,6 +4102,18 @@ function clearAll() {
   updateTodayHero();
   showToast("Datos borrados");
 }
+function closeModal(id) {
+  const m = document.getElementById(id);
+  if (!m || !m.classList.contains("open")) return;
+  m.classList.remove("open");
+  m.classList.add("closing");
+  setTimeout(() => m.classList.remove("closing"), 320);
+}
+function flashSuccess(el) {
+  if (!el) return;
+  el.classList.remove("flash-ok"); void el.offsetWidth; el.classList.add("flash-ok");
+  setTimeout(() => el.classList.remove("flash-ok"), 600);
+}
 function showToast(msg, cls) {
   const t = document.getElementById("toast");
   t.textContent = msg;
@@ -4074,6 +4130,7 @@ function showToast(msg, cls) {
 // every reload. Keeping the data intact now.
 
 // ─── INIT ─────────────────────────────────────────────────────
+updateNavIndicator(document.querySelector(".nav-btn.active"));
 document.getElementById("session-date").value = todayStr();
 populateProgSel(); updateStreak(); updateHeaderStage();
 // reflect rest-timer state in settings row
