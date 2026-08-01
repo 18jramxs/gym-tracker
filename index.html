@@ -48,7 +48,7 @@
   /* text */
   --text:    #ffffff;
   --text-2:  rgba(255,255,255,0.62);
-  --text-3:  rgba(255,255,255,0.32);
+  --text-3:  rgba(255,255,255,0.48);
   --text-4:  rgba(255,255,255,0.18);
 
   /* accents */
@@ -139,7 +139,6 @@ body::after {
 }
 .header-title .dot {
   width: 6px; height: 6px; border-radius: 50%; background: var(--green);
-  box-shadow: 0 0 12px var(--green);
   animation: pulseDot 2.2s ease-in-out infinite;
 }
 @keyframes pulseDot { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
@@ -166,7 +165,7 @@ body::after {
 }
 .streak-badge::before {
   content: ""; width: 8px; height: 8px; border-radius: 50%;
-  background: var(--amber); box-shadow: 0 0 8px var(--amber);
+  background: var(--amber);
 }
 
 /* —— Bottom Nav ————————————————————————————————— */
@@ -370,13 +369,13 @@ body::after {
   letter-spacing: 0.6px; text-transform: uppercase;
   color: var(--text);
 }
-.dots-row { display: flex; gap: 7px; align-items: center; flex-shrink: 0; }
+.dots-row { display: flex; gap: 9px; align-items: center; flex-shrink: 0; }
 .dot {
-  width: 24px; height: 24px; border-radius: 50%;
-  border: 1.5px solid rgba(255,255,255,0.22);
+  width: 38px; height: 38px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.22);
   background: transparent; cursor: pointer;
   position: relative; flex-shrink: 0;
-  transition: border-color 0.28s ease, background 0.28s ease, transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.28s ease;
+  transition: border-color 0.28s ease, background 0.28s ease, transform 0.2s cubic-bezier(0.16,1,0.3,1), box-shadow 0.28s ease;
   padding: 0;
   isolation: isolate;
 }
@@ -402,19 +401,14 @@ body::after {
 }
 .dot.on::before {
   opacity: 1; transform: scale(1);
-  animation: dotBreath 2.6s ease-in-out infinite;
 }
-.dot.on::after { content: ""; position: absolute; width: 8px; height: 8px; background: radial-gradient(circle at 35% 30%, #1a1d24 0%, #050505 90%); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%,-50%); box-shadow: inset 0 1px 1px rgba(0,0,0,0.6); }
+.dot.on::after { content: ""; position: absolute; width: 13px; height: 13px; background: radial-gradient(circle at 35% 30%, #1a1d24 0%, #050505 90%); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%,-50%); box-shadow: inset 0 1px 1px rgba(0,0,0,0.6); }
 .dot:active { transform: scale(1.18); }
-.dot.pop   { animation: popIn 0.32s cubic-bezier(0.34,1.56,0.64,1); }
+.dot.pop   { animation: popIn 0.32s cubic-bezier(0.16,1,0.3,1); }
 .dot.pop::before { animation: dotBurst 0.65s ease-out; }
 .dot-count { font-family: var(--font-mono); font-size: 11px; color: var(--text-3); min-width: 26px; text-align: center; font-weight: 500; transition: color 0.3s; }
 .ex-card:has(.dot.on) .dot-count { color: var(--text-2); }
 
-@keyframes dotBreath {
-  0%, 100% { opacity: 0.55; transform: scale(0.92); filter: blur(2.5px); }
-  50%      { opacity: 1;    transform: scale(1.18); filter: blur(3.2px); }
-}
 @keyframes dotBurst {
   0%   { opacity: 1; transform: scale(0.6); filter: blur(1px); }
   55%  { opacity: 0.9; transform: scale(2.1); filter: blur(6px); }
@@ -479,6 +473,7 @@ body::after {
 }
 .emom-body { padding: 14px; }
 .emom-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-3); margin-bottom: 5px; }
+.emom-note { font-size: 12px; color: var(--text-2); line-height: 1.4; margin-bottom: 12px; }
 .emom-total-bar {
   background: rgba(255,214,10,0.06);
   border: 1px solid rgba(255,214,10,0.18);
@@ -518,6 +513,11 @@ body::after {
   transition: all 0.2s; text-transform: uppercase;
 }
 .hist-tab.active { background: #fff; border-color: #fff; color: #000; font-weight: 400; }
+.hist-tab:first-child { margin-right: 6px; position: relative; }
+.hist-tab:first-child::after {
+  content: ""; position: absolute; right: -6px; top: 22%; bottom: 22%;
+  width: 1px; background: var(--border);
+}
 
 .hist-session { margin-bottom: 10px; }
 .hist-hdr { padding: 13px 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
@@ -592,10 +592,16 @@ body::after {
   font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.32);
   font-family: var(--font-mono);
   transition: all 0.15s;
+  position: relative;
 }
 .act-day:active { transform: scale(0.88); }
 .act-day.trained { background: var(--green); color: rgba(0,0,0,0.55); box-shadow: 0 2px 8px rgba(30,215,96,0.3); }
 .act-day.rest    { background: rgba(255,69,58,0.78); color: rgba(255,255,255,0.7); box-shadow: 0 2px 8px rgba(255,69,58,0.25); }
+.act-day.trained::after, .act-day.rest::after {
+  content: ""; position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%);
+}
+.act-day.trained::after { width: 4px; height: 4px; border-radius: 50%; background: rgba(0,0,0,0.55); }
+.act-day.rest::after { width: 8px; height: 2px; border-radius: 1px; background: rgba(255,255,255,0.7); }
 .act-day.future  { background: rgba(255,255,255,0.025); cursor: default; color: rgba(255,255,255,0.12); }
 .act-day.empty   { background: transparent; cursor: default; pointer-events: none; }
 
@@ -662,6 +668,7 @@ body::after {
 .f-btn:active { transform: scale(0.97); }
 .f-btn.full { width: 100%; padding: 13px; }
 .f-info { font-size: 12px; color: var(--text-3); margin-bottom: 9px; font-family: var(--font-mono); }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 
 .sign-btn {
   background: rgba(255,255,255,0.06);
@@ -834,6 +841,7 @@ body::after {
 /* —— SETTINGS ————————————————————————————— */
 .sett-group { margin-bottom: 12px; overflow: hidden; }
 .sett-group-title { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.7px; padding: 14px 16px 6px; font-weight: 800; }
+.sett-note { font-size: 12px; color: var(--text-2); line-height: 1.4; padding: 0 16px 10px; }
 .sett-row { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-top: 1px solid var(--border); cursor: pointer; transition: background 0.15s; }
 .sett-row:first-of-type { border-top: none; }
 .sett-row:active { background: rgba(255,255,255,0.04); }
@@ -1141,15 +1149,8 @@ body::after {
    Appended layer; only enriches what's above, no overrides.
    ═══════════════════════════════════════════════════════════════ */
 
-/* — Stage gradient subtly breathes — */
-@keyframes ambientShift {
-  0%, 100% { transform: translate3d(0,0,0)     scale(1); opacity: 1; }
-  50%      { transform: translate3d(-1%,1%,0)  scale(1.04); opacity: 0.85; }
-}
-body::before { animation: ambientShift 18s ease-in-out infinite; }
-
 /* — Reusable smooth-cubic — */
-:root { --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1); --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1); }
+:root { --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1); --ease-pop: cubic-bezier(0.16, 1, 0.3, 1); }
 
 /* — Universal button press dampening — */
 button, .nav-btn, .day-btn, .day-chip, .open-informe, .filter-btn, .filter-pill,
@@ -1194,23 +1195,14 @@ button:not(:disabled):active, .open-informe:active, .day-btn:active, .day-chip:a
 .nav-btn.active .nav-icon { color: #fff; filter: drop-shadow(0 0 8px rgba(120,170,255,0.4)); }
 .nav-btn:active { transform: scale(0.92); }
 
-/* — Header live-dot: bigger glow ring — */
-@keyframes pulseDotV2 {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(30,215,96,0.55), 0 0 12px var(--green); }
-  60%      { box-shadow: 0 0 0 7px rgba(30,215,96,0),    0 0 18px var(--green); }
-}
-.header-title .dot { animation: pulseDotV2 2.2s ease-out infinite; }
-
-/* — Day chips on Entreno: selected one gets a subtle conic shimmer — */
+/* — Day chips on Entreno: selected one gets a subtle static tint — */
 .day-btn, .day-chip { position: relative; overflow: hidden; }
 .day-btn.active::before, .day-chip.active::before {
   content: "";
   position: absolute; inset: -50%;
   background: conic-gradient(from 0deg, transparent 0deg, rgba(41,121,255,0.18) 90deg, transparent 180deg, rgba(120,170,255,0.12) 270deg, transparent 360deg);
-  animation: spinSlow 8s linear infinite;
   pointer-events: none; z-index: -1;
 }
-@keyframes spinSlow { to { transform: rotate(360deg); } }
 
 /* — Save CTA: idle breathing glow — */
 .cta-save, #save-session-btn, .save-btn, .btn-primary,
@@ -1251,23 +1243,7 @@ input:focus, select:focus, textarea:focus {
 .stagger-in > *:nth-child(4) { animation-delay: 0.22s; }
 .stagger-in > *:nth-child(5) { animation-delay: 0.28s; }
 
-/* — Progress bar gets a moving shimmer — */
 .prog-bar { position: relative; overflow: hidden; }
-.prog-bar::after {
-  content: "";
-  position: absolute; inset: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.5) 50%, transparent 100%);
-  transform: translateX(-100%);
-  animation: shimmerSlide 2.4s ease-in-out infinite;
-}
-@keyframes shimmerSlide {
-  0%   { transform: translateX(-100%); }
-  60%  { transform: translateX(120%); }
-  100% { transform: translateX(120%); }
-}
-
-/* — Profile peso value: subtle color pulse when fresh — */
-.profile-peso-val { background: linear-gradient(140deg, #fff 0%, #d6e3ff 80%); -webkit-background-clip: text; background-clip: text; color: transparent; }
 
 /* — Chart cards on Físico get a soft accent glow — */
 .fisico-card, .chart-wrap {
@@ -1547,12 +1523,6 @@ input:focus, select:focus, textarea:focus {
   font-family: var(--font-disp); font-size: 26px; color: #0a1224;
   position: relative; z-index: 2;
 }
-.profile-av::before {
-  content: ""; position: absolute; inset: -3px; border-radius: 50%;
-  background: conic-gradient(from 0deg, rgba(41,121,255,0.7), rgba(120,170,255,0), rgba(41,121,255,0.7));
-  animation: spinSlow 5s linear infinite;
-  z-index: 0; opacity: 0.55; filter: blur(3px);
-}
 .profile-id { flex: 1; min-width: 0; }
 .profile-name {
   font-family: var(--font-disp); font-size: 19px; font-weight: 400;
@@ -1585,7 +1555,7 @@ input:focus, select:focus, textarea:focus {
   text-transform: uppercase; letter-spacing: 0.6px; font-weight: 700;
 }
 
-/* ═══ Reflejo / ghost word — constant gentle motion ════════════ */
+/* ═══ Reflejo / ghost word — one slow, subtle drift ════════════ */
 @keyframes ghostDrift {
   0%, 100% { opacity: 0.045; transform: translateX(0); }
   50%      { opacity: 0.08;  transform: translateX(-7px); }
@@ -1593,112 +1563,30 @@ input:focus, select:focus, textarea:focus {
 .today-bg-text, .informe-hero-bg {
   animation: ghostDrift 9s ease-in-out infinite;
 }
-/* A slow recurring light sweep across the today hero ghost word */
-.today-hero .today-bg-text {
-  background: linear-gradient(100deg, rgba(255,255,255,0.045) 0%, rgba(255,255,255,0.16) 48%, rgba(255,255,255,0.045) 60%);
-  background-size: 220% 100%;
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent; color: transparent;
-  animation: ghostDrift 9s ease-in-out infinite, ghostSheen 6.5s ease-in-out infinite;
-}
-@keyframes ghostSheen {
-  0%   { background-position: 130% 0; }
-  55%  { background-position: -30% 0; }
-  100% { background-position: -30% 0; }
-}
 
 
 /* ═══ Perfil — colores vivos + neón respirante ═════════════════ */
 .pstat-v { font-weight: 400; }
-.pstat:not(.grasa):not(.magra) .pstat-v {
-  background: linear-gradient(135deg, #ffffff, #b9d0ff);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-  text-shadow: 0 0 18px rgba(120,170,255,0.25);
-}
-.pstat.grasa .pstat-v {
-  color: #ffe14d;
-  text-shadow: 0 0 16px rgba(255,214,10,0.45);
-  animation: glowAmber 3.4s ease-in-out infinite;
-}
-.pstat.magra .pstat-v {
-  color: #ff6b6b;
-  text-shadow: 0 0 16px rgba(239,68,68,0.45);
-  animation: glowRed 3.4s ease-in-out infinite 0.6s;
-}
-.pstat-v small { color: var(--text-2) !important; -webkit-text-fill-color: var(--text-2); }
-.pstat.grasa::before { box-shadow: 0 0 10px #ffd60a; animation: barPulse 3.4s ease-in-out infinite; }
-.pstat.magra::before { box-shadow: 0 0 10px #ef4444; animation: barPulse 3.4s ease-in-out infinite 0.6s; }
-@keyframes glowAmber {
-  0%,100% { text-shadow: 0 0 12px rgba(255,214,10,0.30); }
-  50%     { text-shadow: 0 0 22px rgba(255,214,10,0.65); }
-}
-@keyframes glowRed {
-  0%,100% { text-shadow: 0 0 12px rgba(239,68,68,0.30); }
-  50%     { text-shadow: 0 0 22px rgba(239,68,68,0.65); }
-}
-@keyframes barPulse {
-  0%,100% { opacity: 0.55; }
-  50%     { opacity: 1; }
-}
-/* Profile card subtle aurora that drifts behind everything */
+.pstat.grasa .pstat-v { color: #ffe14d; }
+.pstat.magra .pstat-v { color: #ff6b6b; }
+.pstat.grasa::before { box-shadow: 0 0 10px #ffd60a; }
+.pstat.magra::before { box-shadow: 0 0 10px #ef4444; }
+/* Profile card subtle aurora accent */
 .profile-card::before {
   content: ""; position: absolute; inset: 0; border-radius: inherit;
   background:
     radial-gradient(120px 80px at 18% 0%, rgba(41,121,255,0.16), transparent 70%),
     radial-gradient(140px 90px at 95% 100%, rgba(255,214,10,0.10), transparent 70%);
-  pointer-events: none; z-index: 0;
-  animation: auroraDrift 11s ease-in-out infinite;
+  pointer-events: none; z-index: 0; opacity: 0.85;
 }
 .profile-card > * { position: relative; z-index: 1; }
-@keyframes auroraDrift {
-  0%,100% { opacity: 0.7; transform: translate3d(0,0,0); }
-  50%     { opacity: 1;   transform: translate3d(3%, -2%, 0); }
-}
-
-/* ═══ Today-stats — simétrico + valores con vida ═══════════════ */
-.today-hero .today-stats .ts .v {
-  background: linear-gradient(135deg, #ffffff, #cfe0ff);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-}
-.today-hero .today-stats .ts {
-  position: relative; overflow: hidden;
-}
-.today-hero .today-stats .ts::after {
-  content: ""; position: absolute; inset: 0;
-  background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.10) 50%, transparent 70%);
-  transform: translateX(-120%);
-  animation: tsSheen 5s ease-in-out infinite;
-}
-.today-hero .today-stats .ts:nth-child(2)::after { animation-delay: 0.5s; }
-@keyframes tsSheen {
-  0%   { transform: translateX(-120%); }
-  45%  { transform: translateX(120%); }
-  100% { transform: translateX(120%); }
-}
-
-/* ═══ Neón respirante — acentos generales ══════════════════════ */
-/* Day chip selected: soft breathing white halo */
+/* ═══ Acentos generales ══════════════════════ */
+/* Day chip selected: soft white lift */
 .day-btn.selected {
-  animation: dayGlow 3s ease-in-out infinite;
-}
-@keyframes dayGlow {
-  0%,100% { box-shadow: 0 6px 18px rgba(255,255,255,0.14), inset 0 0 0 1px rgba(255,255,255,0.4); }
-  50%     { box-shadow: 0 6px 26px rgba(255,255,255,0.30), inset 0 0 0 1px rgba(255,255,255,0.55); }
-}
-/* Etapa badge breathing rim */
-#etapa-badge { animation: badgeBreath 4s ease-in-out infinite; }
-@keyframes badgeBreath {
-  0%,100% { box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 4px 14px rgba(0,0,0,0.3); }
-  50%     { box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 4px 22px rgba(41,121,255,0.22); }
+  box-shadow: 0 6px 18px rgba(255,255,255,0.14), inset 0 0 0 1px rgba(255,255,255,0.4);
 }
 /* Muscle-volume bars: faint neon edge on the fill */
 .mv-fill { box-shadow: 0 0 8px -1px currentColor; }
-/* Section icons on Físico breathe gently */
-.fisico-card .sec-icon { animation: iconBreath 4.5s ease-in-out infinite; }
-@keyframes iconBreath {
-  0%,100% { transform: scale(1); filter: brightness(1); }
-  50%     { transform: scale(1.06); filter: brightness(1.18); }
-}
 
 </style>
 </head>
@@ -1743,6 +1631,7 @@ input:focus, select:focus, textarea:focus {
   <div class="session-info card">
     <div style="flex:1">
       <div class="session-lbl" id="day-label">Selecciona un día</div>
+      <label class="sr-only" for="session-date">Fecha de la sesión</label>
       <input type="date" id="session-date" class="date-input" onchange="onDateChange()">
     </div>
     <div>
@@ -1910,10 +1799,12 @@ input:focus, select:focus, textarea:focus {
       <div><div class="sec-title">Calorías</div><div class="sec-sub">Registro diario</div></div>
     </div>
     <div class="sec-body">
+      <label class="sr-only" for="cal-date">Fecha de calorías</label>
       <div class="f-row" style="margin-bottom:10px"><input type="date" id="cal-date" class="date-input" style="flex:1" onchange="renderCalSection()"></div>
       <div class="f-row">
         <button class="sign-btn neg" id="cal-sign" onclick="toggleCalSign()">−</button>
-        <input type="number" inputmode="numeric" class="f-input" id="cal-input" placeholder="kcal">
+        <label class="sr-only" for="cal-input">Calorías (déficit o superávit)</label>
+        <input type="number" inputmode="numeric" class="f-input" id="cal-input" placeholder="kcal" min="0" max="20000">
         <button class="f-btn" onclick="saveCal()">Guardar</button>
       </div>
       <button class="cal-gaps-btn" id="cal-gaps-btn" onclick="openGapsModal()">
@@ -1947,24 +1838,27 @@ input:focus, select:focus, textarea:focus {
       </div>
       <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;width:100%;box-sizing:border-box;padding:0 16px 16px;">
         <div style="font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:10px;font-weight:800;">Peso corporal · semanal</div>
+        <label class="sr-only" for="peso-date">Fecha de peso</label>
         <div class="f-row" style="margin-bottom:8px"><input type="date" id="peso-date" class="date-input" style="flex:1" onchange="renderPesoSection()"></div>
         <div class="f-info" id="peso-info"></div>
         <div class="f-row">
-          <input type="number" inputmode="decimal" class="f-input" id="peso-input" placeholder="kg" step="0.1">
+          <label class="sr-only" for="peso-input">Peso en kilogramos</label>
+          <input type="number" inputmode="decimal" class="f-input" id="peso-input" placeholder="kg" step="0.1" min="20" max="300">
           <button class="f-btn" id="peso-btn" onclick="savePeso()">Guardar</button>
         </div>
       </div>
       <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;width:100%;box-sizing:border-box;padding:0 16px 16px;">
         <div style="font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:10px;font-weight:800;">Medidas corporales · mensual</div>
+        <label class="sr-only" for="med-date">Fecha de medidas</label>
         <div class="f-row" style="margin-bottom:8px"><input type="date" id="med-date" class="date-input" style="flex:1" onchange="renderMedidasSection()"></div>
         <div class="f-info" id="med-info"></div>
         <div class="medidas-grid">
-          <div class="m-grp"><div class="m-lbl">Cintura (cm)</div><input type="number" inputmode="decimal" class="m-input" id="m-cintura" step="0.1"></div>
-          <div class="m-grp"><div class="m-lbl">Cadera (cm)</div><input type="number" inputmode="decimal" class="m-input" id="m-cadera" step="0.1"></div>
-          <div class="m-grp"><div class="m-lbl">Pecho (cm)</div><input type="number" inputmode="decimal" class="m-input" id="m-pecho" step="0.1"></div>
-          <div class="m-grp"><div class="m-lbl">Brazo (cm)</div><input type="number" inputmode="decimal" class="m-input" id="m-brazo" step="0.1"></div>
-          <div class="m-grp"><div class="m-lbl">Muslo (cm)</div><input type="number" inputmode="decimal" class="m-input" id="m-muslo" step="0.1"></div>
-          <div class="m-grp"><div class="m-lbl">Cuello (cm)</div><input type="number" inputmode="decimal" class="m-input" id="m-cuello" step="0.1"></div>
+          <div class="m-grp"><label class="m-lbl" for="m-cintura">Cintura (cm)</label><input type="number" inputmode="decimal" class="m-input" id="m-cintura" step="0.1" min="0" max="300"></div>
+          <div class="m-grp"><label class="m-lbl" for="m-cadera">Cadera (cm)</label><input type="number" inputmode="decimal" class="m-input" id="m-cadera" step="0.1" min="0" max="300"></div>
+          <div class="m-grp"><label class="m-lbl" for="m-pecho">Pecho (cm)</label><input type="number" inputmode="decimal" class="m-input" id="m-pecho" step="0.1" min="0" max="300"></div>
+          <div class="m-grp"><label class="m-lbl" for="m-brazo">Brazo (cm)</label><input type="number" inputmode="decimal" class="m-input" id="m-brazo" step="0.1" min="0" max="120"></div>
+          <div class="m-grp"><label class="m-lbl" for="m-muslo">Muslo (cm)</label><input type="number" inputmode="decimal" class="m-input" id="m-muslo" step="0.1" min="0" max="150"></div>
+          <div class="m-grp"><label class="m-lbl" for="m-cuello">Cuello (cm)</label><input type="number" inputmode="decimal" class="m-input" id="m-cuello" step="0.1" min="0" max="100"></div>
         </div>
         <button class="f-btn full" onclick="saveMedidas()">Guardar medidas</button>
       </div>
@@ -2016,6 +1910,7 @@ input:focus, select:focus, textarea:focus {
 <div id="screen-ajustes" class="screen">
   <div class="sett-group">
     <div class="sett-group-title">Datos</div>
+    <div class="sett-note">Todo se guarda solo en este dispositivo. Exporta un backup para guardarlo aparte; importar reemplaza todos los datos actuales por los del archivo.</div>
     <div class="sett-row" onclick="exportJSON()">
       <div class="sett-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><line x1="12" y1="3" x2="12" y2="15"/><polyline points="17 8 12 3 7 8"/></svg></div>
       <span>Exportar backup (JSON)</span>
@@ -2141,7 +2036,8 @@ input:focus, select:focus, textarea:focus {
       <div style="font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;font-weight:700;" id="gaps-editor-date"></div>
       <div class="f-row">
         <button class="sign-btn neg" id="gaps-sign" onclick="toggleGapsSign()">−</button>
-        <input type="number" inputmode="numeric" class="f-input" id="gaps-input" placeholder="kcal déficit / superávit">
+        <label class="sr-only" for="gaps-input">Calorías (déficit o superávit) para este día</label>
+        <input type="number" inputmode="numeric" class="f-input" id="gaps-input" placeholder="kcal déficit / superávit" min="0" max="20000">
         <button class="f-btn" onclick="saveGapDay()">Guardar</button>
       </div>
     </div>
@@ -2196,16 +2092,30 @@ const DOB = new Date("2004-01-18");
 function getSeries(day, ex) { const s = SERIES[day]; if (!s) return 3; return s[ex] !== undefined ? s[ex] : (s.default || 3); }
 function getAge() { const t = new Date(); let a = t.getFullYear() - DOB.getFullYear(); const m = t.getMonth() - DOB.getMonth(); if (m < 0 || (m === 0 && t.getDate() < DOB.getDate())) a--; return a; }
 
-let currentDay = null, currentDate = todayStr(), sState = {}, sChecks = {};
+let currentDay = null, currentDate = todayStr(), sState = {}, sChecks = {}, draftTimer = null;
 let histFilter = "all", progChart = null, pesoChart = null, calChart = null, medChart = null;
 let fisicoPeriod = "mes", progPeriod = "mes", metric = "peso";
 let calSign = -1, etapaOpt = null;
 
 // ─── STORAGE ────────────────────────────────────────────────────
-function getData() { try { return JSON.parse(localStorage.getItem("gymtracker_v2") || "[]"); } catch { return []; } }
+function getData() { try { return JSON.parse(localStorage.getItem("gymtracker_v2") || "[]"); } catch { showToast("Datos de entrenos dañados, se reiniciaron"); return []; } }
 function saveData(d) { localStorage.setItem("gymtracker_v2", JSON.stringify(d)); }
-function getFisico() { try { return JSON.parse(localStorage.getItem("gymtracker_fisico") || "{}"); } catch { return {}; } }
+function getFisico() { try { return JSON.parse(localStorage.getItem("gymtracker_fisico") || "{}"); } catch { showToast("Datos físicos dañados, se reiniciaron"); return {}; } }
 function saveFisico(d) { localStorage.setItem("gymtracker_fisico", JSON.stringify(d)); }
+
+// ─── DRAFT AUTOSAVE ─────────────────────────────────────────────
+// A home-screen PWA can be evicted by iOS mid-workout; sState/sChecks only
+// lived in memory until the explicit save tap. Debounce-persist them so an
+// evicted/reopened session doesn't lose logged sets.
+function persistDraft() {
+  clearTimeout(draftTimer);
+  draftTimer = setTimeout(() => {
+    if (!currentDay) return;
+    try { localStorage.setItem("gt_draft", JSON.stringify({ day: currentDay, date: currentDate, sState, sChecks })); } catch {}
+  }, 400);
+}
+function clearDraft() { localStorage.removeItem("gt_draft"); }
+function loadDraft() { try { return JSON.parse(localStorage.getItem("gt_draft") || "null"); } catch { return null; } }
 
 function todayStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
 function fmtDate(s) { if (!s) return ""; const [y,m,d] = s.split("-"); return `${d}/${m}/${y}`; }
@@ -2432,13 +2342,20 @@ function onDateChange() {
 }
 function loadSession() {
   const ex = getData().find(s => s.date === currentDate && s.day === currentDay);
-  if (!ex) return;
-  ex.exercises.forEach(e => {
-    const mode = e.name === "DOMINADAS" ? getDomMode(currentDay, currentDate) : "normal";
-    if (mode === "emom") sState[e.name] = { emomReps: e.emomReps || "", emomMins: e.emomMins || "", emomTotal: e.emomTotal || 0, done: e.done || false };
-    else if (mode === "test") sState[e.name] = { testReps: e.testReps || "", done: e.done || false };
-    else { sState[e.name] = { peso: e.peso || "", series: e.series || "", done: e.done || false }; sChecks[e.name] = e.done ? getSeries(currentDay, e.name) : (e.seriesDone || 0); }
-  });
+  if (ex) {
+    ex.exercises.forEach(e => {
+      const mode = e.name === "DOMINADAS" ? getDomMode(currentDay, currentDate) : "normal";
+      if (mode === "emom") sState[e.name] = { emomReps: e.emomReps || "", emomMins: e.emomMins || "", emomTotal: e.emomTotal || 0, done: e.done || false };
+      else if (mode === "test") sState[e.name] = { testReps: e.testReps || "", done: e.done || false };
+      else { sState[e.name] = { peso: e.peso || "", series: e.series || "", done: e.done || false }; sChecks[e.name] = e.done ? getSeries(currentDay, e.name) : (e.seriesDone || 0); }
+    });
+  }
+  const draft = loadDraft();
+  if (draft && draft.day === currentDay && draft.date === currentDate) {
+    sState = Object.assign({}, sState, draft.sState || {});
+    sChecks = Object.assign({}, sChecks, draft.sChecks || {});
+    showToast("Borrador restaurado", "ok");
+  }
 }
 function captureInputs() {
   if (!currentDay) return;
@@ -2507,7 +2424,7 @@ function buildEMOMCard(ex) {
   card.className = "emom-card" + (st.done ? " ex-card done" : "");
   card.id = id;
   card.style.animation = "fadeUp 0.34s cubic-bezier(0.22,1,0.36,1) both";
-  card.innerHTML = `<div class="emom-hdr"><span class="ex-name" style="color:var(--amber)">EMOM</span><span class="emom-badge">DOMINADAS</span></div><div class="emom-body"><div style="margin-bottom:12px">${refHtml}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px"><div><div class="emom-lbl">Reps por minuto</div><input class="ex-input" type="number" inputmode="numeric" value="${st.emomReps||""}" ${st.done?"disabled":""} oninput="updateEmom('${ex}','emomReps',this.value)"></div><div><div class="emom-lbl">Minutos completados</div><input class="ex-input" type="number" inputmode="numeric" value="${st.emomMins||""}" ${st.done?"disabled":""} oninput="updateEmom('${ex}','emomMins',this.value)"></div></div><div class="emom-total-bar"><span style="font-size:11px;color:var(--text-2);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">Total reps</span><span class="emom-total-val" id="emom-tot-${id}">${total||"—"}</span></div><button class="emom-action" onclick="toggleEmomDone('${ex}')">${st.done?"Reabrir":"Marcar completado"}</button></div>`;
+  card.innerHTML = `<div class="emom-hdr"><span class="ex-name" style="color:var(--amber)">EMOM</span><span class="emom-badge">DOMINADAS</span></div><div class="emom-body"><div class="emom-note">Los lunes, dominadas se mide como EMOM: cuántas repeticiones haces cada minuto y durante cuántos minutos seguidos las mantienes.</div><div style="margin-bottom:12px">${refHtml}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px"><div><div class="emom-lbl">Reps por minuto</div><input class="ex-input" type="number" inputmode="numeric" value="${st.emomReps||""}" ${st.done?"disabled":""} oninput="updateEmom('${ex}','emomReps',this.value)"></div><div><div class="emom-lbl">Minutos completados</div><input class="ex-input" type="number" inputmode="numeric" value="${st.emomMins||""}" ${st.done?"disabled":""} oninput="updateEmom('${ex}','emomMins',this.value)"></div></div><div class="emom-total-bar"><span style="font-size:11px;color:var(--text-2);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">Total reps</span><span class="emom-total-val" id="emom-tot-${id}">${total||"—"}</span></div><button class="emom-action" onclick="toggleEmomDone('${ex}')">${st.done?"Reabrir":"Marcar completado"}</button></div>`;
   return card;
 }
 
@@ -2525,7 +2442,7 @@ function buildTestCard(ex) {
   card.className = "emom-card" + (st.done ? " ex-card done" : "");
   card.id = id;
   card.style.animation = "fadeUp 0.34s cubic-bezier(0.22,1,0.36,1) both";
-  card.innerHTML = `<div class="emom-hdr"><span class="ex-name" style="color:var(--amber)">TEST</span><span class="emom-badge">DOMINADAS · OBJ. ${DOM_GOAL}</span></div><div class="emom-body"><div style="margin-bottom:12px">${refHtml}</div><div class="emom-lbl" style="margin-bottom:5px">Reps máximas (un tirón)</div><input class="ex-input" type="number" inputmode="numeric" value="${st.testReps||""}" ${st.done?"disabled":""} oninput="updateTest('${ex}',this.value)"><div class="test-goal-bar" id="tgb-${id}"><span style="font-size:11px;color:var(--text-2);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">Objetivo ${DOM_GOAL} reps</span><span class="test-pct" style="color:${pctColor}">${pct?pct+"%":"—"}</span></div><button class="emom-action" onclick="toggleTestDone('${ex}')">${st.done?"Reabrir":"Guardar test"}</button></div>`;
+  card.innerHTML = `<div class="emom-hdr"><span class="ex-name" style="color:var(--amber)">TEST</span><span class="emom-badge">DOMINADAS · OBJ. ${DOM_GOAL}</span></div><div class="emom-body"><div class="emom-note">El primer viernes del mes, dominadas se mide como test: tu máximo de repeticiones en una sola serie, para seguir tu progreso hacia el objetivo.</div><div style="margin-bottom:12px">${refHtml}</div><div class="emom-lbl" style="margin-bottom:5px">Reps máximas (un tirón)</div><input class="ex-input" type="number" inputmode="numeric" value="${st.testReps||""}" ${st.done?"disabled":""} oninput="updateTest('${ex}',this.value)"><div class="test-goal-bar" id="tgb-${id}"><span style="font-size:11px;color:var(--text-2);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">Objetivo ${DOM_GOAL} reps</span><span class="test-pct" style="color:${pctColor}">${pct?pct+"%":"—"}</span></div><button class="emom-action" onclick="toggleTestDone('${ex}')">${st.done?"Reabrir":"Guardar test"}</button></div>`;
   return card;
 }
 
@@ -2536,6 +2453,7 @@ function updateEmom(ex, field, val) {
   const tot = r && m ? r * m : 0; sState[ex].emomTotal = tot;
   const el = document.getElementById("emom-tot-" + safeId(ex));
   if (el) el.textContent = tot || "—";
+  persistDraft();
 }
 function updateTest(ex, val) {
   if (!sState[ex]) sState[ex] = { testReps: "", done: false };
@@ -2545,9 +2463,10 @@ function updateTest(ex, val) {
   const pctColor = pct >= 100 ? "var(--green)" : "var(--amber)";
   const bar = document.getElementById("tgb-" + safeId(ex));
   if (bar) { bar.querySelector(".test-pct").textContent = pct ? pct + "%" : "—"; bar.querySelector(".test-pct").style.color = pctColor; }
+  persistDraft();
 }
-function toggleEmomDone(ex) { if (!sState[ex]) return; sState[ex].done = !sState[ex].done; renderExercises(); updateProg(); }
-function toggleTestDone(ex) { if (!sState[ex]) return; sState[ex].done = !sState[ex].done; renderExercises(); updateProg(); }
+function toggleEmomDone(ex) { if (!sState[ex]) return; sState[ex].done = !sState[ex].done; renderExercises(); updateProg(); persistDraft(); }
+function toggleTestDone(ex) { if (!sState[ex]) return; sState[ex].done = !sState[ex].done; renderExercises(); updateProg(); persistDraft(); }
 
 function tickDot(ex, idx) {
   const total = getSeries(currentDay, ex), current = sChecks[ex] || 0;
@@ -2584,8 +2503,9 @@ function tickDot(ex, idx) {
     if (nc > current && REST_ENABLED) restStart(ex);
     updateProg();
   }
+  persistDraft();
 }
-function updateSt(inp) { const ex = inp.dataset.ex, f = inp.dataset.field; if (!sState[ex]) sState[ex] = { peso: "", series: "", done: false }; sState[ex][f] = inp.value; }
+function updateSt(inp) { const ex = inp.dataset.ex, f = inp.dataset.field; if (!sState[ex]) sState[ex] = { peso: "", series: "", done: false }; sState[ex][f] = inp.value; persistDraft(); }
 function updateProg() {
   const exs = ROUTINE[currentDay] || [];
   const done = exs.filter(e => sState[e]?.done).length;
@@ -2605,6 +2525,7 @@ function saveSession() {
   const idx = data.findIndex(s => s.date === session.date && s.day === session.day);
   if (idx >= 0) data[idx] = session; else data.push(session);
   saveData(data);
+  clearDraft();
   checkPR(session);
   showToast("Sesión guardada", "ok");
   populateProgSel(); updateStreak(); updateHeaderStage();
@@ -2815,7 +2736,9 @@ function renderActivityMap() {
     else if (actOverrides[ds] !== undefined) cls = actOverrides[ds] ? 'trained' : 'rest';
     else cls = trainedDates.has(ds) ? 'trained' : 'rest';
     const click = !isFuture ? `onclick="toggleActDay('${ds}')"` : '';
-    cells += `<div class="act-day ${cls}" ${click}>${d}</div>`;
+    const stateLbl = cls === "trained" ? "Entrenado" : cls === "rest" ? "Descanso" : "";
+    const aria = stateLbl ? `aria-label="${d}, ${stateLbl}"` : "";
+    cells += `<div class="act-day ${cls}" ${click} ${aria}>${d}</div>`;
   }
   map.innerHTML = cells;
 }
@@ -2939,7 +2862,14 @@ function selEtapa(t) {
 function confirmEtapa() {
   if (!etapaOpt) { showToast("Selecciona una etapa"); return; }
   const f = getFisico();
-  if (f.etapa && !f.etapa.fechaFin) f.etapa.fechaFin = todayStr();
+  if (f.etapa) {
+    if (!f.etapa.fechaFin) {
+      if (!confirm(`Esto cerrará tu etapa actual (${f.etapa.tipo}) y empezará una nueva. ¿Continuar?`)) return;
+      f.etapa.fechaFin = todayStr();
+    }
+    if (!f.etapaHistorial) f.etapaHistorial = [];
+    f.etapaHistorial.push(f.etapa);
+  }
   f.etapa = { tipo: etapaOpt, fechaInicio: todayStr() };
   saveFisico(f);
   document.getElementById("etapa-selector").classList.remove("open");
@@ -2991,7 +2921,14 @@ function renderMedidasSection() {
 function saveMedidas() {
   const di = document.getElementById("med-date"); const mk = monthKey(di.value || todayStr());
   const f = getFisico(); if (!f.medidas) f.medidas = {};
-  const entry = {}; MED_FIELDS.forEach(field => { const v = parseFloat(document.getElementById("m-" + field).value); if (v) entry[field] = v; });
+  const entry = {}; let hasInvalid = false;
+  MED_FIELDS.forEach(field => {
+    const raw = document.getElementById("m-" + field).value; if (!raw) return;
+    const v = parseFloat(raw);
+    if (isNaN(v) || v <= 0 || v > 300) { hasInvalid = true; return; }
+    entry[field] = v;
+  });
+  if (hasInvalid) { showToast("Medida fuera de rango"); return; }
   if (!Object.keys(entry).length) { showToast("Introduce al menos una medida"); return; }
   f.medidas[mk] = entry;
   saveFisico(f); renderMedidasSection(); renderMedidasChart(); renderBodyFat(); renderProfileMeta(); renderFisicoCharts();
@@ -3377,7 +3314,7 @@ function updateGapsSignBtn() {
 function saveGapDay() {
   if (!gapsSelDate) { showToast("Selecciona un día"); return; }
   const raw = parseFloat(document.getElementById("gaps-input").value);
-  if (isNaN(raw)) { showToast("Valor inválido"); return; }
+  if (isNaN(raw) || Math.abs(raw) > 20000) { showToast("Valor inválido"); return; }
   const f = getFisico(); if (!f.calorias) f.calorias = {};
   f.calorias[gapsSelDate] = Math.abs(raw) * gapsSign;
   saveFisico(f);
@@ -3389,7 +3326,7 @@ function saveGapDay() {
 }
 function saveCal() {
   const raw = parseFloat(document.getElementById("cal-input").value);
-  if (isNaN(raw)) { showToast("Valor inválido"); return; }
+  if (isNaN(raw) || Math.abs(raw) > 20000) { showToast("Valor inválido"); return; }
   const sd = document.getElementById("cal-date").value || todayStr();
   const f = getFisico(); if (!f.calorias) f.calorias = {};
   f.calorias[sd] = Math.abs(raw) * calSign;
@@ -4080,6 +4017,12 @@ function handleImport(e) {
   reader.onload = ev => {
     try {
       const p = JSON.parse(ev.target.result);
+      const entrenos = p.entrenos || p;
+      if (!Array.isArray(entrenos)) throw new Error("formato inválido");
+      const dates = entrenos.map(s => s.date).filter(Boolean).sort();
+      const rango = dates.length ? (dates[0] === dates[dates.length - 1] ? fmtDate(dates[0]) : `${fmtDate(dates[0])} → ${fmtDate(dates[dates.length - 1])}`) : "sin fecha";
+      const msg = `Esto REEMPLAZARÁ todos tus datos actuales con este backup:\n${entrenos.length} sesión(es), ${rango}.\n\nEsta acción no se puede deshacer. ¿Continuar?`;
+      if (!confirm(msg)) { e.target.value = ""; return; }
       if (p.entrenos) {
         saveData(p.entrenos); saveFisico(p.fisico || {});
         localStorage.setItem("gt_act_ov", JSON.stringify(p.actOverrides || {}));
@@ -4087,8 +4030,8 @@ function handleImport(e) {
         localStorage.setItem("gt_rest_on", p.restOn ?? "1");
         loadActOverrides();
       } else saveData(p);
-      showToast("Backup importado", "ok"); renderHist();
-    } catch { showToast("Error al importar"); }
+      showToast(`Backup importado: ${entrenos.length} sesión(es)`, "ok"); renderHist();
+    } catch { showToast("Error al importar: archivo inválido"); }
   };
   reader.readAsText(file); e.target.value = "";
 }
