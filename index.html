@@ -15,8 +15,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="vendor/chart.umd.min.js"></script>
+<script src="vendor/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="vendor/jspdf.umd.min.js"></script>
 
 <style>
 /* ============================================================
@@ -1707,6 +1708,7 @@ input:focus, select:focus, textarea:focus {
 <!-- ───── HEADER ───── -->
 <div class="header">
   <div class="header-title"><span class="dot"></span>GYM TRACKER&nbsp;&nbsp;<span>jo$e</span><span class="header-stage" id="header-stage" style="display:none"></span></div>
+  <div class="streak-badge"><span id="ts-streak">0</span>&nbsp;días</div>
 </div>
 
 
@@ -2204,7 +2206,7 @@ function saveData(d) { localStorage.setItem("gymtracker_v2", JSON.stringify(d));
 function getFisico() { try { return JSON.parse(localStorage.getItem("gymtracker_fisico") || "{}"); } catch { return {}; } }
 function saveFisico(d) { localStorage.setItem("gymtracker_fisico", JSON.stringify(d)); }
 
-function todayStr() { return new Date().toISOString().split("T")[0]; }
+function todayStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
 function fmtDate(s) { if (!s) return ""; const [y,m,d] = s.split("-"); return `${d}/${m}/${y}`; }
 function fmtDateLong(s) {
   if (!s) return "";
@@ -2327,22 +2329,30 @@ function renderFixedWeekly(el) {
   }).join("") +
   `<div class="mv-foot">${groups.length} grupos · ${totS} series / semana</div>`;
 }
-function getStartDate(p, etapaStart) { const d = new Date(); if (p === "semana") d.setDate(d.getDate() - 7); else if (p === "mes") d.setMonth(d.getMonth() - 1); else if (p === "anual") d.setFullYear(d.getFullYear() - 1); else if (p === "etapa" && etapaStart) return etapaStart; else if (p === "todo") return "2000-01-01"; else d.setMonth(d.getMonth() - 1); return d.toISOString().split("T")[0]; }
+function getStartDate(p, etapaStart) { const d = new Date(todayStr() + "T12:00:00"); if (p === "semana") d.setDate(d.getDate() - 7); else if (p === "mes") d.setMonth(d.getMonth() - 1); else if (p === "anual") d.setFullYear(d.getFullYear() - 1); else if (p === "etapa" && etapaStart) return etapaStart; else if (p === "todo") return "2000-01-01"; else d.setMonth(d.getMonth() - 1); return d.toISOString().split("T")[0]; }
 
 // ─── DOMINADAS MODE ─────────────────────────────────────────────
 function isFirstFriday(ds) { const d = new Date(ds + "T12:00:00"); return d.getDay() === 5 && d.getDate() <= 7; }
 function getDomMode(day, ds) { if (day === "lunes") return "emom"; if (day === "viernes" && isFirstFriday(ds)) return "test"; return "normal"; }
 
 // ─── LAST N ─────────────────────────────────────────────────────
-function getLastN(exName, n, beforeDate) {
+// mode picks which data shape counts as "a real entry" for this exercise —
+// DOMINADAS can be logged as emom (lunes), test (1er viernes del mes) or
+// normal (peso/series). Without this, the most recent entry of ANY shape
+// (eg. last Monday's EMOM) would shadow the real reference for a different
+// mode (eg. the monthly test), showing blank/"—" values instead.
+function getLastN(exName, n, beforeDate, mode = "normal") {
   const data = getData(); const results = [];
   const sorted = data.filter(s => s.date < beforeDate).sort((a,b) => b.date.localeCompare(a.date));
   for (const s of sorted) {
     const e = s.exercises.find(x => x.name === exName);
     if (!e) continue;
-    if (e.peso || e.series) { results.push({...e, date: s.date, day: s.day}); if (results.length >= n) break; }
-    else if (e.emomReps || e.emomMins) { results.push({...e, date: s.date, day: s.day}); if (results.length >= n) break; }
-    else if (e.testReps) { results.push({...e, date: s.date, day: s.day}); if (results.length >= n) break; }
+    const matches = mode === "emom" ? (e.emomReps || e.emomMins)
+                  : mode === "test" ? e.testReps
+                  : (e.peso || e.series);
+    if (!matches) continue;
+    results.push({...e, date: s.date, day: s.day});
+    if (results.length >= n) break;
   }
   return results;
 }
@@ -2432,6 +2442,10 @@ function loadSession() {
 function captureInputs() {
   if (!currentDay) return;
   ROUTINE[currentDay].forEach(ex => {
+    // EMOM/test cards also render 1-2 ".ex-input" fields, but those hold
+    // emomReps/emomMins/testReps, not peso/series — skip them here so they
+    // don't get misread as weight/series values.
+    if (ex === "DOMINADAS" && getDomMode(currentDay, currentDate) !== "normal") return;
     const card = document.getElementById(safeId(ex)); if (!card) return;
     const inp = card.querySelectorAll(".ex-input");
     if (!sState[ex]) sState[ex] = { peso: "", series: "", done: false };
@@ -2482,7 +2496,7 @@ function renderExercises() {
 
 function buildEMOMCard(ex) {
   const st = sState[ex] || { emomReps: "", emomMins: "", emomTotal: 0, done: false };
-  const refs = getLastN(ex, 1, currentDate);
+  const refs = getLastN(ex, 1, currentDate, "emom");
   let refHtml = refs.length ?
     `<div class="ex-lbl">Última vez · ${fmtDate(refs[0].date)}</div><div class="ref-val">${refs[0].emomReps || "—"} reps/min · ${refs[0].emomMins || "—"} min · ${refs[0].emomTotal || "—"} total</div>` :
     `<div class="ex-lbl">Referencia</div><div class="ref-val empty">Sin datos previos</div>`;
@@ -2498,7 +2512,7 @@ function buildEMOMCard(ex) {
 
 function buildTestCard(ex) {
   const st = sState[ex] || { testReps: "", done: false };
-  const refs = getLastN(ex, 1, currentDate);
+  const refs = getLastN(ex, 1, currentDate, "test");
   let refHtml = refs.length ?
     `<div class="ex-lbl">Último test · ${fmtDate(refs[0].date)}</div><div class="ref-val">${refs[0].testReps || "—"} reps</div>` :
     `<div class="ex-lbl">Referencia</div><div class="ref-val empty">Sin tests anteriores</div>`;
@@ -2546,16 +2560,20 @@ function tickDot(ex, idx) {
   });
   const dc = document.getElementById("dc-" + id); if (dc) dc.textContent = nc + "/" + total;
   if (nc >= total) {
+    // Capture peso/series and flip done=true right away — not inside the
+    // setTimeout below — so an immediate "Guardar sesión" (eg. tapping save
+    // right after the last dot) persists done:true instead of racing the
+    // animation delay and saving done:false despite seriesDone===total.
+    const inp = card.querySelectorAll(".ex-input");
+    if (!sState[ex]) sState[ex] = { peso: "", series: "", done: false };
+    if (inp[0]) sState[ex].peso = inp[0].value;
+    if (inp[1]) sState[ex].series = inp[1].value;
+    sState[ex].done = true;
+    restStop();
+    updateProg();
     setTimeout(() => {
-      const inp = card.querySelectorAll(".ex-input");
-      if (!sState[ex]) sState[ex] = { peso: "", series: "", done: false };
-      if (inp[0]) sState[ex].peso = inp[0].value;
-      if (inp[1]) sState[ex].series = inp[1].value;
-      sState[ex].done = true;
       card.classList.add("completing");
       setTimeout(() => { card.classList.remove("completing"); card.classList.add("done"); card.querySelectorAll(".ex-input").forEach(i => i.disabled = true); }, 580);
-      restStop();
-      updateProg();
     }, 200);
   } else {
     if (card.classList.contains("done")) {
@@ -2756,7 +2774,7 @@ function renderProgress() {
   document.getElementById("s-sess").textContent = allData.length;
   document.getElementById("s-last").textContent = vals[vals.length - 1].toFixed(1);
   if (progChart) progChart.destroy();
-  progChart = new Chart(document.getElementById("prog-chart").getContext("2d"), buildLineConfig(allData.map(s => fmtDate(s.date)), vals, "#fff", "rgba(255,255,255,0.07)", "kg"));
+  progChart = new Chart(document.getElementById("prog-chart").getContext("2d"), buildLineConfig(allData.map(s => s.date), vals, "#fff", "rgba(255,255,255,0.07)", "kg"));
 }
 
 // ─── ACTIVITY MAP ───────────────────────────────────────────────
@@ -2766,7 +2784,7 @@ function loadActOverrides() { try { actOverrides = JSON.parse(localStorage.getIt
 function saveActOverrides() { localStorage.setItem('gt_act_ov', JSON.stringify(actOverrides)); }
 
 function changeActMonth(delta) {
-  if (!actViewMonth) { actViewMonth = new Date().toISOString().slice(0, 7); }
+  if (!actViewMonth) { actViewMonth = todayStr().slice(0, 7); }
   const [y, m] = actViewMonth.split('-').map(Number);
   const d = new Date(y, m - 1 + delta, 1);
   actViewMonth = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
@@ -2845,15 +2863,17 @@ function renderDomChart(tests, emoms) {
   const baseOpts = chartBase();
   if (domTab === "test") {
     lbl.textContent = "Test máximo (reps)";
-    domChartInst = new Chart(ctx, { type: "line", data: { labels: tests.map(t => fmtDate(t.date)), datasets: [
-      { data: tests.map(t => t.reps), borderColor: "#ffd60a", backgroundColor: "rgba(255,214,10,0.10)", borderWidth: 2.5, pointBackgroundColor: "#ffd60a", pointRadius: 5, tension: 0.34, fill: true, label: "Reps" },
-      { data: tests.map(() => DOM_GOAL), borderColor: "rgba(255,69,58,0.55)", backgroundColor: "transparent", borderWidth: 1.5, borderDash: [5,4], pointRadius: 0, label: "Objetivo" }
+    const testDates = tests.map(t => t.date);
+    domChartInst = new Chart(ctx, { type: "line", data: { datasets: [
+      { data: toTimePoints(testDates, tests.map(t => t.reps)), borderColor: "#ffd60a", backgroundColor: "rgba(255,214,10,0.10)", borderWidth: 2.5, pointBackgroundColor: "#ffd60a", pointRadius: 5, tension: 0.34, fill: true, label: "Reps" },
+      { data: toTimePoints(testDates, tests.map(() => DOM_GOAL)), borderColor: "rgba(255,69,58,0.55)", backgroundColor: "transparent", borderWidth: 1.5, borderDash: [5,4], pointRadius: 0, label: "Objetivo" }
     ]}, options: { ...baseOpts, plugins: { legend: {display:false}, tooltip: tooltipStyle({ format: v => v + " reps" }) } } });
   } else {
     lbl.textContent = "EMOM — Minutos y total reps";
-    domChartInst = new Chart(ctx, { type: "bar", data: { labels: emoms.map(e => fmtDate(e.date)), datasets: [
-      { data: emoms.map(e => e.total), backgroundColor: "rgba(41,121,255,0.65)", borderRadius: 6, label: "Total reps" },
-      { data: emoms.map(e => e.mins),  backgroundColor: "rgba(30,215,96,0.55)", borderRadius: 6, label: "Minutos" }
+    const emomDates = emoms.map(e => e.date);
+    domChartInst = new Chart(ctx, { type: "bar", data: { datasets: [
+      { data: toTimePoints(emomDates, emoms.map(e => e.total)), backgroundColor: "rgba(41,121,255,0.65)", borderRadius: 6, label: "Total reps" },
+      { data: toTimePoints(emomDates, emoms.map(e => e.mins)),  backgroundColor: "rgba(30,215,96,0.55)", borderRadius: 6, label: "Minutos" }
     ]}, options: { ...baseOpts, plugins: { legend: { display: true, labels: { color: "rgba(255,255,255,0.6)", font: { size: 11, weight: 600 } } }, tooltip: tooltipStyle() } } });
   }
 }
@@ -3005,10 +3025,8 @@ function getAnchor() {
     if (!wks.length) continue;
     const wk = wks[0];
     const peso = pesos[wk];
-    const diff = m.cintura - m.cuello;
-    if (diff <= 0) continue;
-    const pct = 495 / (1.0324 - 0.19077 * Math.log10(diff) + 0.15456 * Math.log10(178)) - 450;
-    if (!isFinite(pct) || pct < 3 || pct > 60) continue;
+    const pct = calcBodyFat(peso, m);
+    if (pct === null) continue;
     // Anchor date = later of measurement-month start and the weight's week key
     const monthStart = mk + "-01";
     const fecha = wk > monthStart ? wk : monthStart;
@@ -3390,16 +3408,35 @@ function renderSemanaRes() {
 }
 
 // ─── CHART HELPERS ──────────────────────────────────────────────
-function chartBase() {
+// granularity picks the time unit for the x axis — "day" for per-session/per-week
+// data, "month" for measurements that are only ever logged once a month. Real
+// Date objects (not formatted label strings) let Chart.js's time scale space
+// points by actual elapsed time instead of bunching every entry evenly, which
+// used to hide gaps (eg. a 3-week hole between two weigh-ins looked identical
+// to two consecutive days).
+function chartBase(granularity = "day") {
   return {
     responsive: true,
     plugins: { legend: { display: false } },
     interaction: { mode: "nearest", intersect: false, axis: "x" },
     scales: {
-      x: { ticks: { color: "rgba(255,255,255,0.32)", font: { size: 10, family: "var(--font-mono)" } }, grid: { color: "rgba(255,255,255,0.04)" } },
-      y: { ticks: { color: "rgba(255,255,255,0.32)", font: { size: 10, family: "var(--font-mono)" } }, grid: { color: "rgba(255,255,255,0.04)" } }
+      x: {
+        type: "time",
+        time: granularity === "month"
+          ? { unit: "month", tooltipFormat: "MM/yyyy", displayFormats: { month: "MM/yy" } }
+          : { unit: "day", tooltipFormat: "dd/MM/yyyy", displayFormats: { day: "dd/MM" } },
+        ticks: { color: "rgba(255,255,255,0.32)", font: { size: 10, family: '"SF Mono", ui-monospace, "Roboto Mono", Menlo, monospace' }, autoSkip: true, maxRotation: 0 },
+        grid: { color: "rgba(255,255,255,0.04)" }
+      },
+      y: { ticks: { color: "rgba(255,255,255,0.32)", font: { size: 10, family: '"SF Mono", ui-monospace, "Roboto Mono", Menlo, monospace' } }, grid: { color: "rgba(255,255,255,0.04)" } }
     }
   };
+}
+// Converts raw "YYYY-MM-DD" (or "YYYY-MM" when granularity is "month") strings
+// into {x: Date, y: value} points. Anchored at noon local time, same trick used
+// throughout the app to dodge UTC/local date-boundary drift.
+function toTimePoints(dates, values, granularity = "day") {
+  return dates.map((ds, i) => ({ x: new Date((granularity === "month" ? ds + "-01" : ds) + "T12:00:00"), y: values[i] }));
 }
 function tooltipStyle({ format } = {}) {
   return {
@@ -3417,11 +3454,11 @@ function tooltipStyle({ format } = {}) {
     callbacks: format ? { label: ctx => format(ctx.parsed.y) } : undefined
   };
 }
-function buildLineConfig(labels, values, color, fillColor, unit) {
+function buildLineConfig(dates, values, color, fillColor, unit, granularity = "day") {
   return {
     type: "line",
-    data: { labels, datasets: [{ data: values, borderColor: color, backgroundColor: fillColor, borderWidth: 2.5, pointBackgroundColor: color, pointBorderColor: "#0a0a0c", pointBorderWidth: 1.5, pointRadius: 4.5, pointHoverRadius: 7, tension: 0.35, fill: true }] },
-    options: { ...chartBase(), plugins: { legend: { display: false }, tooltip: tooltipStyle({ format: v => v.toFixed(1) + " " + (unit || "") }) } }
+    data: { datasets: [{ data: toTimePoints(dates, values, granularity), borderColor: color, backgroundColor: fillColor, borderWidth: 2.5, pointBackgroundColor: color, pointBorderColor: "#0a0a0c", pointBorderWidth: 1.5, pointRadius: 4.5, pointHoverRadius: 7, tension: 0.35, fill: true }] },
+    options: { ...chartBase(granularity), plugins: { legend: { display: false }, tooltip: tooltipStyle({ format: v => v.toFixed(1) + " " + (unit || "") }) } }
   };
 }
 function setFisicoPeriod(p, el) { fisicoPeriod = p; document.querySelectorAll("#fisico-period-row .pill").forEach(b => b.classList.remove("active")); el.classList.add("active"); renderFisicoCharts(); renderMedidasChart(); }
@@ -3430,7 +3467,7 @@ function renderFisicoCharts() {
   const pesos = f.pesos || {};
   const pe = Object.entries(pesos).filter(([w]) => w >= sd).sort(([a],[b]) => a.localeCompare(b));
   if (pesoChart) pesoChart.destroy();
-  pesoChart = new Chart(document.getElementById("peso-chart").getContext("2d"), buildLineConfig(pe.map(([w]) => fmtDate(w)), pe.map(([,v]) => v), "var(--green)", "rgba(30,215,96,0.08)", "kg"));
+  pesoChart = new Chart(document.getElementById("peso-chart").getContext("2d"), buildLineConfig(pe.map(([w]) => w), pe.map(([,v]) => v), "var(--green)", "rgba(30,215,96,0.08)", "kg"));
 
   renderComposicionChart(sd);
   renderWeeklyView();
@@ -3454,14 +3491,13 @@ function renderComposicionChart(sd) {
   }
   // Filter by current period filter — but always keep the first point so the chart starts at 0
   const filtered = series.filter((p, i) => i === 0 || p.date >= sd);
-  const labels = filtered.map(p => fmtDate(p.date));
-  const grasaData = filtered.map(p => +p.dG.toFixed(2));
-  const magraData = filtered.map(p => +p.dM.toFixed(2));
+  const dates = filtered.map(p => p.date);
+  const grasaData = toTimePoints(dates, filtered.map(p => +p.dG.toFixed(2)));
+  const magraData = toTimePoints(dates, filtered.map(p => +p.dM.toFixed(2)));
 
   calChart = new Chart(canvas.getContext("2d"), {
     type: "line",
     data: {
-      labels,
       datasets: [
         {
           label: "Grasa", data: grasaData,
@@ -3487,7 +3523,12 @@ function renderComposicionChart(sd) {
         zeroLine: true
       },
       scales: {
-        x: { ticks: { color: "rgba(255,255,255,0.32)", font: { size: 10 } }, grid: { color: "rgba(255,255,255,0.04)" } },
+        x: {
+          type: "time",
+          time: { unit: "day", tooltipFormat: "dd/MM/yyyy", displayFormats: { day: "dd/MM" } },
+          ticks: { color: "rgba(255,255,255,0.32)", font: { size: 10 }, autoSkip: true, maxRotation: 0 },
+          grid: { color: "rgba(255,255,255,0.04)" }
+        },
         y: {
           ticks: { color: "rgba(255,255,255,0.32)", font: { size: 10 }, callback: v => (v > 0 ? "+" : "") + v + " kg" },
           grid: {
@@ -3534,16 +3575,16 @@ function renderComposicionChart(sd) {
 function renderBfChart() {
   const f = getFisico(); const pesos = f.pesos || {}, medidas = f.medidas || {};
   const etapaStart = f.etapa?.fechaInicio; const sd = getStartDate(fisicoPeriod, etapaStart);
-  const months = Object.keys(medidas).filter(mk => (mk + "-01") >= sd).sort(); const labels = [], vals = [];
+  const months = Object.keys(medidas).filter(mk => (mk + "-01") >= sd).sort(); const monthKeys = [], vals = [];
   months.forEach(mk => {
     const med = medidas[mk];
     const wk = Object.keys(pesos).filter(w => w.slice(0, 7) <= mk).sort().reverse()[0];
     const pw = wk ? pesos[wk] : null;
     const bf = calcBodyFat(pw, med);
-    if (bf) { const [y, m] = mk.split("-"); labels.push(m + "/" + y); vals.push(bf); }
+    if (bf) { monthKeys.push(mk); vals.push(bf); }
   });
   if (window._bfChart) window._bfChart.destroy();
-  window._bfChart = new Chart(document.getElementById("bf-chart").getContext("2d"), buildLineConfig(labels, vals, "#a78bfa", "rgba(167,139,250,0.10)", "%"));
+  window._bfChart = new Chart(document.getElementById("bf-chart").getContext("2d"), buildLineConfig(monthKeys, vals, "#a78bfa", "rgba(167,139,250,0.10)", "%", "month"));
 }
 function renderMedidasChart() {
   const f = getFisico(); const m = f.medidas || {};
@@ -3551,7 +3592,7 @@ function renderMedidasChart() {
   const field = document.getElementById("med-chart-sel").value;
   const entries = Object.entries(m).filter(([mk]) => (mk + "-01") >= sd).sort(([a],[b]) => a.localeCompare(b)).filter(([, v]) => v[field] !== undefined);
   if (medChart) medChart.destroy();
-  medChart = new Chart(document.getElementById("med-chart").getContext("2d"), buildLineConfig(entries.map(([mk]) => { const [y, mm] = mk.split("-"); return mm + "/" + y; }), entries.map(([, v]) => v[field]), "var(--cyan)", "rgba(90,200,250,0.10)", "cm"));
+  medChart = new Chart(document.getElementById("med-chart").getContext("2d"), buildLineConfig(entries.map(([mk]) => mk), entries.map(([, v]) => v[field]), "var(--cyan)", "rgba(90,200,250,0.10)", "cm", "month"));
 }
 function goCorpo(idx) { const c = document.getElementById("corpo-carousel"); c.scrollTo({ left: c.offsetWidth * idx, behavior: "smooth" }); updCorpoDots(idx); }
 function onCorpoScroll() { const c = document.getElementById("corpo-carousel"); updCorpoDots(Math.round(c.scrollLeft / c.offsetWidth)); }
@@ -3906,7 +3947,7 @@ function renderInforme() {
     if (inEtapa.length >= 2) {
       if (_informeChartInst) _informeChartInst.destroy();
       _informeChartInst = new Chart(document.getElementById("informe-chart").getContext("2d"),
-        buildLineConfig(inEtapa.map(([w]) => fmtDate(w)), inEtapa.map(([, v]) => v), "#fff", "rgba(255,255,255,0.08)", "kg")
+        buildLineConfig(inEtapa.map(([w]) => w), inEtapa.map(([, v]) => v), "#fff", "rgba(255,255,255,0.08)", "kg")
       );
     }
   }
@@ -4022,7 +4063,12 @@ async function exportInformePDF() {
 
 // ─── EXPORT / IMPORT ───────────────────────────────────────────
 function exportJSON() {
-  const all = { entrenos: getData(), fisico: getFisico() };
+  const all = {
+    entrenos: getData(), fisico: getFisico(),
+    actOverrides: JSON.parse(localStorage.getItem("gt_act_ov") || "{}"),
+    restDur: localStorage.getItem("gt_rest_dur") || "90",
+    restOn: localStorage.getItem("gt_rest_on") ?? "1"
+  };
   const blob = new Blob([JSON.stringify(all, null, 2)], { type: "application/json" });
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "gym-backup.json"; a.click();
   showToast("Backup exportado", "ok");
@@ -4033,7 +4079,13 @@ function handleImport(e) {
   reader.onload = ev => {
     try {
       const p = JSON.parse(ev.target.result);
-      if (p.entrenos) { saveData(p.entrenos); saveFisico(p.fisico || {}); } else saveData(p);
+      if (p.entrenos) {
+        saveData(p.entrenos); saveFisico(p.fisico || {});
+        localStorage.setItem("gt_act_ov", JSON.stringify(p.actOverrides || {}));
+        localStorage.setItem("gt_rest_dur", p.restDur || "90");
+        localStorage.setItem("gt_rest_on", p.restOn ?? "1");
+        loadActOverrides();
+      } else saveData(p);
       showToast("Backup importado", "ok"); renderHist();
     } catch { showToast("Error al importar"); }
   };
@@ -4049,6 +4101,9 @@ function exportCSV() {
 function clearAll() {
   if (!confirm("¿Seguro? Se borrarán TODOS los datos.")) return;
   localStorage.removeItem("gymtracker_v2"); localStorage.removeItem("gymtracker_fisico");
+  localStorage.removeItem("gt_act_ov"); localStorage.removeItem("gt_rest_dur"); localStorage.removeItem("gt_rest_on");
+  actOverrides = {}; REST_DUR = 90; REST_ENABLED = true;
+  const rtState = document.getElementById("rest-timer-state"); if (rtState) rtState.textContent = REST_DUR + "s";
   sState = {}; sChecks = {}; currentDay = null;
   document.getElementById("ex-list").innerHTML = "";
   document.getElementById("save-btn").style.display = "none";
