@@ -160,21 +160,6 @@ body::after {
   margin-left: 4px;
   white-space: nowrap;
 }
-.streak-badge {
-  display: flex; align-items: center; gap: 5px;
-  background: var(--amber-bg);
-  border: 1px solid rgba(255,214,10,0.25);
-  border-radius: var(--r-pill);
-  padding: 5px 11px 5px 10px;
-  font-size: 11px; font-weight: 700;
-  color: var(--amber);
-  letter-spacing: 0.4px;
-}
-.streak-badge::before {
-  content: ""; width: 8px; height: 8px; border-radius: 50%;
-  background: var(--amber);
-}
-
 /* —— Bottom Nav ————————————————————————————————— */
 .bottom-nav {
   position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
@@ -206,7 +191,7 @@ body::after {
   background: linear-gradient(160deg, rgba(255,255,255,0.14), rgba(255,255,255,0.05));
   border: 1px solid rgba(255,255,255,0.2);
   box-shadow: 0 2px 12px rgba(0,0,0,0.3), 0 0 16px -6px rgba(182,255,46,0.16), inset 0 1px 0 rgba(255,255,255,0.16);
-  transition: transform 0.42s var(--ease-out-soft, cubic-bezier(0.22,1,0.36,1));
+  transition: transform 0.5s var(--ease-spring, cubic-bezier(0.34,1.56,0.64,1)), width 0.5s var(--ease-spring, cubic-bezier(0.34,1.56,0.64,1));
   will-change: transform;
   pointer-events: none;
   z-index: 0;
@@ -620,6 +605,7 @@ body::after {
 .act-day.trained::after { width: 4px; height: 4px; border-radius: 50%; background: rgba(0,0,0,0.55); }
 .act-day.rest::after { width: 8px; height: 2px; border-radius: 1px; background: rgba(255,255,255,0.7); }
 .act-day.future  { background: rgba(255,255,255,0.025); cursor: default; color: rgba(255,255,255,0.12); }
+.act-day.no-etapa { background: rgba(255,255,255,0.025); cursor: default; color: rgba(255,255,255,0.22); }
 .act-day.empty   { background: transparent; cursor: default; pointer-events: none; }
 
 /* —— DOMINADAS PROGRESS ———————————————————— */
@@ -889,7 +875,46 @@ body::after {
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .toast.ok { border-color: rgba(182,255,46,0.5); color: var(--green); }
-.empty-state { text-align: center; color: var(--text-3); padding: 48px 16px; font-size: 14px; font-family: var(--font-mono); }
+
+/* —— PULL TO REFRESH ————————————————————————— */
+.ptr-indicator {
+  position: fixed; top: 0; left: 50%; z-index: 200;
+  transform: translate(-50%, -100%); opacity: 0;
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(14,14,18,0.9);
+  backdrop-filter: blur(24px) saturate(200%); -webkit-backdrop-filter: blur(24px) saturate(200%);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-pill);
+  padding: 9px 18px 9px 14px;
+  margin-top: calc(env(safe-area-inset-top) + 10px);
+  font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+  color: var(--text-2);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  pointer-events: none;
+}
+.ptr-indicator svg { width: 15px; height: 15px; color: var(--green); flex-shrink: 0; }
+.ptr-indicator.spin svg { animation: ptrSpin 0.7s linear infinite; }
+@keyframes ptrSpin { to { transform: rotate(360deg); } }
+
+/* —— CIERRE DE SESIÓN COMPLETA ——————————————————— */
+.session-complete-pulse {
+  position: fixed; inset: 0; z-index: 300; pointer-events: none;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.session-complete-pulse::before {
+  content: "";
+  width: 40px; height: 40px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(182,255,46,0.5) 0%, rgba(182,255,46,0.22) 35%, transparent 70%);
+  animation: scPulse 0.9s cubic-bezier(0.22,1,0.36,1) forwards;
+}
+@keyframes scPulse { from { transform: scale(0.3); opacity: 0.9; } to { transform: scale(22); opacity: 0; } }
+.empty-state { text-align: center; color: var(--text-3); padding: 48px 16px; font-size: 14px; font-family: var(--font-mono); display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.mv-empty { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+@keyframes emptyBreathe { 0%, 100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 0.85; transform: scale(1.05); } }
+.empty-glyph { color: var(--text-3); animation: emptyBreathe 3.4s ease-in-out infinite; }
+.empty-glyph svg { display: block; width: 34px; height: 34px; }
+@media (prefers-reduced-motion: reduce) { .empty-glyph { animation: none; } }
 
 /* —— ETAPA MODAL ————————————————————————— */
 .modal-shroud {
@@ -1177,7 +1202,7 @@ body::after {
    ═══════════════════════════════════════════════════════════════ */
 
 /* — Reusable smooth-cubic — */
-:root { --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1); --ease-pop: cubic-bezier(0.16, 1, 0.3, 1); --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1); }
+:root { --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1); --ease-pop: cubic-bezier(0.16, 1, 0.3, 1); --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1); --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); }
 
 /* — Universal button press dampening — */
 button, .nav-btn, .day-btn, .day-chip, .open-informe, .filter-btn, .filter-pill,
@@ -1214,6 +1239,11 @@ button:not(:disabled):active, .open-informe:active, .day-btn:active, .day-chip:a
   transform: scale(0.995) translateY(0.5px);
   box-shadow: 0 6px 20px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05);
 }
+.ex-card.charging, .emom-card.charging {
+  transition: transform 0.42s cubic-bezier(0.22,1,0.36,1), box-shadow 0.42s ease;
+  transform: scale(0.965);
+  box-shadow: 0 0 0 1.5px rgba(182,255,46,0.4), 0 6px 20px rgba(0,0,0,0.45);
+}
 
 /* — Bottom nav: indicator slides to the active tab + icon picks up color — */
 .nav-btn { transition: color 0.28s ease, transform 0.22s var(--ease-pop); }
@@ -1235,6 +1265,7 @@ button:not(:disabled):active, .open-informe:active, .day-btn:active, .day-chip:a
 button[onclick*="saveSession"], button[onclick*="savePeso"], button[onclick*="saveMedidas"], button[onclick*="saveCal"] {
   position: relative;
   background: linear-gradient(180deg, #3989ff 0%, #2979ff 50%, #1f6ce8 100%);
+  color: #fff;
   box-shadow:
     0 6px 18px rgba(41,121,255,0.35),
     inset 0 1px 0 rgba(255,255,255,0.35),
@@ -1502,7 +1533,8 @@ input:focus, select:focus, textarea:focus {
   pointer-events: none; user-select: none;
   animation: ghostDrift 9s ease-in-out infinite;
 }
-.mv-row { display: flex; align-items: center; gap: 11px; padding: 8px 0; }
+@keyframes mvRowIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.mv-row { display: flex; align-items: center; gap: 11px; padding: 8px 0; animation: mvRowIn 0.42s var(--ease-out-soft, cubic-bezier(0.22,1,0.36,1)) both; }
 .mv-row + .mv-row { border-top: 1px solid var(--border); }
 .mv-name {
   flex-shrink: 0; width: 88px; display: flex; align-items: center; gap: 7px;
@@ -1515,7 +1547,7 @@ input:focus, select:focus, textarea:focus {
 }
 .mv-fill {
   height: 100%; border-radius: 100px;
-  transform-origin: left; animation: barGrow 0.6s var(--ease-out-soft) both;
+  transform-origin: left; animation: barGrow 0.6s var(--ease-spring, cubic-bezier(0.34,1.56,0.64,1)) both;
 }
 @keyframes barGrow { from { transform: scaleX(0.02); } to { transform: scaleX(1); } }
 .mv-val {
@@ -1619,10 +1651,15 @@ input:focus, select:focus, textarea:focus {
 
 <body>
 
+<!-- ───── PULL TO REFRESH ───── -->
+<div class="ptr-indicator" id="ptr-indicator" aria-hidden="true">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-3-6.7"/><path d="M21 3v6h-6"/></svg>
+  <span id="ptr-label">Actualizar</span>
+</div>
+
 <!-- ───── HEADER ───── -->
 <div class="header">
   <div class="header-title"><span class="dot"></span>GYM TRACKER&nbsp;&nbsp;<span>jo$e</span><span class="header-stage" id="header-stage" style="display:none"></span></div>
-  <div class="streak-badge"><span id="ts-streak">0</span>&nbsp;días</div>
 </div>
 
 
@@ -1735,7 +1772,7 @@ input:focus, select:focus, textarea:focus {
     <div class="act-map-row" id="activity-map"></div>
   </div>
 
-  <div id="prog-empty" class="empty-state">Selecciona un ejercicio para ver su progreso</div>
+  <div id="prog-empty" class="empty-state"></div>
 </div>
 
 
@@ -2046,7 +2083,7 @@ input:focus, select:focus, textarea:focus {
       <div style="font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;font-weight:700;">Fecha de fin <span style="font-weight:500;text-transform:none;letter-spacing:0">(vacío = activa)</span></div>
       <input type="date" id="etapa-fin-input" onchange="saveEtapaDates()" style="background:var(--bg-input);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:15px;padding:12px 14px;outline:none;width:100%;font-family:inherit;color-scheme:dark;">
     </div>
-    <button onclick="closeEtapaModal()" style="width:100%;background:#fff;color:#000;border:none;border-radius:14px;padding:14px;font-family:var(--font-disp);font-size:17px;letter-spacing:0.8px;cursor:pointer;text-transform:uppercase;">Listo</button>
+    <button class="cta-save" onclick="closeEtapaModal()" style="width:100%;border:none;border-radius:14px;padding:14px;font-family:var(--font-disp);font-size:17px;letter-spacing:0.8px;cursor:pointer;text-transform:uppercase;">Listo</button>
   </div>
 </div>
 
@@ -2068,7 +2105,7 @@ input:focus, select:focus, textarea:focus {
         <button class="f-btn" onclick="saveGapDay()">Guardar</button>
       </div>
     </div>
-    <button onclick="closeGapsModal()" style="width:100%;background:#fff;color:#000;border:none;border-radius:14px;padding:14px;font-family:var(--font-disp);font-size:17px;letter-spacing:0.8px;cursor:pointer;text-transform:uppercase;margin-top:16px;">Listo</button>
+    <button class="cta-save" onclick="closeGapsModal()" style="width:100%;border:none;border-radius:14px;padding:14px;font-family:var(--font-disp);font-size:17px;letter-spacing:0.8px;cursor:pointer;text-transform:uppercase;margin-top:16px;">Listo</button>
   </div>
 </div>
 
@@ -2080,7 +2117,7 @@ input:focus, select:focus, textarea:focus {
     <div style="font-family:var(--font-disp);font-size:24px;letter-spacing:0.5px;text-transform:uppercase;position:relative;">Volumen semanal</div>
     <div style="font-size:12px;color:var(--text-3);margin-bottom:16px;position:relative;">Series fijas por grupo en tu rutina</div>
     <div id="vol-bars" style="position:relative;"></div>
-    <button onclick="closeVolModal()" style="width:100%;background:#fff;color:#000;border:none;border-radius:14px;padding:14px;font-family:var(--font-disp);font-size:17px;letter-spacing:0.8px;cursor:pointer;text-transform:uppercase;margin-top:16px;">Listo</button>
+    <button class="cta-save" onclick="closeVolModal()" style="width:100%;border:none;border-radius:14px;padding:14px;font-family:var(--font-disp);font-size:17px;letter-spacing:0.8px;cursor:pointer;text-transform:uppercase;margin-top:16px;">Listo</button>
   </div>
 </div>
 
@@ -2208,17 +2245,17 @@ function renderMuscleBars(el, start, end) {
   if (!el) return;
   const groups = computeMuscleVolume(start, end);
   if (!groups.length) {
-    el.innerHTML = '<div class="mv-empty">Sin series registradas en este periodo.</div>';
+    el.innerHTML = `<div class="mv-empty">${emptyStateHTML("Sin series registradas en este periodo.")}</div>`;
     return;
   }
   const maxSets = Math.max(...groups.map(g => g.sets));
   const totalSets = groups.reduce((a, g) => a + g.sets, 0);
   const totalVol = groups.reduce((a, g) => a + g.vol, 0);
-  el.innerHTML = groups.map(g => {
-    const w = (g.sets / maxSets * 100).toFixed(0);
-    return `<div class="mv-row">
+  el.innerHTML = groups.map((g, i) => {
+    const w = (g.sets / maxSets * 100).toFixed(0), delay = (i * 0.045).toFixed(3) + "s";
+    return `<div class="mv-row" style="animation-delay:${delay}">
       <span class="mv-name"><span class="mv-dot" style="background:${g.color}"></span>${g.group}</span>
-      <div class="mv-track"><div class="mv-fill" style="width:${w}%;background:${g.color}"></div></div>
+      <div class="mv-track"><div class="mv-fill" style="width:${w}%;background:${g.color};animation-delay:${delay}"></div></div>
       <span class="mv-val"><b>${g.sets}</b><small>${g.vol > 0 ? (g.vol / 1000).toFixed(1) + " t" : "p.c."}</small></span>
     </div>`;
   }).join("") +
@@ -2254,14 +2291,14 @@ function computeFixedWeekly() {
 function renderFixedWeekly(el) {
   if (!el) return;
   const groups = computeFixedWeekly();
-  if (!groups.length) { el.innerHTML = '<div class="mv-empty">Sin rutina configurada.</div>'; return; }
+  if (!groups.length) { el.innerHTML = `<div class="mv-empty">${emptyStateHTML("Sin rutina configurada.")}</div>`; return; }
   const maxS = Math.max(...groups.map(g => g.series));
   const totS = groups.reduce((a, g) => a + g.series, 0);
-  el.innerHTML = groups.map(g => {
-    const w = (g.series / maxS * 100).toFixed(0);
-    return `<div class="mv-row">
+  el.innerHTML = groups.map((g, i) => {
+    const w = (g.series / maxS * 100).toFixed(0), delay = (i * 0.045).toFixed(3) + "s";
+    return `<div class="mv-row" style="animation-delay:${delay}">
       <span class="mv-name"><span class="mv-dot" style="background:${g.color}"></span>${g.group}</span>
-      <div class="mv-track"><div class="mv-fill" style="width:${w}%;background:${g.color}"></div></div>
+      <div class="mv-track"><div class="mv-fill" style="width:${w}%;background:${g.color};animation-delay:${delay}"></div></div>
       <span class="mv-val"><b>${g.series}</b><small>series</small></span>
     </div>`;
   }).join("") +
@@ -2293,23 +2330,6 @@ function getLastN(exName, n, beforeDate, mode = "normal") {
     if (results.length >= n) break;
   }
   return results;
-}
-
-// ─── STREAK ─────────────────────────────────────────────────────
-function calcStreak() {
-  const data = getData(); if (!data.length) return 0;
-  const days = [...new Set(data.map(s => s.date))].sort().reverse();
-  let streak = 0, prev = null;
-  const today = todayStr();
-  for (const d of days) {
-    if (!prev) { if (d === today || daysBetween(d, today) <= 1) { streak = 1; prev = d; } else break; }
-    else { if (daysBetween(d, prev) === 1) { streak++; prev = d; } else break; }
-  }
-  return streak;
-}
-function updateStreak() {
-  const s = calcStreak();
-  const ts = document.getElementById("ts-streak"); if (ts) ts.textContent = s;
 }
 
 // ─── HEADER STAGE (Día X de etapa) ─ OBSOLETE ──────────────────────
@@ -2399,10 +2419,33 @@ function captureInputs() {
   });
 }
 
+// Revelado ligado al scroll: las tarjetas por encima del pliegue entran casi
+// a la vez al montar (como antes); las que quedan más abajo se revelan según
+// van entrando en el viewport al hacer scroll, no todas de golpe al cargar.
+let revealObserver = null, revealSeq = 0;
+function observeReveal(card) {
+  card.style.opacity = "0"; card.style.transform = "translateY(14px)";
+  if (!revealObserver && "IntersectionObserver" in window) {
+    revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target, delay = Math.min(revealSeq * 0.045, 0.3);
+        revealSeq++;
+        el.style.animation = `fadeUp 0.42s var(--ease-out-soft, cubic-bezier(0.22,1,0.36,1)) ${delay}s both`;
+        el.addEventListener("animationend", () => { el.style.animation = ""; el.style.opacity = ""; el.style.transform = ""; }, { once: true });
+        revealObserver.unobserve(el);
+      });
+    }, { threshold: 0.12, rootMargin: "0px 0px -30px 0px" });
+  }
+  if (revealObserver) revealObserver.observe(card);
+  else { card.style.opacity = ""; card.style.transform = ""; } // sin soporte: mostrar directo
+}
+
 function renderExercises() {
   const list = document.getElementById("ex-list");
   const exercises = ROUTINE[currentDay] || [];
   list.innerHTML = "";
+  revealSeq = 0;
   exercises.forEach((ex, idx) => {
     if (ex === "DOMINADAS") {
       const mode = getDomMode(currentDay, currentDate);
@@ -2432,7 +2475,8 @@ function renderExercises() {
     const card = document.createElement("div");
     card.className = "ex-card" + (done ? " done" : "");
     card.id = id;
-    card.style.animation = `fadeUp 0.34s cubic-bezier(0.22,1,0.36,1) ${idx*0.04}s both`;
+    card.dataset.ex = ex; card.dataset.kind = "normal";
+    observeReveal(card);
     card.innerHTML = `<div class="ex-header"><span class="ex-name">${ex}</span><div class="dots-row"><span class="dot-count" id="dc-${id}">${checked}/${total}</span>${dots}</div></div><div class="ex-body"><div class="ex-ref">${refHtml}</div><div class="ex-in-grp"><span class="ex-lbl">Hoy</span><input class="ex-input" placeholder="Peso (kg)" type="number" inputmode="decimal" value="${sState[ex].peso}" ${done?"disabled":""} data-ex="${ex}" data-field="peso" oninput="updateSt(this)"><input class="ex-input" placeholder="Series (ej. 3x10)" style="margin-top:6px" value="${sState[ex].series}" ${done?"disabled":""} data-ex="${ex}" data-field="series" oninput="updateSt(this)"></div></div>`;
     list.appendChild(card);
   });
@@ -2450,7 +2494,8 @@ function buildEMOMCard(ex) {
   const card = document.createElement("div");
   card.className = "emom-card" + (st.done ? " ex-card done" : "");
   card.id = id;
-  card.style.animation = "fadeUp 0.34s cubic-bezier(0.22,1,0.36,1) both";
+  card.dataset.ex = ex; card.dataset.kind = "emom";
+  observeReveal(card);
   card.innerHTML = `<div class="emom-hdr"><span class="ex-name" style="color:var(--amber)">EMOM</span><span class="emom-badge">DOMINADAS</span></div><div class="emom-body"><div class="emom-note">Los lunes, dominadas se mide como EMOM: cuántas repeticiones haces cada minuto y durante cuántos minutos seguidos las mantienes.</div><div style="margin-bottom:12px">${refHtml}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px"><div><div class="emom-lbl">Reps por minuto</div><input class="ex-input" type="number" inputmode="numeric" value="${st.emomReps||""}" ${st.done?"disabled":""} oninput="updateEmom('${ex}','emomReps',this.value)"></div><div><div class="emom-lbl">Minutos completados</div><input class="ex-input" type="number" inputmode="numeric" value="${st.emomMins||""}" ${st.done?"disabled":""} oninput="updateEmom('${ex}','emomMins',this.value)"></div></div><div class="emom-total-bar"><span style="font-size:11px;color:var(--text-2);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">Total reps</span><span class="emom-total-val" id="emom-tot-${id}">${total||"—"}</span></div><button class="emom-action" onclick="toggleEmomDone('${ex}')">${st.done?"Reabrir":"Marcar completado"}</button></div>`;
   return card;
 }
@@ -2468,7 +2513,8 @@ function buildTestCard(ex) {
   const card = document.createElement("div");
   card.className = "emom-card" + (st.done ? " ex-card done" : "");
   card.id = id;
-  card.style.animation = "fadeUp 0.34s cubic-bezier(0.22,1,0.36,1) both";
+  card.dataset.ex = ex; card.dataset.kind = "test";
+  observeReveal(card);
   card.innerHTML = `<div class="emom-hdr"><span class="ex-name" style="color:var(--amber)">TEST</span><span class="emom-badge">DOMINADAS · OBJ. ${DOM_GOAL}</span></div><div class="emom-body"><div class="emom-note">El primer viernes del mes, dominadas se mide como test: tu máximo de repeticiones en una sola serie, para seguir tu progreso hacia el objetivo.</div><div style="margin-bottom:12px">${refHtml}</div><div class="emom-lbl" style="margin-bottom:5px">Reps máximas (un tirón)</div><input class="ex-input" type="number" inputmode="numeric" value="${st.testReps||""}" ${st.done?"disabled":""} oninput="updateTest('${ex}',this.value)"><div class="test-goal-bar" id="tgb-${id}"><span style="font-size:11px;color:var(--text-2);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">Objetivo ${DOM_GOAL} reps</span><span class="test-pct" style="color:${pctColor}">${pct?pct+"%":"—"}</span></div><button class="emom-action" onclick="toggleTestDone('${ex}')">${st.done?"Reabrir":"Guardar test"}</button></div>`;
   return card;
 }
@@ -2492,11 +2538,44 @@ function updateTest(ex, val) {
   if (bar) { bar.querySelector(".test-pct").textContent = pct ? pct + "%" : "—"; bar.querySelector(".test-pct").style.color = pctColor; }
   persistDraft();
 }
-function toggleEmomDone(ex) { if (!sState[ex]) return; sState[ex].done = !sState[ex].done; renderExercises(); updateProg(); persistDraft(); }
-function toggleTestDone(ex) { if (!sState[ex]) return; sState[ex].done = !sState[ex].done; renderExercises(); updateProg(); persistDraft(); }
+// Icono de trazo lineal (disco + barra) para estados vacíos, en vez de
+// texto plano o emoji — respira suavemente para que no se sienta muerto.
+function emptyStateHTML(msg) {
+  return `<div class="empty-glyph"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="18" width="5" height="12" rx="1.5"/><rect x="12" y="14" width="4" height="20" rx="1.5"/><line x1="16" y1="24" x2="32" y2="24"/><rect x="32" y="14" width="4" height="20" rx="1.5"/><rect x="38" y="18" width="5" height="12" rx="1.5"/></svg></div><div>${msg}</div>`;
+}
+
+// Vibración táctil corta — no-op silencioso en navegadores/dispositivos
+// que no exponen la Vibration API (p. ej. Safari en iOS).
+function haptic(ms) { try { navigator.vibrate && navigator.vibrate(ms); } catch {} }
+
+// Anima un valor numérico en pantalla (cuenta hacia arriba/abajo) en vez de
+// sustituirlo de golpe. Recuerda el último valor mostrado en dataset.animVal
+// para poder partir de ahí en la siguiente actualización; si es el primer
+// pintado, o el valor no es numérico, lo muestra directo sin animar.
+const REDUCE_MOTION = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function animateNumber(el, newVal, opts) {
+  if (!el) return;
+  opts = opts || {};
+  const decimals = opts.decimals || 0, suffix = opts.suffix || "";
+  const render = v => el.innerHTML = v + (suffix ? `<small>${suffix}</small>` : "");
+  if (newVal === null || newVal === undefined || isNaN(newVal)) { el.innerHTML = "—"; delete el.dataset.animVal; return; }
+  const from = el.dataset.animVal !== undefined ? parseFloat(el.dataset.animVal) : newVal;
+  el.dataset.animVal = newVal;
+  if (REDUCE_MOTION || from === newVal) { render(newVal.toFixed(decimals)); return; }
+  const dur = 480, t0 = performance.now();
+  (function frame(t) {
+    const p = Math.min(1, (t - t0) / dur), eased = 1 - Math.pow(1 - p, 3);
+    render((from + (newVal - from) * eased).toFixed(decimals));
+    if (p < 1) requestAnimationFrame(frame);
+  })(t0);
+}
+
+function toggleEmomDone(ex) { if (!sState[ex]) return; sState[ex].done = !sState[ex].done; haptic(sState[ex].done ? 14 : 8); renderExercises(); updateProg(); persistDraft(); }
+function toggleTestDone(ex) { if (!sState[ex]) return; sState[ex].done = !sState[ex].done; haptic(sState[ex].done ? 14 : 8); renderExercises(); updateProg(); persistDraft(); }
 
 function tickDot(ex, idx) {
   const total = getSeries(currentDay, ex), current = sChecks[ex] || 0;
+  haptic(idx === current ? 12 : 8);
   if (idx === current - 1) sChecks[ex] = current - 1;
   else if (idx === current) sChecks[ex] = current + 1;
   else sChecks[ex] = idx + 1;
@@ -2557,8 +2636,21 @@ function saveSession() {
   clearDraft();
   checkPR(session);
   flashSuccess(document.getElementById("save-btn"));
-  showToast("Sesión guardada", "ok");
-  populateProgSel(); updateStreak(); updateHeaderStage();
+  const exs = ROUTINE[currentDay] || [];
+  const allDone = exs.length > 0 && exs.every(ex => sState[ex]?.done);
+  if (allDone) { celebrateSessionComplete(); showToast("Sesión completa — todo hecho", "ok"); }
+  else showToast("Sesión guardada", "ok");
+  populateProgSel(); updateHeaderStage();
+}
+// Momento de cierre al guardar una sesión con todos los ejercicios hechos —
+// un pulso radial en lima, más contundente que el toast normal de guardado.
+function celebrateSessionComplete() {
+  if (REDUCE_MOTION) return;
+  const el = document.createElement("div");
+  el.className = "session-complete-pulse";
+  document.body.appendChild(el);
+  haptic([16, 60, 16, 60, 24]);
+  setTimeout(() => el.remove(), 950);
 }
 function checkPR(session) {
   const data = getData();
@@ -2653,7 +2745,7 @@ function renderHist() {
   const list = document.getElementById("hist-list");
   let data = getData().sort((a, b) => b.date.localeCompare(a.date));
   if (histFilter !== "all") data = data.filter(s => s.day === histFilter);
-  if (!data.length) { list.innerHTML = '<div class="empty-state">Sin sesiones registradas</div>'; return; }
+  if (!data.length) { list.innerHTML = `<div class="empty-state">${emptyStateHTML("Sin sesiones registradas")}</div>`; return; }
   list.innerHTML = data.map((s, i) => {
     const done = s.exercises.filter(e => e.done).length;
     const vol = calcVol(s.exercises);
@@ -2712,19 +2804,19 @@ function renderProgress() {
     domC.style.display = "block"; renderDomProgress(); return;
   }
   if (domC) domC.style.display = "none";
-  if (!ex) { statsEl.style.display = "none"; chartEl.style.display = "none"; emptyEl.style.display = "block"; ctrl.style.display = "none"; emptyEl.textContent = "Selecciona un ejercicio para ver su progreso"; return; }
+  if (!ex) { statsEl.style.display = "none"; chartEl.style.display = "none"; emptyEl.style.display = "block"; ctrl.style.display = "none"; emptyEl.innerHTML = emptyStateHTML("Selecciona un ejercicio para ver su progreso"); return; }
   const sd = getStartDate(progPeriod, null);
   const allData = getData().filter(s => s.exercises.some(e => e.name === ex && e.peso) && s.date >= sd).sort((a, b) => a.date.localeCompare(b.date));
-  if (!allData.length) { statsEl.style.display = "none"; chartEl.style.display = "none"; emptyEl.style.display = "block"; ctrl.style.display = "block"; emptyEl.textContent = "Sin datos en este período"; return; }
+  if (!allData.length) { statsEl.style.display = "none"; chartEl.style.display = "none"; emptyEl.style.display = "block"; ctrl.style.display = "block"; emptyEl.innerHTML = emptyStateHTML("Sin datos en este período"); return; }
   emptyEl.style.display = "none"; statsEl.style.display = "grid"; chartEl.style.display = "block"; ctrl.style.display = "block";
   const vals = allData.map(s => { const e = s.exercises.find(e => e.name === ex); return metric === "orm" ? (calc1RM(e.peso, e.series) || parseFloat(e.peso) || 0) : (parseFloat(e.peso) || 0); });
   const isP = metric === "peso";
   document.getElementById("s-max-lbl").textContent  = isP ? "Máx kg" : "Máx 1RM";
   document.getElementById("s-last-lbl").textContent = isP ? "Último kg" : "Último 1RM";
   document.getElementById("prog-chart-lbl").textContent = isP ? "Peso máximo (kg)" : "1RM estimado (kg)";
-  document.getElementById("s-max").textContent  = Math.max(...vals).toFixed(1);
-  document.getElementById("s-sess").textContent = allData.length;
-  document.getElementById("s-last").textContent = vals[vals.length - 1].toFixed(1);
+  animateNumber(document.getElementById("s-max"), Math.max(...vals), { decimals: 1 });
+  animateNumber(document.getElementById("s-sess"), allData.length, { decimals: 0 });
+  animateNumber(document.getElementById("s-last"), vals[vals.length - 1], { decimals: 1 });
   if (progChart) progChart.destroy();
   progChart = new Chart(document.getElementById("prog-chart").getContext("2d"), buildLineConfig(allData.map(s => s.date), vals, "#fff", "rgba(255,255,255,0.07)", "kg"));
 }
@@ -2742,11 +2834,27 @@ function changeActMonth(delta) {
   actViewMonth = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
   renderActivityMap();
 }
+// Solo tiene sentido marcar un día como "entrenado"/"descanso" mientras hay
+// una etapa (déficit/volumen/mantenimiento) activa: es entonces cuando el
+// resto de hábitos (dieta, etc.) también se están siguiendo de verdad.
+function etapaRanges() {
+  const f = getFisico();
+  const ranges = [];
+  if (f.etapa && f.etapa.fechaInicio) ranges.push([f.etapa.fechaInicio, f.etapa.fechaFin || todayStr()]);
+  if (Array.isArray(f.etapaHistorial)) {
+    for (const e of f.etapaHistorial) if (e.fechaInicio) ranges.push([e.fechaInicio, e.fechaFin || e.fechaInicio]);
+  }
+  return ranges;
+}
+function isDateInAnyEtapa(ds, ranges) {
+  return ranges.some(([ini, fin]) => ds >= ini && ds <= fin);
+}
 function renderActivityMap() {
   loadActOverrides();
   const map = document.getElementById('activity-map'); if (!map) return;
   const data = getData();
   const trainedDates = new Set(data.map(s => s.date));
+  const ranges = etapaRanges();
   const today = todayStr();
   if (!actViewMonth) actViewMonth = today.slice(0, 7);
   const [y, m] = actViewMonth.split('-').map(Number);
@@ -2761,18 +2869,21 @@ function renderActivityMap() {
   for (let d = 1; d <= daysInMonth; d++) {
     const ds = y + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0');
     const isFuture = ds > today;
+    const inEtapa = isDateInAnyEtapa(ds, ranges);
     let cls;
     if (isFuture) cls = 'future';
+    else if (!inEtapa) cls = 'no-etapa';
     else if (actOverrides[ds] !== undefined) cls = actOverrides[ds] ? 'trained' : 'rest';
     else cls = trainedDates.has(ds) ? 'trained' : 'rest';
-    const click = !isFuture ? `onclick="toggleActDay('${ds}')"` : '';
-    const stateLbl = cls === "trained" ? "Entrenado" : cls === "rest" ? "Descanso" : "";
+    const click = (!isFuture && inEtapa) ? `onclick="toggleActDay('${ds}')"` : '';
+    const stateLbl = cls === "trained" ? "Entrenado" : cls === "rest" ? "Descanso" : cls === "no-etapa" ? "Sin etapa activa" : "";
     const aria = stateLbl ? `aria-label="${d}, ${stateLbl}"` : "";
     cells += `<div class="act-day ${cls}" ${click} ${aria}>${d}</div>`;
   }
   map.innerHTML = cells;
 }
 function toggleActDay(ds) {
+  if (!isDateInAnyEtapa(ds, etapaRanges())) return;
   loadActOverrides();
   const data = getData(); const trainedDates = new Set(data.map(s => s.date));
   const current = actOverrides[ds] !== undefined ? actOverrides[ds] : trainedDates.has(ds);
@@ -2914,15 +3025,11 @@ function renderProfileMeta() {
   document.getElementById("profile-age").textContent = getAge() + " años";
   const f = getFisico(); const pesos = f.pesos || {}; const lw = Object.keys(pesos).sort().reverse()[0];
   const pesoEl = document.getElementById("profile-peso");
-  pesoEl.innerHTML = lw ? pesos[lw] + '<small>kg</small>' : "—";
+  animateNumber(pesoEl, lw ? pesos[lw] : null, { decimals: pesos[lw] % 1 ? 1 : 0, suffix: "kg" });
   const est = computeEstimados();
   const gEl = document.getElementById("profile-grasa"), mEl = document.getElementById("profile-magra");
-  if (est) {
-    gEl.innerHTML = est.pctGrasa.toFixed(1) + '<small>%</small>';
-    mEl.innerHTML = est.pctMagra.toFixed(1) + '<small>%</small>';
-  } else {
-    gEl.textContent = "—"; mEl.textContent = "—";
-  }
+  animateNumber(gEl, est ? est.pctGrasa : null, { decimals: 1, suffix: "%" });
+  animateNumber(mEl, est ? est.pctMagra : null, { decimals: 1, suffix: "%" });
 }
 function renderPesoSection() {
   const f = getFisico(); const pesos = f.pesos || {};
@@ -2968,8 +3075,8 @@ function saveMedidas() {
 }
 function renderMacros() {
   const f = getFisico(); const pesos = f.pesos || {}; const lw = Object.keys(pesos).sort().reverse()[0]; const pw = lw ? pesos[lw] : null;
-  document.getElementById("macro-prot").textContent = pw ? Math.round(pw * 1.2) : "—";
-  document.getElementById("macro-grasa").textContent = pw ? Math.round(pw * 0.5) : "—";
+  animateNumber(document.getElementById("macro-prot"), pw ? Math.round(pw * 1.2) : null, { decimals: 0 });
+  animateNumber(document.getElementById("macro-grasa"), pw ? Math.round(pw * 0.5) : null, { decimals: 0 });
 }
 function calcBodyFat(peso, med) {
   if (!peso || !med || !med.cintura || !med.cuello) return null;
@@ -3723,7 +3830,7 @@ function renderInforme() {
   const body = document.getElementById("informe-body");
   const d = buildInformeData();
   if (!d) {
-    body.innerHTML = '<div class="empty-state">No hay una etapa configurada todavía.<br>Ve a Físico para crear una.</div>';
+    body.innerHTML = `<div class="empty-state">${emptyStateHTML("No hay una etapa configurada todavía.<br>Ve a Físico para crear una.")}</div>`;
     return;
   }
   const { etapa, dias, deltaPeso, deltaBF, totKcal, sessions, totalVol, prList, adherence } = d;
@@ -3797,11 +3904,11 @@ function renderInforme() {
   if (mGroups.length) {
     const maxS = Math.max(...mGroups.map(g => g.series));
     const totS = mGroups.reduce((a, g) => a + g.series, 0);
-    const mRows = mGroups.map(g => {
-      const w = (g.series / maxS * 100).toFixed(0);
-      return `<div class="mv-row">
+    const mRows = mGroups.map((g, i) => {
+      const w = (g.series / maxS * 100).toFixed(0), delay = (i * 0.045).toFixed(3) + "s";
+      return `<div class="mv-row" style="animation-delay:${delay}">
         <span class="mv-name"><span class="mv-dot" style="background:${g.color}"></span>${g.group}</span>
-        <div class="mv-track"><div class="mv-fill" style="width:${w}%;background:${g.color}"></div></div>
+        <div class="mv-track"><div class="mv-fill" style="width:${w}%;background:${g.color};animation-delay:${delay}"></div></div>
         <span class="mv-val"><b>${g.series}</b><small>series</small></span>
       </div>`;
     }).join("");
@@ -4129,10 +4236,141 @@ function showToast(msg, cls) {
 // DOMINADAS IS a normal weighted exercise, so this deleted valid Friday data on
 // every reload. Keeping the data intact now.
 
+// ─── TILT 3D EN TARJETAS DE EJERCICIO ──────────────────────────
+// El borde de la tarjeta se inclina levemente hacia el punto donde tocas,
+// como un widget de iOS. Se ignora sobre inputs (no interfiere con el
+// foco de teclado) y respeta prefers-reduced-motion.
+(function setupCardTilt() {
+  if (REDUCE_MOTION) return;
+  const MAX_DEG = 5;
+  let activeCard = null;
+  function tiltFor(card, x, y) {
+    const r = card.getBoundingClientRect();
+    const px = Math.min(1, Math.max(0, (x - r.left) / r.width));
+    const py = Math.min(1, Math.max(0, (y - r.top) / r.height));
+    const rx = (0.5 - py) * MAX_DEG * 2, ry = (px - 0.5) * MAX_DEG * 2;
+    card.style.transform = `perspective(600px) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) scale(0.985)`;
+  }
+  function reset(card) {
+    card.style.transition = "transform 0.45s var(--ease-out-soft, cubic-bezier(0.22,1,0.36,1))";
+    card.style.transform = "";
+    card.addEventListener("transitionend", () => { card.style.transition = ""; }, { once: true });
+  }
+  document.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    if (e.target.tagName === "INPUT") return;
+    const list = document.getElementById("ex-list");
+    const card = e.target.closest(".ex-card:not(.done), .emom-card:not(.done)");
+    if (!card || !list || !list.contains(card)) return;
+    activeCard = card;
+    card.style.transition = "";
+    tiltFor(card, e.clientX, e.clientY);
+  });
+  document.addEventListener("pointermove", (e) => { if (activeCard) tiltFor(activeCard, e.clientX, e.clientY); });
+  ["pointerup", "pointercancel"].forEach(evt => {
+    document.addEventListener(evt, () => { if (activeCard) { reset(activeCard); activeCard = null; } });
+  });
+})();
+
+// ─── MANTENER PULSADO: COMPLETAR EJERCICIO DE UN TIRÓN ─────────
+// Si ya hiciste todas las series y solo te falta marcarlas, mantener
+// pulsada la tarjeta la da por completada entera sin ir tocando cada serie.
+function completeCardQuick(card) {
+  const ex = card.dataset.ex; if (!ex) return;
+  haptic([12, 40, 18]);
+  if (card.dataset.kind === "emom") { if (sState[ex] && !sState[ex].done) toggleEmomDone(ex); }
+  else if (card.dataset.kind === "test") { if (sState[ex] && !sState[ex].done) toggleTestDone(ex); }
+  else { const total = getSeries(currentDay, ex); if ((sChecks[ex] || 0) < total) tickDot(ex, total - 1); }
+  showToast("Ejercicio completado", "ok");
+}
+(function setupLongPressComplete() {
+  const list = document.getElementById("ex-list");
+  if (!list) return;
+  const HOLD_MS = 480, MOVE_TOLERANCE = 10;
+  let timer = null, startX = 0, startY = 0, targetCard = null;
+  function cancel() {
+    clearTimeout(timer); timer = null;
+    if (targetCard) targetCard.classList.remove("charging");
+    targetCard = null;
+  }
+  list.addEventListener("pointerdown", (e) => {
+    if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") return;
+    const card = e.target.closest(".ex-card:not(.done), .emom-card:not(.done)");
+    if (!card) return;
+    targetCard = card; startX = e.clientX; startY = e.clientY;
+    card.classList.add("charging");
+    timer = setTimeout(() => {
+      if (!targetCard) return;
+      const c = targetCard; c.classList.remove("charging"); targetCard = null;
+      completeCardQuick(c);
+    }, HOLD_MS);
+  });
+  list.addEventListener("pointermove", (e) => {
+    if (!targetCard) return;
+    if (Math.abs(e.clientX - startX) > MOVE_TOLERANCE || Math.abs(e.clientY - startY) > MOVE_TOLERANCE) cancel();
+  });
+  ["pointerup", "pointercancel"].forEach(evt => list.addEventListener(evt, cancel));
+})();
+
+// ─── PULL TO REFRESH ────────────────────────────────────────────
+// La app no tiene servidor con el que sincronizar — "actualizar" significa
+// releer localStorage y repintar la pantalla activa, por si los datos
+// cambiaron desde otra pestaña/dispositivo (import de backup, etc.).
+function refreshCurrentScreen() {
+  const cur = document.querySelector(".screen.active");
+  if (!cur) return;
+  const name = cur.id.replace("screen-", "");
+  if (name === "entreno" && currentDay) { sState = {}; sChecks = {}; loadSession(); renderExercises(); updateTodayHero(); }
+  else if (name === "historial") renderHist();
+  else if (name === "progreso") { populateProgSel(); renderProgress(); renderActivityMap(); }
+  else if (name === "fisico") initFisico();
+  else if (name === "informe") renderInforme();
+}
+(function setupPullToRefresh() {
+  if (REDUCE_MOTION) return;
+  const el = document.getElementById("ptr-indicator"), label = document.getElementById("ptr-label");
+  if (!el || !label) return;
+  const THRESHOLD = 68;
+  let startY = null, pulling = false, triggered = false;
+  document.addEventListener("touchstart", (e) => {
+    startY = window.scrollY <= 0 ? e.touches[0].clientY : null;
+    pulling = false; triggered = false;
+  }, { passive: true });
+  document.addEventListener("touchmove", (e) => {
+    if (startY === null || window.scrollY > 0) return;
+    const dy = e.touches[0].clientY - startY;
+    if (dy <= 0) return;
+    pulling = true;
+    el.style.transition = "none";
+    const progress = Math.min(1, (dy * 0.55) / THRESHOLD);
+    el.style.opacity = progress.toFixed(2);
+    el.style.transform = `translate(-50%, ${(-100 + progress * 100).toFixed(1)}%)`;
+    if (progress >= 1 !== triggered) { triggered = progress >= 1; label.textContent = triggered ? "Suelta para actualizar" : "Actualizar"; if (triggered) haptic(10); }
+  }, { passive: true });
+  document.addEventListener("touchend", () => {
+    if (!pulling) { startY = null; return; }
+    el.style.transition = "transform 0.4s var(--ease-spring, cubic-bezier(0.34,1.56,0.64,1)), opacity 0.3s ease";
+    if (triggered) {
+      el.classList.add("spin"); label.textContent = "Actualizando…";
+      el.style.opacity = "1"; el.style.transform = "translate(-50%, 0%)";
+      haptic(16);
+      setTimeout(() => {
+        refreshCurrentScreen();
+        showToast("Actualizado", "ok");
+        el.classList.remove("spin");
+        el.style.opacity = "0"; el.style.transform = "translate(-50%, -100%)";
+      }, 550);
+    } else {
+      el.style.opacity = "0"; el.style.transform = "translate(-50%, -100%)";
+    }
+    startY = null; pulling = false; triggered = false;
+  }, { passive: true });
+})();
+
 // ─── INIT ─────────────────────────────────────────────────────
 updateNavIndicator(document.querySelector(".nav-btn.active"));
 document.getElementById("session-date").value = todayStr();
-populateProgSel(); updateStreak(); updateHeaderStage();
+populateProgSel(); updateHeaderStage();
 // reflect rest-timer state in settings row
 const rtState = document.getElementById("rest-timer-state");
 if (rtState) rtState.textContent = REST_ENABLED ? REST_DUR + "s" : "OFF";
