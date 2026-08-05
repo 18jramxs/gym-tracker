@@ -2204,15 +2204,15 @@ function clearDraft() { localStorage.removeItem("gt_draft"); }
 function loadDraft() { try { return JSON.parse(localStorage.getItem("gt_draft") || "null"); } catch { return null; } }
 
 function todayStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
-// Fecha del día de rutina seleccionado: si hoy es ese día de la semana, hoy;
-// si no, la ocurrencia pasada más reciente (para registrar/consultar la sesión ya hecha).
-function nearestDateForDay(day) {
+// Fecha del día de rutina seleccionado dentro de la semana en curso (lunes-domingo,
+// igual criterio que weekKey): lunes/martes ya pasados y jueves/viernes/sábado por
+// venir caen todos en la MISMA semana que hoy, no se retrocede a la semana anterior.
+function weekDateForDay(day) {
   const idx = DAY_IDX[day];
   if (idx === undefined) return todayStr();
   const d = new Date();
-  let diff = d.getDay() - idx;
-  if (diff < 0) diff += 7;
-  d.setDate(d.getDate() - diff);
+  const dow = d.getDay() || 7;
+  d.setDate(d.getDate() - dow + 1 + (idx - 1));
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 function fmtDate(s) { if (!s) return ""; const [y,m,d] = s.split("-"); return `${d}/${m}/${y}`; }
@@ -2410,7 +2410,7 @@ function updateTodayHero() {
 // ─── DAY SELECT ─────────────────────────────────────────────────
 function selectDay(day) {
   currentDay = day; sState = {}; sChecks = {};
-  currentDate = nearestDateForDay(day);
+  currentDate = weekDateForDay(day);
   document.getElementById("session-date").value = currentDate;
   document.querySelectorAll(".day-btn").forEach((b, i) =>
     b.classList.toggle("selected", ["lunes","martes","jueves","viernes","sabado"][i] === day)
