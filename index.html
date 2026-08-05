@@ -2167,6 +2167,7 @@ const SERIES = {
 const DAY_LBL = { lunes:"Lunes · Torso", martes:"Martes · Pierna", jueves:"Jueves · Torso", viernes:"Viernes · Torso", sabado:"Sábado · Pierna" };
 const DAY_TITLE = { lunes:"TORSO", martes:"PIERNA", jueves:"TORSO", viernes:"TORSO", sabado:"PIERNA" };
 const DAY_BG    = { lunes:"PUSH PULL", martes:"LEG DAY", jueves:"PUSH PULL", viernes:"PUSH PULL", sabado:"LEG DAY" };
+const DAY_IDX   = { lunes:1, martes:2, jueves:4, viernes:5, sabado:6 };
 const PIERNA = ["martes","sabado"];
 const SINGLE_REF = ["ABS"];
 const MED_FIELDS = ["cintura","cadera","pecho","brazo","muslo","cuello"];
@@ -2203,6 +2204,17 @@ function clearDraft() { localStorage.removeItem("gt_draft"); }
 function loadDraft() { try { return JSON.parse(localStorage.getItem("gt_draft") || "null"); } catch { return null; } }
 
 function todayStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
+// Fecha del día de rutina seleccionado: si hoy es ese día de la semana, hoy;
+// si no, la ocurrencia pasada más reciente (para registrar/consultar la sesión ya hecha).
+function nearestDateForDay(day) {
+  const idx = DAY_IDX[day];
+  if (idx === undefined) return todayStr();
+  const d = new Date();
+  let diff = d.getDay() - idx;
+  if (diff < 0) diff += 7;
+  d.setDate(d.getDate() - diff);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
 function fmtDate(s) { if (!s) return ""; const [y,m,d] = s.split("-"); return `${d}/${m}/${y}`; }
 function fmtDateLong(s) {
   if (!s) return "";
@@ -2398,6 +2410,8 @@ function updateTodayHero() {
 // ─── DAY SELECT ─────────────────────────────────────────────────
 function selectDay(day) {
   currentDay = day; sState = {}; sChecks = {};
+  currentDate = nearestDateForDay(day);
+  document.getElementById("session-date").value = currentDate;
   document.querySelectorAll(".day-btn").forEach((b, i) =>
     b.classList.toggle("selected", ["lunes","martes","jueves","viernes","sabado"][i] === day)
   );
@@ -2504,7 +2518,7 @@ function renderExercises() {
     card.id = id;
     card.dataset.ex = ex; card.dataset.kind = "normal";
     observeReveal(card);
-    card.innerHTML = `<div class="ex-header"><span class="ex-name">${ex}</span><div class="dots-row"><span class="dot-count" id="dc-${id}">${checked}/${total}</span>${dots}</div></div><div class="ex-body"><div class="ex-ref">${refHtml}</div><div class="ex-in-grp"><span class="ex-lbl">Hoy</span><input class="ex-input" placeholder="Peso (kg)" type="number" inputmode="decimal" value="${sState[ex].peso}" ${done?"disabled":""} data-ex="${ex}" data-field="peso" oninput="updateSt(this)"><input class="ex-input" placeholder="Series (ej. 3x10)" style="margin-top:6px" value="${sState[ex].series}" ${done?"disabled":""} data-ex="${ex}" data-field="series" oninput="updateSt(this)"></div>${progRow}</div>`;
+    card.innerHTML = `<div class="ex-header"><span class="ex-name">${ex}</span><div class="dots-row"><span class="dot-count" id="dc-${id}">${checked}/${total}</span>${dots}</div></div><div class="ex-body"><div class="ex-ref">${refHtml}</div><div class="ex-in-grp"><span class="ex-lbl">Hoy</span><input class="ex-input" placeholder="Peso (kg)" type="number" inputmode="decimal" value="${sState[ex].peso}" ${done?"disabled":""} data-ex="${ex}" data-field="peso" oninput="updateSt(this)"><input class="ex-input" placeholder="Series" style="margin-top:6px" value="${sState[ex].series}" ${done?"disabled":""} data-ex="${ex}" data-field="series" oninput="updateSt(this)"></div>${progRow}</div>`;
     list.appendChild(card);
   });
   updateProg();
