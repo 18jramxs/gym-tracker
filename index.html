@@ -428,6 +428,27 @@ body::after {
   font-family: var(--font-mono);
 }
 .ref-val.empty { color: var(--text-3); font-style: normal; font-family: inherit; font-size: 12px; }
+.prog-ref-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; border-radius: 50%;
+  font-size: 10px; font-weight: 800; margin-left: 6px; vertical-align: middle;
+}
+.prog-ref-badge.eq { background: var(--amber-bg); color: var(--amber); }
+.prog-ref-badge.up { background: var(--green-bg); color: var(--green); }
+.prog-row { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; margin-top: 2px; }
+.prog-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-3); margin-right: 2px; }
+.prog-dot {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 1.5px solid; background: transparent; cursor: pointer; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 13px; font-weight: 700; line-height: 1;
+  transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease, transform 0.2s cubic-bezier(0.16,1,0.3,1);
+}
+.prog-dot:active { transform: scale(1.15); }
+.prog-dot.eq { border-color: rgba(255,214,10,0.35); color: var(--amber); }
+.prog-dot.up { border-color: rgba(182,255,46,0.35); color: var(--green); }
+.prog-dot.eq.active { background: var(--amber); color: #1a1400; border-color: var(--amber); box-shadow: 0 2px 8px rgba(255,214,10,0.3); }
+.prog-dot.up.active { background: var(--green); color: #0a1400; border-color: var(--green); box-shadow: 0 2px 8px rgba(182,255,46,0.3); }
 .ex-input {
   background: var(--bg-input);
   border: 1px solid var(--border);
@@ -2130,18 +2151,18 @@ input:focus, select:focus, textarea:focus {
 
 // ─── ROUTINE / SERIES / DOM CONSTS ──────────────────────────────
 const ROUTINE = {
-  lunes:["DOMINADAS","T-BAR","CURL PREDICADOR","DEREK CURL","CURL INVERTIDO BARRA Z","CURL MUÑECA","APERTURAS POSTERIORES","PRESS MILITAR","ELEVACIONES LATERALES","PRESS INCLINADO","APERTURAS","JM PRESS","EXTENSIÓN TRÍCEPS"],
-  martes:["PÉNDULO","EXTENSIÓN CUÁDRICEPS","SLDL","EXTENSIÓN FEMORAL","ABS","GEMELO","SÓLEO","HIP THRUST"],
-  jueves:["PRESS MILITAR","ELEVACIONES LATERALES","APERTURAS POSTERIORES","PRESS INCLINADO","APERTURAS","CURL PREDICADOR","DEREK CURL","ABS"],
-  viernes:["DOMINADAS","T-BAR","CURL INVERTIDO BARRA Z","CURL MUÑECA","JM PRESS","EXTENSIÓN TRÍCEPS"],
-  sabado:["PÉNDULO","EXTENSIÓN CUÁDRICEPS","SLDL","EXTENSIÓN FEMORAL","ABS","GEMELO","SÓLEO","HIP THRUST"]
+  lunes:["DOMINADAS","REMO HAMMER","PRESS MILITAR","PRESS INCLINADO","ELEVACIONES LATERALES","APERTURAS","APERTURAS POSTERIORES","JM PRESS","EXTENSIÓN TRÍCEPS","CURL PREDICADOR","CURL MANCUERNA","CURL INVERTIDO"],
+  martes:["HACK","SLDL","EXTENSIÓN CUÁDRICEPS","HIP THRUST","EXTENSIÓN FEMORAL","GEMELO","ADUCTORES","ABS"],
+  jueves:["PRESS MILITAR","PRESS INCLINADO","ELEVACIONES LATERALES","APERTURAS","APERTURAS POSTERIORES","CURL PREDICADOR","CURL MANCUERNA"],
+  viernes:["DOMINADAS","REMO HAMMER","JM PRESS","EXTENSIÓN TRÍCEPS","CURL INVERTIDO"],
+  sabado:["HACK","SLDL","EXTENSIÓN CUÁDRICEPS","HIP THRUST","EXTENSIÓN FEMORAL","SÓLEO","ADUCTORES","ABS"]
 };
 const SERIES = {
-  lunes:{default:2,DOMINADAS:4},
-  martes:{default:3,ABS:4,"HIP THRUST":4},
-  jueves:{"PRESS MILITAR":2,"ELEVACIONES LATERALES":2,"APERTURAS POSTERIORES":2,"PRESS INCLINADO":3,APERTURAS:3,"CURL PREDICADOR":3,"DEREK CURL":3,ABS:4},
-  viernes:{default:4,DOMINADAS:4,"T-BAR":4,"CURL INVERTIDO BARRA Z":2,"CURL MUÑECA":2},
-  sabado:{default:3,ABS:4,"HIP THRUST":4}
+  lunes:{default:2,DOMINADAS:4,"CURL INVERTIDO":3},
+  martes:{default:2,GEMELO:3,"HIP THRUST":4,ADUCTORES:3,ABS:3},
+  jueves:{"PRESS MILITAR":2,"PRESS INCLINADO":3,"ELEVACIONES LATERALES":2,APERTURAS:3,"APERTURAS POSTERIORES":2,"CURL PREDICADOR":3,"CURL MANCUERNA":3},
+  viernes:{DOMINADAS:4,"REMO HAMMER":4,"JM PRESS":3,"EXTENSIÓN TRÍCEPS":3,"CURL INVERTIDO":3},
+  sabado:{default:2,SÓLEO:3,"HIP THRUST":4,ADUCTORES:3,ABS:3}
 };
 const DAY_LBL = { lunes:"Lunes · Torso", martes:"Martes · Pierna", jueves:"Jueves · Torso", viernes:"Viernes · Torso", sabado:"Sábado · Pierna" };
 const DAY_TITLE = { lunes:"TORSO", martes:"PIERNA", jueves:"TORSO", viernes:"TORSO", sabado:"PIERNA" };
@@ -2199,23 +2220,24 @@ function calc1RM(peso, ser) { if (!peso || !ser) return null; const w = parseFlo
 
 // ─── VOLUMEN POR GRUPO MUSCULAR ─────────────────────────────────
 const MUSCLE = {
-  "DOMINADAS":"Espalda", "T-BAR":"Espalda",
-  "CURL PREDICADOR":"Bíceps", "DEREK CURL":"Bíceps", "CURL INVERTIDO BARRA Z":"Bíceps",
-  "CURL MUÑECA":"Antebrazo",
+  "DOMINADAS":"Espalda", "REMO HAMMER":"Espalda",
+  "CURL PREDICADOR":"Bíceps", "CURL MANCUERNA":"Bíceps",
+  "CURL INVERTIDO":"Antebrazo",
   "PRESS MILITAR":"Hombro", "ELEVACIONES LATERALES":"Hombro", "APERTURAS POSTERIORES":"Hombro",
   "PRESS INCLINADO":"Pecho", "APERTURAS":"Pecho",
   "JM PRESS":"Tríceps", "EXTENSIÓN TRÍCEPS":"Tríceps",
-  "PÉNDULO":"Cuádriceps", "EXTENSIÓN CUÁDRICEPS":"Cuádriceps",
+  "HACK":"Cuádriceps", "EXTENSIÓN CUÁDRICEPS":"Cuádriceps",
   "SLDL":"Femoral", "EXTENSIÓN FEMORAL":"Femoral",
   "HIP THRUST":"Glúteo",
   "GEMELO":"Gemelo", "SÓLEO":"Gemelo",
+  "ADUCTORES":"Aductor",
   "ABS":"Abdomen"
 };
 const MUSCLE_COLOR = {
   "Espalda":"#2979ff", "Pecho":"#ef4444", "Hombro":"#ffd60a",
   "Bíceps":"#22c55e", "Tríceps":"#a78bfa", "Antebrazo":"#5ac8fa",
   "Cuádriceps":"#ff9f0a", "Femoral":"#ff6482", "Glúteo":"#ff375f",
-  "Gemelo":"#64d2ff", "Abdomen":"#bf5af2"
+  "Gemelo":"#64d2ff", "Abdomen":"#bf5af2", "Aductor":"#00c7be"
 };
 function exSets(e) {
   if (e.emomReps || e.emomMins || e.testReps) return e.done ? 1 : 0;
@@ -2350,6 +2372,7 @@ function updateTodayHero() {
   if (!currentDay) {
     titleEl.textContent  = "SELECCIONA DÍA";
     eyebrowEl.textContent = "Hoy";
+    subEl.style.display = "flex";
     subEl.innerHTML = '<span class="tag">Toca un día para comenzar</span>';
     bgEl.textContent = "TRAIN";
     statsEl.style.display = "none";
@@ -2365,7 +2388,8 @@ function updateTodayHero() {
   titleEl.textContent  = focus;
   eyebrowEl.textContent = `${dayName} · ${fmtDate(currentDate)}`;
   bgEl.textContent = DAY_BG[currentDay] || focus;
-  subEl.innerHTML = `<span class="tag">${exs.length} ejercicios</span><span class="tag">${totalSets} series</span>`;
+  subEl.style.display = "none";
+  subEl.innerHTML = "";
   statsEl.style.display = "grid";
   document.getElementById("ts-ex").textContent   = exs.length;
   document.getElementById("ts-sets").textContent = totalSets;
@@ -2394,7 +2418,7 @@ function loadSession() {
       const mode = e.name === "DOMINADAS" ? getDomMode(currentDay, currentDate) : "normal";
       if (mode === "emom") sState[e.name] = { emomReps: e.emomReps || "", emomMins: e.emomMins || "", emomTotal: e.emomTotal || 0, done: e.done || false };
       else if (mode === "test") sState[e.name] = { testReps: e.testReps || "", done: e.done || false };
-      else { sState[e.name] = { peso: e.peso || "", series: e.series || "", done: e.done || false }; sChecks[e.name] = e.done ? getSeries(currentDay, e.name) : (e.seriesDone || 0); }
+      else { sState[e.name] = { peso: e.peso || "", series: e.series || "", done: e.done || false, prog: e.prog || null }; sChecks[e.name] = e.done ? getSeries(currentDay, e.name) : (e.seriesDone || 0); }
     });
   }
   const draft = loadDraft();
@@ -2457,27 +2481,30 @@ function renderExercises() {
         list.appendChild(buildTestCard(ex)); return;
       }
     }
-    if (!sState[ex]) sState[ex] = { peso: "", series: "", done: false };
+    if (!sState[ex]) sState[ex] = { peso: "", series: "", done: false, prog: null };
     if (sChecks[ex] === undefined) sChecks[ex] = 0;
     const isPierna = PIERNA.includes(currentDay), isSingle = SINGLE_REF.includes(ex);
     const nRefs = (isPierna || isSingle) ? 1 : 2;
     const refs = getLastN(ex, nRefs, currentDate);
+    const canProg = ex !== "DOMINADAS";
     let refHtml = "";
     if (!refs.length) refHtml = `<div class="ex-lbl">Referencia</div><div class="ref-val empty">Sin datos previos</div>`;
     else refHtml = refs.map((r, i) => {
       const val = r.peso ? r.peso + " kg" + (r.series ? " · " + r.series : "") : r.series || "";
       const lbl = nRefs > 1 ? (i === 0 ? "Última vez" : "Anterior") : "Última vez";
-      return `<div class="ex-lbl" style="margin-top:${i>0?"7px":"0"}">${lbl} · ${fmtDate(r.date)}</div><div class="ref-val">${val}</div>`;
+      const badge = (i === 0 && canProg && r.prog) ? `<span class="prog-ref-badge ${r.prog}">${r.prog === "up" ? "↑" : "="}</span>` : "";
+      return `<div class="ex-lbl" style="margin-top:${i>0?"7px":"0"}">${lbl} · ${fmtDate(r.date)}</div><div class="ref-val">${val}${badge}</div>`;
     }).join("");
     const id = safeId(ex), total = getSeries(currentDay, ex), done = sChecks[ex] >= total || sState[ex].done, checked = sChecks[ex] || 0;
     let dots = "";
     for (let i = 0; i < total; i++) dots += `<button class="dot ${i<checked?"on":""}" onclick="tickDot('${ex}',${i})"></button>`;
+    const progRow = canProg ? `<div class="prog-row"><span class="prog-lbl">Próxima vez</span><button class="prog-dot eq${sState[ex].prog==="eq"?" active":""}" onclick="toggleProg('${ex}','eq')" aria-label="Mantener peso">=</button><button class="prog-dot up${sState[ex].prog==="up"?" active":""}" onclick="toggleProg('${ex}','up')" aria-label="Subir peso">↑</button></div>` : "";
     const card = document.createElement("div");
     card.className = "ex-card" + (done ? " done" : "");
     card.id = id;
     card.dataset.ex = ex; card.dataset.kind = "normal";
     observeReveal(card);
-    card.innerHTML = `<div class="ex-header"><span class="ex-name">${ex}</span><div class="dots-row"><span class="dot-count" id="dc-${id}">${checked}/${total}</span>${dots}</div></div><div class="ex-body"><div class="ex-ref">${refHtml}</div><div class="ex-in-grp"><span class="ex-lbl">Hoy</span><input class="ex-input" placeholder="Peso (kg)" type="number" inputmode="decimal" value="${sState[ex].peso}" ${done?"disabled":""} data-ex="${ex}" data-field="peso" oninput="updateSt(this)"><input class="ex-input" placeholder="Series (ej. 3x10)" style="margin-top:6px" value="${sState[ex].series}" ${done?"disabled":""} data-ex="${ex}" data-field="series" oninput="updateSt(this)"></div></div>`;
+    card.innerHTML = `<div class="ex-header"><span class="ex-name">${ex}</span><div class="dots-row"><span class="dot-count" id="dc-${id}">${checked}/${total}</span>${dots}</div></div><div class="ex-body"><div class="ex-ref">${refHtml}</div><div class="ex-in-grp"><span class="ex-lbl">Hoy</span><input class="ex-input" placeholder="Peso (kg)" type="number" inputmode="decimal" value="${sState[ex].peso}" ${done?"disabled":""} data-ex="${ex}" data-field="peso" oninput="updateSt(this)"><input class="ex-input" placeholder="Series (ej. 3x10)" style="margin-top:6px" value="${sState[ex].series}" ${done?"disabled":""} data-ex="${ex}" data-field="series" oninput="updateSt(this)"></div>${progRow}</div>`;
     list.appendChild(card);
   });
   updateProg();
@@ -2612,6 +2639,18 @@ function tickDot(ex, idx) {
   persistDraft();
 }
 function updateSt(inp) { const ex = inp.dataset.ex, f = inp.dataset.field; if (!sState[ex]) sState[ex] = { peso: "", series: "", done: false }; sState[ex][f] = inp.value; persistDraft(); }
+function toggleProg(ex, val) {
+  if (!sState[ex]) sState[ex] = { peso: "", series: "", done: false, prog: null };
+  sState[ex].prog = sState[ex].prog === val ? null : val;
+  haptic(8);
+  const card = document.getElementById(safeId(ex));
+  if (card) {
+    const eqBtn = card.querySelector(".prog-dot.eq"), upBtn = card.querySelector(".prog-dot.up");
+    if (eqBtn) eqBtn.classList.toggle("active", sState[ex].prog === "eq");
+    if (upBtn) upBtn.classList.toggle("active", sState[ex].prog === "up");
+  }
+  persistDraft();
+}
 function updateProg() {
   const exs = ROUTINE[currentDay] || [];
   const done = exs.filter(e => sState[e]?.done).length;
@@ -2627,7 +2666,7 @@ function saveSession() {
     const st = sState[ex] || {}; const mode = ex === "DOMINADAS" ? getDomMode(currentDay, currentDate) : "normal";
     if (mode === "emom") return { name: ex, emomReps: st.emomReps || "", emomMins: st.emomMins || "", emomTotal: st.emomTotal || 0, done: st.done || false };
     if (mode === "test") return { name: ex, testReps: st.testReps || "", done: st.done || false };
-    return { name: ex, peso: st.peso || "", series: st.series || "", done: st.done || false, seriesDone: sChecks[ex] || 0 };
+    return { name: ex, peso: st.peso || "", series: st.series || "", done: st.done || false, seriesDone: sChecks[ex] || 0, prog: (ex !== "DOMINADAS" && st.prog) || null };
   })};
   const data = getData();
   const idx = data.findIndex(s => s.date === session.date && s.day === session.day);
