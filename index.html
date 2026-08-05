@@ -562,7 +562,15 @@ body::after {
 .hist-controls { display: flex; align-items: center; gap: 6px; }
 .del-btn { background: none; border: none; color: var(--red); font-size: 16px; cursor: pointer; padding: 4px 8px; opacity: 0.5; }
 .del-btn:active { opacity: 1; }
+.edit-date-btn { background: none; border: none; color: var(--text-3); font-size: 15px; cursor: pointer; padding: 4px 7px; opacity: 0.6; }
+.edit-date-btn:active { opacity: 1; }
 .toggle-btn { background: none; border: none; color: var(--text-3); font-size: 22px; cursor: pointer; padding: 0 4px; line-height: 1; }
+.hist-date-edit-row { display: none; align-items: center; gap: 8px; padding: 0 15px 13px; }
+.hist-date-edit-row.open { display: flex; }
+.hist-date-edit-row input[type=date] {
+  flex: 1; background: var(--bg-input); border: 1px solid var(--border); border-radius: 10px;
+  color: var(--text); font-size: 14px; padding: 8px 10px; outline: none; font-family: inherit; color-scheme: dark;
+}
 
 /* —— PROGRESS ————————————————————————————————— */
 .ex-select {
@@ -2819,8 +2827,34 @@ function renderHist() {
       return `<div class="hist-ex-row"><span class="hist-ex-name">${e.name}</span><span class="hist-ex-data">${dataStr}</span></div>`;
     }).filter(Boolean).join("");
     const dayName = s.day.charAt(0).toUpperCase() + s.day.slice(1);
-    return `<div class="hist-session" style="animation:fadeUp 0.32s cubic-bezier(0.22,1,0.36,1) ${i*0.04}s both"><div class="hist-hdr" onclick="toggleHist(${i})"><div><div class="hist-date">${fmtDate(s.date)} · ${dayName}</div><div class="hist-meta"><span class="hist-chip">${done}/${s.exercises.length}</span>${vol>0?`<span class="hist-chip blue">${vol.toLocaleString()} kg</span>`:""}${hasPR?'<span class="hist-chip green">PR</span>':''}</div></div><div class="hist-controls"><button class="del-btn" onclick="delSession(event,'${s.date}','${s.day}')">✕</button><button class="toggle-btn" id="arr-${i}">›</button></div></div><div class="hist-body" id="hb-${i}">${exRows||'<div style="color:var(--text-3);font-size:13px;padding:6px 0">Sin datos registrados</div>'}</div></div>`;
+    return `<div class="hist-session" style="animation:fadeUp 0.32s cubic-bezier(0.22,1,0.36,1) ${i*0.04}s both"><div class="hist-hdr" onclick="toggleHist(${i})"><div><div class="hist-date">${fmtDate(s.date)} · ${dayName}</div><div class="hist-meta"><span class="hist-chip">${done}/${s.exercises.length}</span>${vol>0?`<span class="hist-chip blue">${vol.toLocaleString()} kg</span>`:""}${hasPR?'<span class="hist-chip green">PR</span>':''}</div></div><div class="hist-controls"><button class="edit-date-btn" onclick="toggleDateEdit(event,${i})" aria-label="Editar fecha">✎</button><button class="del-btn" onclick="delSession(event,'${s.date}','${s.day}')">✕</button><button class="toggle-btn" id="arr-${i}">›</button></div></div><div class="hist-date-edit-row" id="de-${i}"><input type="date" id="dei-${i}" value="${s.date}" onclick="event.stopPropagation()" onchange="changeSessionDate(this,'${s.date}','${s.day}')"></div><div class="hist-body" id="hb-${i}">${exRows||'<div style="color:var(--text-3);font-size:13px;padding:6px 0">Sin datos registrados</div>'}</div></div>`;
   }).join("");
+}
+function toggleDateEdit(e, i) {
+  e.stopPropagation();
+  const row = document.getElementById("de-" + i);
+  if (!row) return;
+  const open = row.classList.toggle("open");
+  if (open) {
+    const inp = document.getElementById("dei-" + i);
+    if (inp) { inp.focus(); try { inp.showPicker && inp.showPicker(); } catch {} }
+  }
+}
+function changeSessionDate(input, oldDate, day) {
+  const newDate = input.value;
+  if (!newDate || newDate === oldDate) return;
+  const data = getData();
+  if (data.some(s => s.date === newDate && s.day === day)) {
+    showToast("Ya hay una sesión de ese día guardada en esa fecha");
+    input.value = oldDate;
+    return;
+  }
+  const idx = data.findIndex(s => s.date === oldDate && s.day === day);
+  if (idx < 0) return;
+  data[idx].date = newDate;
+  saveData(data);
+  showToast("Fecha actualizada", "ok");
+  renderHist();
 }
 function toggleHist(i) {
   const b = document.getElementById("hb-" + i);
