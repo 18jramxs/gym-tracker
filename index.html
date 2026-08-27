@@ -417,7 +417,21 @@ body::after {
 }
 
 .ex-body { padding: 12px 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.ex-ref, .ex-in-grp { display: flex; flex-direction: column; gap: 5px; }
+.ex-ref, .ex-in-grp { display: flex; flex-direction: column; gap: 5px; justify-content: space-between; }
+.ex-in-hdr { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.unit-toggle {
+  font-family: var(--font-mono); font-size: 9px; font-weight: 800;
+  letter-spacing: 0.4px; text-transform: uppercase;
+  color: var(--text-3); background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border); border-radius: 100px;
+  padding: 2px 8px; cursor: pointer;
+  transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease, transform 0.15s ease;
+}
+.unit-toggle:active { transform: scale(0.9); }
+.peso-equiv {
+  font-size: 10px; font-family: var(--font-mono); color: var(--text-3);
+  min-height: 12px; line-height: 1;
+}
 .ex-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-3); }
 .ref-val {
   font-size: 13px; color: var(--text-2);
@@ -1290,14 +1304,14 @@ button:not(:disabled):active, .open-informe:active, .day-btn:active, .day-chip:a
 }
 
 /* — Save CTA: idle breathing glow — */
-.cta-save, #save-session-btn, .save-btn, .btn-primary,
+.cta-save, #save-session-btn, .save-btn, .btn-primary, .f-btn,
 button[onclick*="saveSession"], button[onclick*="savePeso"], button[onclick*="saveMedidas"], button[onclick*="saveCal"] {
   position: relative;
-  background: linear-gradient(180deg, #3989ff 0%, #2979ff 50%, #1f6ce8 100%);
-  color: #fff;
+  background: linear-gradient(180deg, #ffe066 0%, var(--amber) 50%, #f2b705 100%);
+  color: #1a1400;
   box-shadow:
-    0 6px 18px rgba(41,121,255,0.35),
-    inset 0 1px 0 rgba(255,255,255,0.35),
+    0 6px 18px rgba(255,214,10,0.35),
+    inset 0 1px 0 rgba(255,255,255,0.5),
     inset 0 -1px 0 rgba(0,0,0,0.15);
   transition: transform 0.18s var(--ease-pop), box-shadow 0.28s ease, filter 0.28s ease;
 }
@@ -1598,24 +1612,24 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* ═══ PERFIL FÍSICO (rediseño) ═════════════════════════════════ */
-.profile-card { margin-bottom: 12px; overflow: hidden; position: relative; padding: 18px; }
-.profile-top { display: flex; align-items: center; gap: 14px; position: relative; }
+.profile-card { margin-bottom: 12px; overflow: hidden; position: relative; padding: 15px 16px; }
+.profile-top { display: flex; align-items: center; gap: 12px; position: relative; }
 .profile-av {
-  position: relative; width: 54px; height: 54px; border-radius: 50%;
+  position: relative; width: 46px; height: 46px; border-radius: 50%;
   display: grid; place-items: center; flex-shrink: 0;
   background: linear-gradient(140deg, #fff, #cfe0ff 70%, #a9c6ff);
   box-shadow: inset 0 1px 2px rgba(255,255,255,0.9), inset 0 -2px 4px rgba(41,121,255,0.25), 0 4px 16px rgba(41,121,255,0.22);
 }
 .profile-av span {
-  font-family: var(--font-disp); font-size: 26px; color: #0a1224;
+  font-family: var(--font-disp); font-size: 21px; color: #0a1224;
   position: relative; z-index: 2;
 }
 .profile-id { flex: 1; min-width: 0; }
 .profile-name {
-  font-family: var(--font-disp); font-size: 19px; font-weight: 400;
+  font-family: var(--font-disp); font-size: 18px; font-weight: 400;
   letter-spacing: 0.2px; color: var(--text); line-height: 1.05;
 }
-.profile-chips { display: flex; gap: 6px; margin-top: 7px; }
+.profile-chips { display: flex; gap: 6px; margin-top: 6px; }
 .pchip {
   font-family: var(--font-mono); font-size: 10.5px; font-weight: 500;
   color: var(--text-2); padding: 3px 9px;
@@ -1624,11 +1638,11 @@ input:focus, select:focus, textarea:focus {
 }
 .profile-stats {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
-  margin-top: 16px; position: relative;
+  margin-top: 12px; position: relative;
   background: var(--border); border: 1px solid var(--border);
   border-radius: var(--r-sm); overflow: hidden;
 }
-.pstat { background: var(--bg-card); padding: 13px 8px 11px; text-align: center; position: relative; }
+.pstat { background: var(--bg-card); padding: 10px 8px 9px; text-align: center; position: relative; }
 .pstat::before {
   content: ""; position: absolute; top: 0; left: 22%; right: 22%; height: 2px; border-radius: 2px;
   background: var(--text-3); opacity: 0.3;
@@ -2191,6 +2205,41 @@ let histFilter = "all", progChart = null, pesoChart = null, calChart = null, med
 let fisicoPeriod = "mes", progPeriod = "mes", metric = "peso";
 let calSign = -1, etapaOpt = null;
 
+// ─── UNIDAD DE PESO (Entreno) ─────────────────────────────────────
+// El dato se guarda siempre en kg (igual que antes); esto solo afecta
+// a cómo se muestra/escribe el peso de "Hoy" en las tarjetas de ejercicio.
+let weightUnit = localStorage.getItem("gymtracker_unit") === "lb" ? "lb" : "kg";
+const LB_PER_KG = 2.2046226218;
+function kgToLb(kg) { return kg * LB_PER_KG; }
+function lbToKg(lb) { return lb / LB_PER_KG; }
+function roundW(n) { return String(Math.round(n * 10) / 10); }
+function pesoInputToKg(raw) {
+  if (weightUnit !== "lb" || raw === "" || raw == null) return raw;
+  const n = parseFloat(raw);
+  return isNaN(n) ? raw : roundW(lbToKg(n));
+}
+function pesoKgToDisplay(kgStr) {
+  if (weightUnit !== "lb" || kgStr === "" || kgStr == null) return kgStr;
+  const n = parseFloat(kgStr);
+  return isNaN(n) ? kgStr : roundW(kgToLb(n));
+}
+function fmtWeightKg(kgVal) {
+  const n = parseFloat(kgVal);
+  if (isNaN(n)) return kgVal || "";
+  return weightUnit === "lb" ? roundW(kgToLb(n)) + " lb" : roundW(n) + " kg";
+}
+function fmtWeightKgAsKg(kgVal) {
+  const n = parseFloat(kgVal);
+  return isNaN(n) ? "" : roundW(n) + " kg";
+}
+function toggleWeightUnit() {
+  captureInputs();
+  weightUnit = weightUnit === "kg" ? "lb" : "kg";
+  localStorage.setItem("gymtracker_unit", weightUnit);
+  haptic(8);
+  renderExercises();
+}
+
 // ─── STORAGE ────────────────────────────────────────────────────
 function getData() { try { return JSON.parse(localStorage.getItem("gymtracker_v2") || "[]"); } catch { showToast("Datos de entrenos dañados, se reiniciaron"); return []; } }
 function saveData(d) { localStorage.setItem("gymtracker_v2", JSON.stringify(d)); }
@@ -2460,7 +2509,7 @@ function captureInputs() {
     const card = document.getElementById(safeId(ex)); if (!card) return;
     const inp = card.querySelectorAll(".ex-input");
     if (!sState[ex]) sState[ex] = { peso: "", series: "", done: false };
-    if (inp[0]) sState[ex].peso = inp[0].value;
+    if (inp[0]) sState[ex].peso = pesoInputToKg(inp[0].value);
     if (inp[1]) sState[ex].series = inp[1].value;
   });
 }
@@ -2509,24 +2558,25 @@ function renderExercises() {
     const nRefs = (isPierna || isSingle) ? 1 : 2;
     const refs = getLastN(ex, nRefs, currentDate);
     const canProg = ex !== "DOMINADAS";
+    const nameBadge = (canProg && refs[0] && refs[0].prog) ? `<span class="prog-ref-badge ${refs[0].prog}">${refs[0].prog === "up" ? "↑" : "="}</span>` : "";
     let refHtml = "";
     if (!refs.length) refHtml = `<div class="ex-lbl">Referencia</div><div class="ref-val empty">Sin datos previos</div>`;
     else refHtml = refs.map((r, i) => {
-      const val = r.peso ? r.peso + " kg" + (r.series ? " · " + r.series : "") : r.series || "";
+      const val = r.peso ? fmtWeightKg(r.peso) + (r.series ? " · " + r.series : "") : r.series || "";
       const lbl = nRefs > 1 ? (i === 0 ? "Última vez" : "Anterior") : "Última vez";
-      const badge = (i === 0 && canProg && r.prog) ? `<span class="prog-ref-badge ${r.prog}">${r.prog === "up" ? "↑" : "="}</span>` : "";
-      return `<div class="ex-lbl" style="margin-top:${i>0?"7px":"0"}">${lbl} · ${fmtDate(r.date)}</div><div class="ref-val">${val}${badge}</div>`;
+      return `<div class="ex-lbl">${lbl} · ${fmtDate(r.date)}</div><div class="ref-val">${val}</div>`;
     }).join("");
     const id = safeId(ex), total = getSeries(currentDay, ex), done = sChecks[ex] >= total || sState[ex].done, checked = sChecks[ex] || 0;
     let dots = "";
     for (let i = 0; i < total; i++) dots += `<button class="dot ${i<checked?"on":""}" onclick="tickDot('${ex}',${i})"></button>`;
     const progRow = canProg ? `<div class="prog-row"><span class="prog-lbl">Próxima vez</span><button class="prog-dot eq${sState[ex].prog==="eq"?" active":""}" onclick="toggleProg('${ex}','eq')" aria-label="Mantener peso">=</button><button class="prog-dot up${sState[ex].prog==="up"?" active":""}" onclick="toggleProg('${ex}','up')" aria-label="Subir peso">↑</button></div>` : "";
+    const equivTxt = (weightUnit === "lb" && sState[ex].peso) ? "≈ " + fmtWeightKgAsKg(sState[ex].peso) : "";
     const card = document.createElement("div");
     card.className = "ex-card" + (done ? " done" : "");
     card.id = id;
     card.dataset.ex = ex; card.dataset.kind = "normal";
     observeReveal(card);
-    card.innerHTML = `<div class="ex-header"><span class="ex-name">${ex}</span><div class="dots-row"><span class="dot-count" id="dc-${id}">${checked}/${total}</span>${dots}</div></div><div class="ex-body"><div class="ex-ref">${refHtml}</div><div class="ex-in-grp"><span class="ex-lbl">Hoy</span><input class="ex-input" placeholder="Peso (kg)" type="number" inputmode="decimal" value="${sState[ex].peso}" ${done?"disabled":""} data-ex="${ex}" data-field="peso" oninput="updateSt(this)"><input class="ex-input" placeholder="Series" style="margin-top:6px" value="${sState[ex].series}" ${done?"disabled":""} data-ex="${ex}" data-field="series" oninput="updateSt(this)"></div>${progRow}</div>`;
+    card.innerHTML = `<div class="ex-header"><span class="ex-name">${ex}${nameBadge}</span><div class="dots-row"><span class="dot-count" id="dc-${id}">${checked}/${total}</span>${dots}</div></div><div class="ex-body"><div class="ex-ref">${refHtml}</div><div class="ex-in-grp"><div class="ex-in-hdr"><span class="ex-lbl">Hoy</span><button type="button" class="unit-toggle" onclick="toggleWeightUnit()">${weightUnit}</button></div><input class="ex-input" placeholder="Peso (${weightUnit})" type="number" inputmode="decimal" value="${pesoKgToDisplay(sState[ex].peso)}" ${done?"disabled":""} data-ex="${ex}" data-field="peso" oninput="updateSt(this)"><span class="peso-equiv" id="pe-${id}">${equivTxt}</span><input class="ex-input" placeholder="Series" value="${sState[ex].series}" ${done?"disabled":""} data-ex="${ex}" data-field="series" oninput="updateSt(this)"></div>${progRow}</div>`;
     list.appendChild(card);
   });
   updateProg();
@@ -2641,7 +2691,7 @@ function tickDot(ex, idx) {
     // animation delay and saving done:false despite seriesDone===total.
     const inp = card.querySelectorAll(".ex-input");
     if (!sState[ex]) sState[ex] = { peso: "", series: "", done: false };
-    if (inp[0]) sState[ex].peso = inp[0].value;
+    if (inp[0]) sState[ex].peso = pesoInputToKg(inp[0].value);
     if (inp[1]) sState[ex].series = inp[1].value;
     sState[ex].done = true;
     restStop();
@@ -2660,7 +2710,19 @@ function tickDot(ex, idx) {
   }
   persistDraft();
 }
-function updateSt(inp) { const ex = inp.dataset.ex, f = inp.dataset.field; if (!sState[ex]) sState[ex] = { peso: "", series: "", done: false }; sState[ex][f] = inp.value; persistDraft(); }
+function updateSt(inp) {
+  const ex = inp.dataset.ex, f = inp.dataset.field;
+  if (!sState[ex]) sState[ex] = { peso: "", series: "", done: false };
+  sState[ex][f] = f === "peso" ? pesoInputToKg(inp.value) : inp.value;
+  if (f === "peso") {
+    const eq = document.getElementById("pe-" + safeId(ex));
+    if (eq) {
+      const n = parseFloat(inp.value);
+      eq.textContent = (weightUnit === "lb" && inp.value !== "" && !isNaN(n)) ? "≈ " + roundW(lbToKg(n)) + " kg" : "";
+    }
+  }
+  persistDraft();
+}
 function toggleProg(ex, val) {
   if (!sState[ex]) sState[ex] = { peso: "", series: "", done: false, prog: null };
   sState[ex].prog = sState[ex].prog === val ? null : val;
@@ -2891,10 +2953,10 @@ function renderProgress() {
     domC.style.display = "block"; renderDomProgress(); return;
   }
   if (domC) domC.style.display = "none";
-  if (!ex) { statsEl.style.display = "none"; chartEl.style.display = "none"; emptyEl.style.display = "block"; ctrl.style.display = "none"; emptyEl.innerHTML = emptyStateHTML("Selecciona un ejercicio para ver su progreso"); return; }
+  if (!ex) { statsEl.style.display = "none"; chartEl.style.display = "none"; emptyEl.style.display = "flex"; ctrl.style.display = "none"; emptyEl.innerHTML = emptyStateHTML("Selecciona un ejercicio para ver su progreso"); return; }
   const sd = getStartDate(progPeriod, null);
   const allData = getData().filter(s => s.exercises.some(e => e.name === ex && e.peso) && s.date >= sd).sort((a, b) => a.date.localeCompare(b.date));
-  if (!allData.length) { statsEl.style.display = "none"; chartEl.style.display = "none"; emptyEl.style.display = "block"; ctrl.style.display = "block"; emptyEl.innerHTML = emptyStateHTML("Sin datos en este período"); return; }
+  if (!allData.length) { statsEl.style.display = "none"; chartEl.style.display = "none"; emptyEl.style.display = "flex"; ctrl.style.display = "block"; emptyEl.innerHTML = emptyStateHTML("Sin datos en este período"); return; }
   emptyEl.style.display = "none"; statsEl.style.display = "grid"; chartEl.style.display = "block"; ctrl.style.display = "block";
   const vals = allData.map(s => { const e = s.exercises.find(e => e.name === ex); return metric === "orm" ? (calc1RM(e.peso, e.series) || parseFloat(e.peso) || 0) : (parseFloat(e.peso) || 0); });
   const isP = metric === "peso";
