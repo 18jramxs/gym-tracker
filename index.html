@@ -295,15 +295,23 @@ body::after {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   margin-top: 14px; position: relative;
 }
-.date-btn-wrap { position: relative; display: inline-flex; max-width: 50%; }
-.date-input.date-input-hidden { color: transparent; padding: 4px 8px; font-size: 11px; }
-.date-input-label {
-  position: absolute; inset: 0; display: flex; align-items: center;
-  padding: 0 8px; pointer-events: none; overflow: hidden;
-  font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
-  color: var(--text); white-space: nowrap; text-overflow: ellipsis; text-transform: uppercase;
+/* El span visible (.date-input-label) fija el tamaño del botón según su
+   contenido — el input real es una capa invisible del mismo tamaño encima,
+   solo para capturar el tap y abrir el selector nativo. Así el botón nunca
+   recorta el texto: manda el contenido, no un ancho fijo. */
+.date-btn-wrap { position: relative; display: inline-flex; flex-shrink: 0; }
+.date-input.date-input-hidden {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  opacity: 0; padding: 0; border: none; font-size: inherit;
 }
-.today-progress { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; }
+.date-input-label {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  padding: 6px 12px; pointer-events: none;
+  background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: var(--r-xs);
+  font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
+  color: var(--text); white-space: nowrap; text-transform: uppercase;
+}
+.today-progress { display: flex; flex-direction: column; align-items: flex-end; min-width: 0; }
 .today-progress #done-count { margin-bottom: 4px; }
 
 /* —— DAY GRID ————————————————————————————————— */
