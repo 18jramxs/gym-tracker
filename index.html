@@ -339,6 +339,14 @@ body::after {
   font-weight: 400;
   box-shadow: 0 6px 18px rgba(255,255,255,0.18), inset 0 0 0 1px rgba(255,255,255,0.4);
 }
+/* Marca de "hoy" (F4): un punto bajo el texto, distinto de la marca de
+   seleccionado (fondo blanco) — se ve aunque hoy no sea el día abierto. */
+.day-btn.today::after {
+  content: ""; position: absolute; left: 50%; bottom: 5px;
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--blue); transform: translateX(-50%);
+}
+.day-btn.today.selected::after { background: #000; }
 
 /* —— SESSION INFO ——————————————————————————————— */
 .session-info {
@@ -363,6 +371,8 @@ body::after {
   transition: transform 0.55s var(--ease-out-soft, cubic-bezier(0.22,1,0.36,1)), box-shadow 0.4s ease;
 }
 .prog-bar.complete { box-shadow: 0 0 10px 1px rgba(182,255,46,0.6); }
+.prog-bar.day-flash { animation: dayFlashPulse 0.65s ease; }
+@keyframes dayFlashPulse { 0% { box-shadow: 0 0 10px 1px rgba(182,255,46,0.6); } 35% { box-shadow: 0 0 20px 6px rgba(182,255,46,0.95); } 100% { box-shadow: 0 0 10px 1px rgba(182,255,46,0.6); } }
 #done-count { font-family: var(--font-mono); font-size: 12px; color: var(--text-2); }
 
 /* —— EXERCISE CARDS ———————————————————————— */
@@ -470,18 +480,30 @@ body::after {
 .prog-ref-badge.up { background: var(--green-bg); color: var(--green); }
 .prog-row { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; margin-top: 2px; }
 .prog-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-3); margin-right: 2px; }
-.prog-dot {
-  width: 26px; height: 26px; border-radius: 50%;
-  border: 1.5px solid; background: transparent; cursor: pointer; padding: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-mono); font-size: 13px; font-weight: 700; line-height: 1;
-  transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease, transform 0.2s cubic-bezier(0.16,1,0.3,1);
+/* Switch deslizante "mantener/progresa" (F1): pista glass translúcida con un
+   pulgar que se desliza y se ilumina del color correspondiente por detrás. */
+.prog-switch {
+  position: relative; width: 50px; height: 25px; border-radius: 13px;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  flex-shrink: 0; transition: background 0.3s ease, border-color 0.3s ease;
 }
-.prog-dot:active { transform: scale(1.15); }
-.prog-dot.eq { border-color: rgba(255,214,10,0.35); color: var(--amber); }
-.prog-dot.up { border-color: rgba(182,255,46,0.35); color: var(--green); }
-.prog-dot.eq.active { background: var(--amber); color: #1a1400; border-color: var(--amber); box-shadow: 0 2px 8px rgba(255,214,10,0.3); }
-.prog-dot.up.active { background: var(--green); color: #0a1400; border-color: var(--green); box-shadow: 0 2px 8px rgba(182,255,46,0.3); }
+.switch-tap {
+  position: absolute; inset: 0; width: 50%; height: 100%;
+  background: none; border: none; padding: 0; cursor: pointer; z-index: 2;
+}
+.switch-tap.right { left: 50%; }
+.switch-thumb {
+  position: absolute; top: 2px; left: 2px; width: 19px; height: 19px; border-radius: 50%;
+  background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.35);
+  backdrop-filter: blur(8px) saturate(160%); -webkit-backdrop-filter: blur(8px) saturate(160%);
+  transform: translateX(11px);
+  transition: transform 0.32s var(--ease-spring, cubic-bezier(0.34,1.56,0.64,1)), background 0.25s ease, box-shadow 0.25s ease;
+}
+.prog-switch.state-eq { background: rgba(255,214,10,0.14); border-color: rgba(255,214,10,0.35); }
+.prog-switch.state-eq .switch-thumb { transform: translateX(0); background: rgba(255,214,10,0.55); box-shadow: 0 0 10px rgba(255,214,10,0.55); }
+.prog-switch.state-up { background: rgba(182,255,46,0.14); border-color: rgba(182,255,46,0.35); }
+.prog-switch.state-up .switch-thumb { transform: translateX(23px); background: rgba(182,255,46,0.55); box-shadow: 0 0 10px rgba(182,255,46,0.55); }
 .ex-input {
   background: var(--bg-input);
   border: 1px solid var(--border);
@@ -636,6 +658,12 @@ body::after {
 }
 .pill:active { transform: scale(0.95); }
 .pill.active { background: #fff; border-color: #fff; color: #000; }
+/* Las 3 vistas del Historial (D) se distinguen por luminosidad, de oscuro a
+   claro, no solo por matiz: rojo oscuro (GYM) → naranja medio (TOTAL) →
+   amarillo claro (DOMINADAS) — así se diferencian de un vistazo. */
+.pill.active.hist-view-gym { background: #6b0f0a; border-color: #6b0f0a; color: #fff; }
+.pill.active.hist-view-dominadas_total { background: var(--orange); border-color: var(--orange); color: #1a0d00; }
+.pill.active.hist-view-dominadas { background: #ffe14d; border-color: #ffe14d; color: #1a1400; }
 
 .metric-row { display: flex; gap: 6px; margin-bottom: 12px; }
 .metric-btn {
@@ -740,8 +768,13 @@ body::after {
 .sign-btn.pos { color: var(--green); border-color: rgba(182,255,46,0.3); background: rgba(182,255,46,0.08); }
 
 .medidas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-.m-grp { display: flex; flex-direction: column; gap: 5px; }
+.m-grp { display: flex; flex-direction: column; gap: 5px; transition: opacity 0.18s ease, transform 0.18s ease; }
 .m-lbl { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+#m-grp-cintura .m-lbl, #m-grp-brazo .m-lbl, #m-grp-cintura .m-input, #m-grp-brazo .m-input { cursor: pointer; }
+/* Transición animada al alternar variante de cintura/brazo (E1) — un pulso
+   breve, no un salto seco. */
+.m-grp.variant-flip { animation: medVariantFlip 0.26s ease; }
+@keyframes medVariantFlip { 0% { opacity: 0.35; transform: scale(0.97); } 100% { opacity: 1; transform: scale(1); } }
 .m-input {
   background: var(--bg-input);
   border: 1px solid var(--border);
@@ -1246,6 +1279,13 @@ body::after {
 
 /* —— Helper: tabular numerals on numbers —— */
 .tnum { font-variant-numeric: tabular-nums; }
+/* F5: ningún contador numérico desplaza el contenido vecino al cambiar de
+   valor — pesos, series, tonelaje, repeticiones, progreso. */
+.stat-val, .pstat-v, .hist-chip, .macro-val, .wc-val, .semana-val, .test-pct,
+.emom-total-val, .iwk-bar-v, .iwk-cum, .ex-input, .m-input, .dot-count, .peso-equiv,
+#s-max, #s-sess, #s-last, #profile-peso, #profile-grasa, #profile-magra, #bf-val {
+  font-variant-numeric: tabular-nums;
+}
 
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1782,7 +1822,7 @@ input:focus, select:focus, textarea:focus {
 <!-- ───── HISTORIAL ───── -->
 <div id="screen-historial" class="screen">
   <div class="pill-row">
-    <button class="pill active" id="hist-view-btn" onclick="cycleHistView()">GYM</button>
+    <button class="pill active hist-view-gym" id="hist-view-btn" onclick="cycleHistView()">GYM</button>
     <button class="pill active" id="hist-day-btn" onclick="cycleHistDay()">TODOS</button>
   </div>
   <div id="hist-list"></div>
@@ -1836,6 +1876,11 @@ input:focus, select:focus, textarea:focus {
       <div style="font-size:9px;font-weight:800;color:var(--text-3);text-align:center;letter-spacing:0.4px;">D</div>
     </div>
     <div class="act-map-row" id="activity-map"></div>
+  </div>
+
+  <div class="chart-wrap" id="sustituidos-wrap" style="padding:14px 16px;">
+    <div class="chart-lbl" style="margin-bottom:10px;">Ejercicios sustituidos</div>
+    <div id="sustituidos-list"></div>
   </div>
 
   <div id="prog-empty" class="empty-state"></div>
@@ -1982,10 +2027,10 @@ input:focus, select:focus, textarea:focus {
         <div class="f-row" style="margin-bottom:8px"><input type="date" id="med-date" class="date-input" style="flex:1" onchange="renderMedidasSection()"></div>
         <div class="f-info" id="med-info"></div>
         <div class="medidas-grid">
-          <div class="m-grp"><label class="m-lbl" for="m-cintura">Cintura (cm)</label><input type="number" inputmode="decimal" class="m-input" id="m-cintura" step="0.1" min="0" max="300"></div>
+          <div class="m-grp" id="m-grp-cintura"><label class="m-lbl" for="m-cintura" id="m-lbl-cintura" ondblclick="toggleMedVariant('cintura')">Cintura (cm)</label><input type="number" inputmode="decimal" class="m-input" id="m-cintura" step="0.1" min="0" max="300" ondblclick="toggleMedVariant('cintura')"></div>
           <div class="m-grp"><label class="m-lbl" for="m-cadera">Cadera (cm)</label><input type="number" inputmode="decimal" class="m-input" id="m-cadera" step="0.1" min="0" max="300"></div>
           <div class="m-grp"><label class="m-lbl" for="m-pecho">Pecho (cm)</label><input type="number" inputmode="decimal" class="m-input" id="m-pecho" step="0.1" min="0" max="300"></div>
-          <div class="m-grp"><label class="m-lbl" for="m-brazo">Brazo (cm)</label><input type="number" inputmode="decimal" class="m-input" id="m-brazo" step="0.1" min="0" max="120"></div>
+          <div class="m-grp" id="m-grp-brazo"><label class="m-lbl" for="m-brazo" id="m-lbl-brazo" ondblclick="toggleMedVariant('brazo')">Brazo (cm)</label><input type="number" inputmode="decimal" class="m-input" id="m-brazo" step="0.1" min="0" max="120" ondblclick="toggleMedVariant('brazo')"></div>
           <div class="m-grp"><label class="m-lbl" for="m-muslo">Muslo (cm)</label><input type="number" inputmode="decimal" class="m-input" id="m-muslo" step="0.1" min="0" max="150"></div>
           <div class="m-grp"><label class="m-lbl" for="m-cuello">Cuello (cm)</label><input type="number" inputmode="decimal" class="m-input" id="m-cuello" step="0.1" min="0" max="100"></div>
         </div>
@@ -2197,25 +2242,39 @@ input:focus, select:focus, textarea:focus {
 
 // ─── ROUTINE / SERIES / DOM CONSTS ──────────────────────────────
 const ROUTINE = {
-  lunes:["DOMINADAS","REMO HAMMER","JALÓN AL PECHO","PRESS MILITAR","PRESS INCLINADO","ELEVACIONES LATERALES","APERTURAS","EXTENSIÓN POSTERIOR","JM PRESS","EXTENSIÓN TRÍCEPS","CURL PREDICADOR","CURL MANCUERNA","CURL INVERTIDO"],
-  martes:["HACK","SLDL","EXTENSIÓN CUÁDRICEPS","HIP THRUST","EXTENSIÓN FEMORAL","GEMELO","ADUCTORES","ABS"],
+  lunes:["DOMINADAS","REMO HAMMER","JALÓN AL PECHO","PRESS MILITAR","PRESS INCLINADO","ELEVACIONES LATERALES","APERTURAS","EXTENSIÓN POSTERIOR","JM PRESS","EXTENSIÓN TRÍCEPS UNILATERAL","CURL PREDICADOR","CURL MANCUERNA","CURL INVERTIDO"],
+  martes:["PÉNDULO","SLDL","EXTENSIÓN CUÁDRICEPS","HIP THRUST","EXTENSIÓN FEMORAL","GEMELO","ADUCTORES","ABS"],
   jueves:["PRESS MILITAR","PRESS INCLINADO","ELEVACIONES LATERALES","APERTURAS","EXTENSIÓN POSTERIOR","CURL PREDICADOR","CURL MANCUERNA"],
-  viernes:["DOMINADAS","REMO HAMMER","JALÓN AL PECHO","JM PRESS","EXTENSIÓN TRÍCEPS","CURL INVERTIDO"],
-  sabado:["HACK","SLDL","EXTENSIÓN CUÁDRICEPS","HIP THRUST","EXTENSIÓN FEMORAL","SÓLEO","ADUCTORES","ABS"]
+  viernes:["DOMINADAS","REMO HAMMER","JALÓN AL PECHO","JM PRESS","EXTENSIÓN TRÍCEPS UNILATERAL","CURL INVERTIDO"],
+  sabado:["PÉNDULO","SLDL","EXTENSIÓN CUÁDRICEPS","HIP THRUST","EXTENSIÓN FEMORAL","SÓLEO","ADUCTORES","ABS"]
 };
 const SERIES = {
   lunes:{default:2,DOMINADAS:4,"CURL INVERTIDO":3,"JALÓN AL PECHO":2},
   martes:{default:2,GEMELO:3,"HIP THRUST":4,ADUCTORES:3,ABS:3},
   jueves:{"PRESS MILITAR":2,"PRESS INCLINADO":3,"ELEVACIONES LATERALES":2,APERTURAS:3,"EXTENSIÓN POSTERIOR":2,"CURL PREDICADOR":3,"CURL MANCUERNA":3},
-  viernes:{DOMINADAS:4,"REMO HAMMER":4,"JALÓN AL PECHO":2,"JM PRESS":3,"EXTENSIÓN TRÍCEPS":3,"CURL INVERTIDO":3},
+  viernes:{DOMINADAS:4,"REMO HAMMER":4,"JALÓN AL PECHO":2,"JM PRESS":3,"EXTENSIÓN TRÍCEPS UNILATERAL":3,"CURL INVERTIDO":3},
   sabado:{default:2,SÓLEO:3,"HIP THRUST":4,ADUCTORES:3,ABS:3}
 };
+// HACK se renombró a PÉNDULO (28/09/2026): mismo movimiento, el nombre
+// estaba mal puesto — no es una sustitución, por eso no aparece en
+// EJERCICIOS SUSTITUIDOS. migrateExerciseData() renombra también el
+// histórico para que "PÉNDULO" siga siendo la clave de enlace.
+// EXTENSIÓN TRÍCEPS → EXTENSIÓN TRÍCEPS UNILATERAL sí es una sustitución real
+// (bilateral con barra en V → unilateral con brazo apoyado): el nombre viejo
+// se retira de la rutina pero su histórico se deja intacto bajo su propio
+// nombre, consultable desde EJERCICIOS SUSTITUIDOS (ver SUSTITUCIONES_SEED).
 const DAY_TITLE = { lunes:"TORSO", martes:"PIERNA", jueves:"TORSO", viernes:"TORSO", sabado:"PIERNA" };
 const DAY_BG    = { lunes:"PUSH PULL", martes:"LEG DAY", jueves:"PUSH PULL", viernes:"PUSH PULL", sabado:"LEG DAY" };
 const DAY_IDX   = { lunes:1, martes:2, jueves:4, viernes:5, sabado:6 };
 const PIERNA = ["martes","sabado"];
 const SINGLE_REF = ["ABS"];
 const MED_FIELDS = ["cintura","cadera","pecho","brazo","muslo","cuello"];
+// Cintura y brazo tienen dos variantes cada uno (E1): se alternan con doble
+// toque o deslizando sobre el campo, cada una con su propio histórico dentro
+// de medidas[mk].cintura / .brazo (objeto {variante: valor}, no un número).
+const MED_VARIANTS = { cintura: ["estrecha","ombligo"], brazo: ["relajado","contraido"] };
+const MED_VARIANT_LBL = { estrecha:"ESTRECHA", ombligo:"OMBLIGO", relajado:"RELAJADO", contraido:"CONTRAÍDO" };
+let medVariant = { cintura: "estrecha", brazo: "relajado" };
 const DOM_GOAL = 17;
 const ALTURA_M = 1.78;
 const DOB = new Date("2004-01-18");
@@ -2223,7 +2282,7 @@ const DOB = new Date("2004-01-18");
 function getSeries(day, ex) { const s = SERIES[day]; if (!s) return 3; return s[ex] !== undefined ? s[ex] : (s.default || 3); }
 function getAge() { const t = new Date(); let a = t.getFullYear() - DOB.getFullYear(); const m = t.getMonth() - DOB.getMonth(); if (m < 0 || (m === 0 && t.getDate() < DOB.getDate())) a--; return a; }
 
-let currentDay = null, currentDate = todayStr(), sState = {}, sChecks = {}, draftTimer = null;
+let currentDay = null, currentDate = todayStr(), sState = {}, sChecks = {}, draftTimer = null, dayCompleteFlashed = false;
 let histFilter = "all", histView = "gym", progChart = null, pesoChart = null, calChart = null, medChart = null;
 let fisicoPeriod = "mes", progPeriod = "mes", metric = "peso";
 let calSign = -1, etapaOpt = null;
@@ -2241,19 +2300,43 @@ function pesoInputToKg(raw) {
   const n = parseFloat(raw);
   return isNaN(n) ? raw : roundW(lbToKg(n));
 }
-function pesoKgToDisplay(kgStr) {
-  if (weightUnit !== "lb" || kgStr === "" || kgStr == null) return kgStr;
-  const n = parseFloat(kgStr);
-  return isNaN(n) ? kgStr : roundW(kgToLb(n));
-}
 function fmtWeightKg(kgVal) {
   const n = parseFloat(kgVal);
   if (isNaN(n)) return kgVal || "";
   return weightUnit === "lb" ? roundW(kgToLb(n)) + " lb" : roundW(n) + " kg";
 }
-function fmtWeightKgAsKg(kgVal) {
-  const n = parseFloat(kgVal);
-  return isNaN(n) ? "" : roundW(n) + " kg";
+// ─── CONVERSIÓN FIEL (B1) ───────────────────────────────────────
+// El dato de cálculo (peso, siempre en kg) se guarda igual que antes para no
+// tocar volumen/1RM/PR/CSV. Junto a él se guarda el valor EXACTO tal como se
+// escribió (pesoRaw) y la unidad en la que se escribió (pesoUnidad). Mostrar
+// en esa misma unidad nunca pasa por un redondeo; la otra unidad se calcula
+// siempre desde pesoRaw (nunca desde el kg ya redondeado), así el valor no
+// "baila" al alternar kg/lb. Sin pesoUnidad (registros antiguos) = kg.
+function pesoRawToUnit(raw, fromUnit, toUnit) {
+  if (raw === "" || raw == null) return "";
+  const n = parseFloat(raw);
+  if (isNaN(n)) return "";
+  if (fromUnit === toUnit) return String(raw);
+  if (fromUnit === "kg") return String(Math.round(kgToLb(n)));
+  return roundW(lbToKg(n));
+}
+function pesoDisplayValue(ex) {
+  const st = sState[ex]; if (!st) return "";
+  const raw = (st.pesoRaw !== undefined && st.pesoRaw !== "") ? st.pesoRaw : st.peso;
+  return pesoRawToUnit(raw, st.pesoUnidad || "kg", weightUnit);
+}
+function pesoEquivKgText(ex) {
+  const st = sState[ex]; if (!st || weightUnit !== "lb") return "";
+  const raw = (st.pesoRaw !== undefined && st.pesoRaw !== "") ? st.pesoRaw : st.peso;
+  if (raw === "" || raw == null) return "";
+  const kg = pesoRawToUnit(raw, st.pesoUnidad || "kg", "kg");
+  return kg === "" ? "" : "≈ " + kg + " kg";
+}
+function fmtWeightRecord(r) {
+  if (!r.pesoUnidad) return fmtWeightKg(r.peso);
+  const raw = (r.pesoRaw !== undefined && r.pesoRaw !== "") ? r.pesoRaw : r.peso;
+  const v = pesoRawToUnit(raw, r.pesoUnidad, weightUnit);
+  return v === "" ? "" : v + " " + weightUnit;
 }
 function toggleWeightUnit() {
   captureInputs();
@@ -2272,6 +2355,58 @@ function saveFisico(d) { localStorage.setItem("gymtracker_fisico", JSON.stringif
 // Independientes del entreno de gym — no entran en su tonelaje ni en su volumen.
 function getDomExtra() { try { return JSON.parse(localStorage.getItem("gymtracker_dominadas_extra") || "{}"); } catch { return {}; } }
 function saveDomExtraData(d) { localStorage.setItem("gymtracker_dominadas_extra", JSON.stringify(d)); }
+// Ejercicios sustituidos: [{idAntiguo, nombreAntiguo, idNuevo, nombreNuevo, fecha}]
+// idAntiguo/idNuevo son el "name" del ejercicio, igual convención que el resto
+// de la app (no hay un id separado — el name ya es único e inmutable, ver A4).
+function getSustituciones() { try { return JSON.parse(localStorage.getItem("gymtracker_sustituidos") || "[]"); } catch { return []; } }
+function saveSustituciones(d) { localStorage.setItem("gymtracker_sustituidos", JSON.stringify(d)); }
+
+// ─── MIGRACIÓN DE DATOS (octubre 2026) ──────────────────────────
+// Se ejecuta una sola vez (flag en localStorage) para no pisar ediciones
+// manuales futuras del usuario sobre estos mismos ejercicios/fechas.
+function migrateDataOct2026() {
+  if (localStorage.getItem("gt_migration_2026_10_applied")) return;
+  const data = getData();
+  let changed = false;
+  data.forEach(s => {
+    s.exercises.forEach(e => {
+      if (e.name === "HACK") {
+        e.name = "PÉNDULO";
+        changed = true;
+        if (s.date >= "2026-09-01" && s.date < "2026-10-01") e.peso = "140";
+        else if (s.date >= "2026-10-01") e.peso = "160";
+      }
+      if (e.name === "JM PRESS" && s.date !== "2026-10-05") {
+        const w = parseFloat(e.peso);
+        if (!isNaN(w) && w > 70) { e.peso = "70"; changed = true; }
+        if (parseFloat(e.peso) === 70) {
+          if (s.day === "lunes") { e.series = "1x8"; changed = true; }
+          else if (s.day === "viernes") { e.series = "1x8 2x6"; changed = true; }
+        }
+      }
+    });
+  });
+  if (changed) saveData(data);
+  const sust = getSustituciones();
+  if (!sust.some(x => x.idAntiguo === "EXTENSIÓN TRÍCEPS")) {
+    sust.push({ idAntiguo: "EXTENSIÓN TRÍCEPS", nombreAntiguo: "EXTENSIÓN TRÍCEPS", idNuevo: "EXTENSIÓN TRÍCEPS UNILATERAL", nombreNuevo: "EXTENSIÓN TRÍCEPS UNILATERAL", fecha: "2026-09-28" });
+    saveSustituciones(sust);
+  }
+  localStorage.setItem("gt_migration_2026_10_applied", "1");
+}
+// Cintura/brazo pasan a tener dos variantes cada uno; los datos previos a esta
+// versión eran un número plano → se asignan a la variante que ya se medía.
+// Comprobación por forma de dato (no por flag), así es segura de repetir.
+function migrateMedidasVariantes() {
+  const f = getFisico(); const medidas = f.medidas || {};
+  let changed = false;
+  Object.keys(medidas).forEach(mk => {
+    const m = medidas[mk];
+    if (typeof m.cintura === "number") { m.cintura = { estrecha: m.cintura }; changed = true; }
+    if (typeof m.brazo === "number") { m.brazo = { relajado: m.brazo }; changed = true; }
+  });
+  if (changed) { f.medidas = medidas; saveFisico(f); }
+}
 
 // ─── DRAFT AUTOSAVE ─────────────────────────────────────────────
 // A home-screen PWA can be evicted by iOS mid-workout; sState/sChecks only
@@ -2335,8 +2470,8 @@ const MUSCLE = {
   "CURL INVERTIDO":"Antebrazo",
   "PRESS MILITAR":"Hombro", "ELEVACIONES LATERALES":"Hombro", "EXTENSIÓN POSTERIOR":"Hombro",
   "PRESS INCLINADO":"Pecho", "APERTURAS":"Pecho",
-  "JM PRESS":"Tríceps", "EXTENSIÓN TRÍCEPS":"Tríceps",
-  "HACK":"Cuádriceps", "EXTENSIÓN CUÁDRICEPS":"Cuádriceps",
+  "JM PRESS":"Tríceps", "EXTENSIÓN TRÍCEPS":"Tríceps", "EXTENSIÓN TRÍCEPS UNILATERAL":"Tríceps",
+  "PÉNDULO":"Cuádriceps", "EXTENSIÓN CUÁDRICEPS":"Cuádriceps",
   "SLDL":"Femoral", "EXTENSIÓN FEMORAL":"Femoral",
   "HIP THRUST":"Glúteo",
   "GEMELO":"Gemelo", "SÓLEO":"Gemelo",
@@ -2587,7 +2722,7 @@ function updateTodayHero() {
 
 // ─── DAY SELECT ─────────────────────────────────────────────────
 function selectDay(day) {
-  currentDay = day; sState = {}; sChecks = {};
+  currentDay = day; sState = {}; sChecks = {}; dayCompleteFlashed = false;
   currentDate = weekDateForDay(day);
   document.getElementById("session-date").value = currentDate;
   document.querySelectorAll(".day-btn").forEach((b, i) =>
@@ -2601,7 +2736,7 @@ function onDateChange() {
   currentDate = document.getElementById("session-date").value || todayStr();
   renderDomExtraCard();
   if (!currentDay) { updateTodayHero(); return; }
-  sState = {}; sChecks = {}; loadSession(); renderExercises(); updateTodayHero();
+  sState = {}; sChecks = {}; dayCompleteFlashed = false; loadSession(); renderExercises(); updateTodayHero();
 }
 function loadSession() {
   const ex = getData().find(s => s.date === currentDate && s.day === currentDay);
@@ -2611,7 +2746,7 @@ function loadSession() {
       if (mode === "emom") sState[e.name] = { emomReps: e.emomReps || "", emomMins: e.emomMins || "", emomTotal: e.emomTotal || 0, lastre: e.lastre || "", done: e.done || false };
       else if (mode === "test") sState[e.name] = { testReps: e.testReps || "", done: e.done || false };
       else if (e.name === "DOMINADAS") { sState[e.name] = { lastre: e.lastre || "", series: e.series || "", done: e.done || false }; sChecks[e.name] = e.done ? getSeries(currentDay, e.name) : (e.seriesDone || 0); }
-      else { sState[e.name] = { peso: e.peso || "", series: e.series || "", done: e.done || false, prog: e.prog || null }; sChecks[e.name] = e.done ? getSeries(currentDay, e.name) : (e.seriesDone || 0); }
+      else { sState[e.name] = { peso: e.peso || "", pesoRaw: e.pesoRaw !== undefined ? e.pesoRaw : (e.peso || ""), pesoUnidad: e.pesoUnidad || "kg", series: e.series || "", done: e.done || false, prog: e.prog || null }; sChecks[e.name] = e.done ? getSeries(currentDay, e.name) : (e.seriesDone || 0); }
     });
   }
   const draft = loadDraft();
@@ -2631,7 +2766,7 @@ function captureInputs() {
     const card = document.getElementById(safeId(ex)); if (!card) return;
     const inp = card.querySelectorAll(".ex-input");
     if (!sState[ex]) sState[ex] = { done: false };
-    inp.forEach(i => { const f = i.dataset.field; if (!f) return; sState[ex][f] = f === "peso" ? pesoInputToKg(i.value) : i.value; });
+    inp.forEach(i => { const f = i.dataset.field; if (!f) return; if (f === "peso") { sState[ex].peso = pesoInputToKg(i.value); sState[ex].pesoRaw = i.value; sState[ex].pesoUnidad = weightUnit; } else sState[ex][f] = i.value; });
   });
 }
 
@@ -2687,21 +2822,21 @@ function renderExercises() {
     let refHtml = "";
     if (!refs.length) refHtml = `<div class="ex-lbl">Referencia</div><div class="ref-val empty">Sin datos previos</div>`;
     else refHtml = refs.map((r, i) => {
-      const val = r.peso ? fmtWeightKg(r.peso) + (r.series ? " · " + r.series : "") : r.series || "";
+      const val = r.peso ? fmtWeightRecord(r) + (r.series ? " · " + r.series : "") : r.series || "";
       const lbl = nRefs > 1 ? (i === 0 ? "Última vez" : "Anterior") : "Última vez";
       return `<div class="ex-lbl">${lbl} · ${fmtDate(r.date)}</div><div class="ref-val">${val}</div>`;
     }).join("");
     const id = safeId(ex), total = getSeries(currentDay, ex), done = sChecks[ex] >= total || sState[ex].done, checked = sChecks[ex] || 0;
     let dots = "";
     for (let i = 0; i < total; i++) dots += `<button class="dot ${i<checked?"on":""}" onclick="tickDot('${ex}',${i})"></button>`;
-    const progRow = canProg ? `<div class="prog-row"><span class="prog-lbl">Próxima vez</span><button class="prog-dot eq${sState[ex].prog==="eq"?" active":""}" onclick="toggleProg('${ex}','eq')" aria-label="Mantener peso">=</button><button class="prog-dot up${sState[ex].prog==="up"?" active":""}" onclick="toggleProg('${ex}','up')" aria-label="Subir peso">↑</button></div>` : "";
-    const equivTxt = (weightUnit === "lb" && sState[ex].peso) ? "≈ " + fmtWeightKgAsKg(sState[ex].peso) : "";
+    const progRow = canProg ? `<div class="prog-row"><span class="prog-lbl">Próxima vez</span><div class="prog-switch${sState[ex].prog==="eq"?" state-eq":""}${sState[ex].prog==="up"?" state-up":""}"><button type="button" class="switch-tap left" onclick="toggleProg('${ex}','eq')" aria-label="Mantener peso"></button><button type="button" class="switch-tap right" onclick="toggleProg('${ex}','up')" aria-label="Subir peso"></button><span class="switch-thumb"></span></div></div>` : "";
+    const equivTxt = pesoEquivKgText(ex);
     const card = document.createElement("div");
     card.className = "ex-card" + (done ? " done" : "");
     card.id = id;
     card.dataset.ex = ex; card.dataset.kind = "normal";
     observeReveal(card);
-    card.innerHTML = `<div class="ex-header"><span class="ex-name">${ex}${nameBadge}</span><div class="dots-row"><span class="dot-count" id="dc-${id}">${checked}/${total}</span>${dots}</div></div><div class="ex-body"><div class="ex-ref">${refHtml}</div><div class="ex-in-grp"><div class="ex-in-hdr"><span class="ex-lbl">Hoy</span><button type="button" class="unit-toggle" onclick="toggleWeightUnit()">${weightUnit}</button></div><input class="ex-input" placeholder="Peso (${weightUnit})" type="number" inputmode="decimal" value="${pesoKgToDisplay(sState[ex].peso)}" ${done?"disabled":""} data-ex="${ex}" data-field="peso" oninput="updateSt(this)"><span class="peso-equiv" id="pe-${id}">${equivTxt}</span><input class="ex-input" placeholder="Series" value="${sState[ex].series}" ${done?"disabled":""} data-ex="${ex}" data-field="series" oninput="updateSt(this)"></div>${progRow}</div>`;
+    card.innerHTML = `<div class="ex-header"><span class="ex-name">${ex}${nameBadge}</span><div class="dots-row"><span class="dot-count tnum" id="dc-${id}">${checked}/${total}</span>${dots}</div></div><div class="ex-body"><div class="ex-ref">${refHtml}</div><div class="ex-in-grp"><div class="ex-in-hdr"><span class="ex-lbl">Hoy</span><button type="button" class="unit-toggle" onclick="toggleWeightUnit()">${weightUnit}</button></div><input class="ex-input" placeholder="Peso (${weightUnit})" type="number" inputmode="decimal" value="${pesoDisplayValue(ex)}" ${done?"disabled":""} data-ex="${ex}" data-field="peso" oninput="updateSt(this)"><span class="peso-equiv tnum" id="pe-${id}">${equivTxt}</span><input class="ex-input" placeholder="Series" value="${sState[ex].series}" ${done?"disabled":""} data-ex="${ex}" data-field="series" oninput="updateSt(this)"></div>${progRow}</div>`;
     list.appendChild(card);
   });
   updateProg();
@@ -2825,7 +2960,7 @@ function toggleTestDone(ex) { if (!sState[ex]) return; sState[ex].done = !sState
 
 function tickDot(ex, idx) {
   const total = getSeries(currentDay, ex), current = sChecks[ex] || 0;
-  haptic(idx === current ? 12 : 8);
+  haptic(idx === current ? 10 : 8);
   if (idx === current - 1) sChecks[ex] = current - 1;
   else if (idx === current) sChecks[ex] = current + 1;
   else sChecks[ex] = idx + 1;
@@ -2842,9 +2977,10 @@ function tickDot(ex, idx) {
     // animation delay and saving done:false despite seriesDone===total.
     const inp = card.querySelectorAll(".ex-input");
     if (!sState[ex]) sState[ex] = { done: false };
-    inp.forEach(i => { const f = i.dataset.field; if (!f) return; sState[ex][f] = f === "peso" ? pesoInputToKg(i.value) : i.value; });
+    inp.forEach(i => { const f = i.dataset.field; if (!f) return; if (f === "peso") { sState[ex].peso = pesoInputToKg(i.value); sState[ex].pesoRaw = i.value; sState[ex].pesoUnidad = weightUnit; } else sState[ex][f] = i.value; });
     sState[ex].done = true;
     restStop();
+    haptic([14, 50, 14]); // ejercicio completo: vibración doble, más marcada que el tick normal
     updateProg();
     setTimeout(() => {
       card.classList.add("completing");
@@ -2863,14 +2999,13 @@ function tickDot(ex, idx) {
 function updateSt(inp) {
   const ex = inp.dataset.ex, f = inp.dataset.field;
   if (!sState[ex]) sState[ex] = { peso: "", series: "", done: false };
-  sState[ex][f] = f === "peso" ? pesoInputToKg(inp.value) : inp.value;
   if (f === "peso") {
+    sState[ex].peso = pesoInputToKg(inp.value);
+    sState[ex].pesoRaw = inp.value;
+    sState[ex].pesoUnidad = weightUnit;
     const eq = document.getElementById("pe-" + safeId(ex));
-    if (eq) {
-      const n = parseFloat(inp.value);
-      eq.textContent = (weightUnit === "lb" && inp.value !== "" && !isNaN(n)) ? "≈ " + roundW(lbToKg(n)) + " kg" : "";
-    }
-  }
+    if (eq) eq.textContent = pesoEquivKgText(ex);
+  } else sState[ex][f] = inp.value;
   persistDraft();
 }
 function toggleProg(ex, val) {
@@ -2879,9 +3014,8 @@ function toggleProg(ex, val) {
   haptic(8);
   const card = document.getElementById(safeId(ex));
   if (card) {
-    const eqBtn = card.querySelector(".prog-dot.eq"), upBtn = card.querySelector(".prog-dot.up");
-    if (eqBtn) eqBtn.classList.toggle("active", sState[ex].prog === "eq");
-    if (upBtn) upBtn.classList.toggle("active", sState[ex].prog === "up");
+    const sw = card.querySelector(".prog-switch");
+    if (sw) sw.className = "prog-switch" + (sState[ex].prog === "eq" ? " state-eq" : "") + (sState[ex].prog === "up" ? " state-up" : "");
   }
   persistDraft();
 }
@@ -2893,6 +3027,24 @@ function updateProg() {
   const pb = document.getElementById("prog-bar");
   pb.style.transform = "scaleX(" + (pct / 100) + ")";
   pb.classList.toggle("complete", pct >= 100);
+  if (pct >= 100 && exs.length && !dayCompleteFlashed) { dayCompleteFlashed = true; flashDayComplete(exs); }
+  else if (pct < 100) dayCompleteFlashed = false;
+}
+// Al llegar el progreso del día al 100% (última serie pendiente marcada):
+// destello breve en la barra + resumen de tonelaje/series + vibración de
+// confirmación. Breve y elegante — nada de confeti ni animaciones largas (F6).
+function flashDayComplete(exs) {
+  const pb = document.getElementById("prog-bar");
+  if (pb && !REDUCE_MOTION) { pb.classList.add("day-flash"); setTimeout(() => pb.classList.remove("day-flash"), 650); }
+  haptic([16, 60, 16, 60, 24]);
+  const totalSeries = exs.reduce((a, ex) => a + getSeries(currentDay, ex), 0);
+  const sessionExercises = exs.map(ex => {
+    const st = sState[ex] || {};
+    if (ex === "DOMINADAS") return { name: ex, lastre: st.lastre, pesoCorporal: getPesoCorporalAt(currentDate), series: st.series };
+    return { name: ex, peso: st.peso, series: st.series };
+  });
+  const vol = calcVol(sessionExercises);
+  showToast(`Entreno completo · ${totalSeries} series${vol > 0 ? " · " + vol.toLocaleString() + " kg" : ""}`, "ok");
 }
 function saveSession() {
   if (!currentDay) return; captureInputs();
@@ -2901,7 +3053,7 @@ function saveSession() {
     if (mode === "emom") return { name: ex, emomReps: st.emomReps || "", emomMins: st.emomMins || "", emomTotal: st.emomTotal || 0, lastre: st.lastre || "", pesoCorporal: getPesoCorporalAt(currentDate), done: st.done || false };
     if (mode === "test") return { name: ex, testReps: st.testReps || "", pesoCorporal: getPesoCorporalAt(currentDate), done: st.done || false };
     if (ex === "DOMINADAS") return { name: ex, lastre: st.lastre || "", series: st.series || "", pesoCorporal: getPesoCorporalAt(currentDate), done: st.done || false, seriesDone: sChecks[ex] || 0 };
-    return { name: ex, peso: st.peso || "", series: st.series || "", done: st.done || false, seriesDone: sChecks[ex] || 0, prog: st.prog || null };
+    return { name: ex, peso: st.peso || "", pesoRaw: st.pesoRaw !== undefined ? st.pesoRaw : (st.peso || ""), pesoUnidad: st.pesoUnidad || "kg", series: st.series || "", done: st.done || false, seriesDone: sChecks[ex] || 0, prog: st.prog || null };
   })};
   const data = getData();
   const idx = data.findIndex(s => s.date === session.date && s.day === session.day);
@@ -3018,9 +3170,13 @@ const HIST_DOW_LBL = { lunes:"LUN", martes:"MAR", miercoles:"MIÉ", jueves:"JUE"
 const DOW_KEYS = ["domingo","lunes","martes","miercoles","jueves","viernes","sabado"];
 function dayKeyOf(ds) { const [y,m,d] = ds.split("-").map(Number); return DOW_KEYS[new Date(y, m - 1, d).getDay()]; }
 function histDayCycle() { return histView === "gym" ? ["lunes","martes","jueves","viernes","sabado","all"] : ["lunes","martes","miercoles","jueves","viernes","sabado","domingo","all"]; }
+const HIST_VIEW_CYCLE = ["gym", "dominadas", "dominadas_total"];
+const HIST_VIEW_LBL = { gym: "GYM", dominadas: "DOMINADAS", dominadas_total: "DOMINADAS TOTAL" };
 function cycleHistView() {
-  histView = histView === "gym" ? "dominadas" : "gym";
-  document.getElementById("hist-view-btn").textContent = histView === "gym" ? "GYM" : "DOMINADAS";
+  histView = HIST_VIEW_CYCLE[(HIST_VIEW_CYCLE.indexOf(histView) + 1) % HIST_VIEW_CYCLE.length];
+  const btn = document.getElementById("hist-view-btn");
+  btn.textContent = HIST_VIEW_LBL[histView];
+  btn.className = "pill active hist-view-" + histView;
   if (!histDayCycle().includes(histFilter)) histFilter = "all";
   document.getElementById("hist-day-btn").textContent = HIST_DOW_LBL[histFilter];
   haptic(8);
@@ -3036,6 +3192,7 @@ function cycleHistDay() {
 }
 function renderHist() {
   if (histView === "dominadas") { renderHistDominadas(); return; }
+  if (histView === "dominadas_total") { renderHistDominadasTotal(); return; }
   const list = document.getElementById("hist-list");
   let data = getData().sort((a, b) => b.date.localeCompare(a.date));
   if (histFilter !== "all") data = data.filter(s => s.day === histFilter);
@@ -3094,6 +3251,64 @@ function renderHistDominadas() {
     const wkEnd = new Date(wk + "T12:00:00"); wkEnd.setDate(wkEnd.getDate() + 6);
     const wkEndS = wkEnd.toISOString().split("T")[0];
     return `<div class="hist-session" style="animation:fadeUp 0.32s cubic-bezier(0.22,1,0.36,1) ${wi*0.04}s both"><div class="hist-hdr" onclick="toggleHist('dom${wi}')"><div><div class="hist-date">Semana ${fmtDate(wk)} – ${fmtDate(wkEndS)}</div><div class="hist-meta"><span class="hist-chip">${weekReps} reps</span>${weekTon>0?`<span class="hist-chip blue">${(weekTon/1000).toFixed(2)} t</span>`:""}</div></div><div class="hist-controls"><button class="toggle-btn" id="arr-dom${wi}">›</button></div></div><div class="hist-body" id="hb-dom${wi}">${dayRows}</div></div>`;
+  }).join("");
+}
+// Desglose de un día para la vista DOMINADAS TOTAL: hasta 3 fuentes posibles
+// — EMOM del lunes, las 4 series normales del viernes y las dominadas sueltas
+// — cada una con sus propias reps y su propio tonelaje (peso corporal+lastre
+// por rep), para sumarlas y mostrarlas desglosadas debajo del total del día.
+function domTotalDayBreakdown(ds) {
+  const sources = [];
+  const sess = getData().find(s => s.date === ds);
+  if (sess) {
+    const e = sess.exercises.find(x => x.name === "DOMINADAS");
+    if (e) {
+      const w = (e.pesoCorporal || 0) + (parseFloat(e.lastre) || 0);
+      if (sess.day === "lunes" && (e.emomReps || e.emomMins || e.emomTotal)) {
+        const reps = e.emomTotal || 0;
+        sources.push({ lbl: "EMOM lunes", reps, ton: reps * w });
+      } else if (sess.day === "viernes" && e.series && !e.testReps) {
+        let reps = 0, ton = 0;
+        parseSeries(e.series).forEach(({ series, reps: r }) => { reps += series * r; ton += series * r * w; });
+        sources.push({ lbl: "Viernes · 4 series", reps, ton });
+      }
+    }
+  }
+  const extra = getDomExtra()[ds];
+  if (extra && extra.length) {
+    const reps = extra.reduce((a, t) => a + (t.reps || 0), 0);
+    const ton = extra.reduce((a, t) => a + (t.reps || 0) * ((t.pesoCorporal || 0) + (t.lastre || 0)), 0);
+    sources.push({ lbl: "Sueltas", reps, ton });
+  }
+  return sources;
+}
+// Vista DOMINADAS TOTAL: suma de las tres fuentes anteriores, agrupada por
+// semana igual que la vista DOMINADAS, con el desglose de cada fuente debajo.
+function renderHistDominadasTotal() {
+  const list = document.getElementById("hist-list");
+  const gymDates = getData().filter(s => (s.day === "lunes" || s.day === "viernes") && s.exercises.some(e => e.name === "DOMINADAS")).map(s => s.date);
+  const dates = [...new Set([...gymDates, ...Object.keys(getDomExtra())])]
+    .filter(ds => domTotalDayBreakdown(ds).length)
+    .filter(ds => histFilter === "all" || dayKeyOf(ds) === histFilter)
+    .sort((a, b) => b.localeCompare(a));
+  if (!dates.length) { list.innerHTML = `<div class="empty-state">${emptyStateHTML("Sin dominadas registradas")}</div>`; return; }
+  const weeks = {};
+  dates.forEach(ds => { const wk = weekKey(ds); (weeks[wk] = weeks[wk] || []).push(ds); });
+  const weekKeys = Object.keys(weeks).sort((a, b) => b.localeCompare(a));
+  list.innerHTML = weekKeys.map((wk, wi) => {
+    let weekReps = 0, weekTon = 0;
+    const dayRows = weeks[wk].sort((a, b) => b.localeCompare(a)).map(ds => {
+      const sources = domTotalDayBreakdown(ds);
+      const reps = sources.reduce((a, s) => a + s.reps, 0);
+      const ton = sources.reduce((a, s) => a + s.ton, 0);
+      weekReps += reps; weekTon += ton;
+      const dk = dayKeyOf(ds), dayName = dk.charAt(0).toUpperCase() + dk.slice(1);
+      const breakdown = sources.map(s => `${s.lbl}: ${s.reps} reps`).join(" + ");
+      return `<div class="hist-ex-row"><span class="hist-ex-name">${fmtDate(ds)} · ${dayName}</span><span class="hist-ex-data">${reps} reps${ton > 0 ? " · " + (ton / 1000).toFixed(2) + " t" : ""}</span></div><div style="font-size:11px;color:var(--text-3);padding:0 0 8px">${breakdown}</div>`;
+    }).join("");
+    const wkEnd = new Date(wk + "T12:00:00"); wkEnd.setDate(wkEnd.getDate() + 6);
+    const wkEndS = wkEnd.toISOString().split("T")[0];
+    return `<div class="hist-session" style="animation:fadeUp 0.32s cubic-bezier(0.22,1,0.36,1) ${wi*0.04}s both"><div class="hist-hdr" onclick="toggleHist('domt${wi}')"><div><div class="hist-date">Semana ${fmtDate(wk)} – ${fmtDate(wkEndS)}</div><div class="hist-meta"><span class="hist-chip">${weekReps} reps</span>${weekTon>0?`<span class="hist-chip blue">${(weekTon/1000).toFixed(2)} t</span>`:""}</div></div><div class="hist-controls"><button class="toggle-btn" id="arr-domt${wi}">›</button></div></div><div class="hist-body" id="hb-domt${wi}">${dayRows}</div></div>`;
   }).join("");
 }
 function toggleDateEdit(e, i) {
@@ -3172,6 +3387,38 @@ function renderProgress() {
   animateNumber(document.getElementById("s-last"), vals[vals.length - 1], { decimals: 1 });
   if (progChart) progChart.destroy();
   progChart = new Chart(document.getElementById("prog-chart").getContext("2d"), buildLineConfig(allData.map(s => s.date), vals, "#fff", "rgba(255,255,255,0.07)", "kg"));
+}
+
+// ─── EJERCICIOS SUSTITUIDOS (Bloque C) ──────────────────────────
+// Tarjetas cerradas con el patrón ÚLTIMA VEZ/ANTERIOR (igual que en Entreno);
+// al pulsar se despliega el histórico completo leído por idAntiguo, sin
+// duplicar datos. Ordenadas por fecha de sustitución, la más reciente arriba.
+function renderSustituidos() {
+  const wrap = document.getElementById("sustituidos-list");
+  if (!wrap) return;
+  const sust = getSustituciones().slice().sort((a, b) => b.fecha.localeCompare(a.fecha));
+  if (!sust.length) { wrap.innerHTML = `<div class="empty-state">${emptyStateHTML("Sin ejercicios sustituidos")}</div>`; return; }
+  const data = getData();
+  wrap.innerHTML = sust.map((s, i) => {
+    const hist = data
+      .filter(sess => sess.exercises.some(e => e.name === s.idAntiguo && (e.peso || e.series)))
+      .map(sess => ({ ...sess.exercises.find(e => e.name === s.idAntiguo), date: sess.date }))
+      .sort((a, b) => b.date.localeCompare(a.date));
+    const refRow = r => {
+      const val = r.peso ? fmtWeightRecord(r) + (r.series ? " · " + r.series : "") : (r.series || "");
+      return { val };
+    };
+    const refs = hist.slice(0, 2);
+    const refHtml = refs.length
+      ? refs.map((r, ri) => `<div class="ex-lbl">${ri === 0 ? "Última vez" : "Anterior"} · ${fmtDate(r.date)}</div><div class="ref-val">${refRow(r).val}</div>`).join("")
+      : `<div class="ex-lbl">Referencia</div><div class="ref-val empty">Sin registros</div>`;
+    const maxW = hist.reduce((m, r) => Math.max(m, parseFloat(r.peso) || 0), 0);
+    const fullHtml = hist.length
+      ? hist.map(r => `<div class="hist-ex-row"><span class="hist-ex-name">${fmtDate(r.date)}</span><span class="hist-ex-data">${refRow(r).val}</span></div>`).join("") +
+        (maxW > 0 ? `<div class="hist-ex-row"><span class="hist-ex-name">Peso máximo</span><span class="hist-ex-data">${fmtWeightKg(maxW)}</span></div>` : "")
+      : `<div style="color:var(--text-3);font-size:13px;padding:6px 0">Sin registros</div>`;
+    return `<div class="hist-session" style="animation:fadeUp 0.32s cubic-bezier(0.22,1,0.36,1) ${i*0.04}s both"><div class="hist-hdr" onclick="toggleHist('sust${i}')"><div><div class="hist-date">${s.nombreAntiguo} <span style="color:var(--text-3)">→</span> ${s.nombreNuevo}</div><div class="hist-meta"><span class="hist-chip">Sustituido el ${fmtDate(s.fecha)}</span></div><div class="ex-ref" style="margin-top:8px">${refHtml}</div></div><div class="hist-controls"><button class="toggle-btn" id="arr-sust${i}">›</button></div></div><div class="hist-body" id="hb-sust${i}">${fullHtml}</div></div>`;
+  }).join("");
 }
 
 // ─── ACTIVITY MAP ───────────────────────────────────────────────
@@ -3488,19 +3735,66 @@ function savePeso() {
   flashSuccess(document.getElementById("peso-btn"));
   showToast("Peso guardado", "ok");
 }
+function updateMedVariantLabels() {
+  Object.keys(MED_VARIANTS).forEach(field => {
+    const lbl = document.getElementById("m-lbl-" + field);
+    if (lbl) lbl.textContent = field.charAt(0).toUpperCase() + field.slice(1) + " · " + MED_VARIANT_LBL[medVariant[field]] + " (cm)";
+  });
+}
+// Doble toque o deslizar sobre el campo alterna la variante (E1); cada
+// variante tiene su propio histórico independiente dentro de medidas[mk].
+function toggleMedVariant(field) {
+  const opts = MED_VARIANTS[field]; if (!opts) return;
+  medVariant[field] = medVariant[field] === opts[0] ? opts[1] : opts[0];
+  haptic(8);
+  const grp = document.getElementById("m-grp-" + field);
+  if (grp) { grp.classList.add("variant-flip"); setTimeout(() => grp.classList.remove("variant-flip"), 260); }
+  renderMedidasSection();
+}
+function wireMedVariantSwipe(field) {
+  const grp = document.getElementById("m-grp-" + field); if (!grp) return;
+  let startX = null;
+  grp.addEventListener("touchstart", e => { startX = e.touches[0].clientX; }, { passive: true });
+  grp.addEventListener("touchend", e => {
+    if (startX === null) return;
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 30) toggleMedVariant(field);
+    startX = null;
+  }, { passive: true });
+}
 function renderMedidasSection() {
   const f = getFisico(); const m = f.medidas || {};
   const di = document.getElementById("med-date"); if (!di.value) di.value = todayStr();
   const mk = monthKey(di.value); const al = m[mk];
   document.getElementById("med-info").textContent = al ? "Medidas de " + mk + " (editables)" : "Sin medidas este mes";
-  MED_FIELDS.forEach(field => { const inp = document.getElementById("m-" + field); inp.value = al && al[field] ? al[field] : ""; });
+  MED_FIELDS.forEach(field => {
+    const inp = document.getElementById("m-" + field);
+    if (MED_VARIANTS[field]) {
+      const obj = al && al[field] && typeof al[field] === "object" ? al[field] : {};
+      const v = obj[medVariant[field]];
+      inp.value = v != null ? v : "";
+    } else {
+      inp.value = al && al[field] ? al[field] : "";
+    }
+  });
+  updateMedVariantLabels();
 }
 function saveMedidas() {
   const di = document.getElementById("med-date"); const mk = monthKey(di.value || todayStr());
   const f = getFisico(); if (!f.medidas) f.medidas = {};
+  const existing = f.medidas[mk] || {};
   const entry = {}; let hasInvalid = false;
   MED_FIELDS.forEach(field => {
-    const raw = document.getElementById("m-" + field).value; if (!raw) return;
+    const raw = document.getElementById("m-" + field).value;
+    if (MED_VARIANTS[field]) {
+      const prevObj = (existing[field] && typeof existing[field] === "object") ? existing[field] : {};
+      if (!raw) { if (Object.keys(prevObj).length) entry[field] = prevObj; return; }
+      const v = parseFloat(raw);
+      if (isNaN(v) || v <= 0 || v > 300) { hasInvalid = true; return; }
+      entry[field] = { ...prevObj, [medVariant[field]]: v };
+      return;
+    }
+    if (!raw) return;
     const v = parseFloat(raw);
     if (isNaN(v) || v <= 0 || v > 300) { hasInvalid = true; return; }
     entry[field] = v;
@@ -3517,9 +3811,16 @@ function renderMacros() {
   animateNumber(document.getElementById("macro-prot"), pw ? Math.round(pw * 1.2) : null, { decimals: 0 });
   animateNumber(document.getElementById("macro-grasa"), pw ? Math.round(pw * 0.5) : null, { decimals: 0 });
 }
+// El método Navy exige la cintura medida a la altura del OMBLIGO (E2) — la
+// variante "estrecha" daba porcentajes irrealmente bajos. Sin ese dato, no se
+// calcula (el llamador debe mostrar "—", nunca sustituir por la estrecha).
+function cinturaOmbligo(med) {
+  return med && med.cintura && typeof med.cintura === "object" ? (med.cintura.ombligo || null) : null;
+}
 function calcBodyFat(peso, med) {
-  if (!peso || !med || !med.cintura || !med.cuello) return null;
-  const navy = 495 / (1.0324 - 0.19077 * Math.log10(med.cintura - med.cuello) + 0.15456 * Math.log10(ALTURA_M * 100)) - 450;
+  const cOmbligo = cinturaOmbligo(med);
+  if (!peso || !cOmbligo || !med.cuello) return null;
+  const navy = 495 / (1.0324 - 0.19077 * Math.log10(cOmbligo - med.cuello) + 0.15456 * Math.log10(ALTURA_M * 100)) - 450;
   if (navy < 3 || navy > 50) return null;
   return parseFloat(navy.toFixed(1));
 }
@@ -3535,7 +3836,7 @@ function getAnchor() {
   const sortedMonths = Object.keys(medidas).sort().reverse();
   for (const mk of sortedMonths) {
     const m = medidas[mk];
-    if (!m || !m.cintura || !m.cuello) continue;
+    if (!m || !cinturaOmbligo(m) || !m.cuello) continue;
     const cutoff = mk + "-31";
     const wks = Object.keys(pesos).filter(w => w <= cutoff).sort().reverse();
     if (!wks.length) continue;
@@ -3774,7 +4075,7 @@ function renderBodyFat() {
   const valEl = document.getElementById("bf-val"), bkEl = document.getElementById("bf-breakdown");
   if (!est) {
     valEl.textContent = "—"; valEl.style.color = "var(--text-2)";
-    bkEl.innerHTML = '<div style="font-size:12px;color:var(--text-3);text-align:center;padding:4px">Necesitas peso + medidas (cintura y cuello)</div>';
+    bkEl.innerHTML = '<div style="font-size:12px;color:var(--text-3);text-align:center;padding:4px">Necesitas peso + medidas (cintura al ombligo y cuello)</div>';
     return;
   }
   const bf = est.pctGrasa;
@@ -4112,9 +4413,10 @@ function renderMedidasChart() {
   const f = getFisico(); const m = f.medidas || {};
   const etapaStart = f.etapa?.fechaInicio; const sd = getStartDate(fisicoPeriod, etapaStart);
   const field = document.getElementById("med-chart-sel").value;
-  const entries = Object.entries(m).filter(([mk]) => (mk + "-01") >= sd).sort(([a],[b]) => a.localeCompare(b)).filter(([, v]) => v[field] !== undefined);
+  const valOf = v => MED_VARIANTS[field] ? (v[field] && typeof v[field] === "object" ? v[field][medVariant[field]] : undefined) : v[field];
+  const entries = Object.entries(m).filter(([mk]) => (mk + "-01") >= sd).sort(([a],[b]) => a.localeCompare(b)).filter(([, v]) => valOf(v) !== undefined);
   if (medChart) medChart.destroy();
-  medChart = new Chart(document.getElementById("med-chart").getContext("2d"), buildLineConfig(entries.map(([mk]) => mk), entries.map(([, v]) => v[field]), "var(--cyan)", "rgba(90,200,250,0.10)", "cm", "month"));
+  medChart = new Chart(document.getElementById("med-chart").getContext("2d"), buildLineConfig(entries.map(([mk]) => mk), entries.map(([, v]) => valOf(v)), "var(--cyan)", "rgba(90,200,250,0.10)", "cm", "month"));
 }
 function goCorpo(idx) { const c = document.getElementById("corpo-carousel"); c.scrollTo({ left: c.offsetWidth * idx, behavior: "smooth" }); updCorpoDots(idx); }
 function onCorpoScroll() { const c = document.getElementById("corpo-carousel"); updCorpoDots(Math.round(c.scrollLeft / c.offsetWidth)); }
@@ -4147,14 +4449,14 @@ function showScreen(name, btn) {
       cur.classList.remove("active"); cur.style.animation = "";
       next.classList.add("active");
       if (name === "historial") renderHist();
-      if (name === "progreso") { populateProgSel(); renderProgress(); renderActivityMap(); }
+      if (name === "progreso") { populateProgSel(); renderProgress(); renderActivityMap(); renderSustituidos(); }
       if (name === "fisico") initFisico();
       if (name === "informe") renderInforme();
     }, 160);
   } else {
     next.classList.add("active");
     if (name === "historial") renderHist();
-    if (name === "progreso") { populateProgSel(); renderProgress(); renderActivityMap(); }
+    if (name === "progreso") { populateProgSel(); renderProgress(); renderActivityMap(); renderSustituidos(); }
     if (name === "fisico") initFisico();
     if (name === "informe") renderInforme();
   }
@@ -4768,7 +5070,7 @@ function refreshCurrentScreen() {
     renderDomExtraCard();
   }
   else if (name === "historial") renderHist();
-  else if (name === "progreso") { populateProgSel(); renderProgress(); renderActivityMap(); }
+  else if (name === "progreso") { populateProgSel(); renderProgress(); renderActivityMap(); renderSustituidos(); }
   else if (name === "fisico") initFisico();
   else if (name === "informe") renderInforme();
 }
@@ -4814,6 +5116,9 @@ function refreshCurrentScreen() {
 })();
 
 // ─── INIT ─────────────────────────────────────────────────────
+migrateDataOct2026();
+migrateMedidasVariantes();
+wireMedVariantSwipe("cintura"); wireMedVariantSwipe("brazo");
 updateNavIndicator(document.querySelector(".nav-btn.active"));
 document.getElementById("session-date").value = todayStr();
 populateProgSel(); updateHeaderStage();
@@ -4834,6 +5139,14 @@ if (luEl) {
 
 const dm = { 1: "lunes", 2: "martes", 4: "jueves", 5: "viernes", 6: "sabado" };
 const td = dm[new Date().getDay()];
+// Marca de "hoy" en el selector LUN/MAR/JUE/VIE/SAB (F4) — independiente de
+// la marca de día seleccionado, así se ve de un vistazo si estás viendo hoy
+// o un día pasado aunque hayas navegado a otra fecha.
+if (td) {
+  document.querySelectorAll(".day-btn").forEach((b, i) =>
+    b.classList.toggle("today", ["lunes","martes","jueves","viernes","sabado"][i] === td)
+  );
+}
 if (td) selectDay(td); else { updateTodayHero(); renderDomExtraCard(); }
 
 </script>
