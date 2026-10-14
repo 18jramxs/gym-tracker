@@ -480,19 +480,21 @@ body::after {
 .prog-ref-badge.up { background: var(--green-bg); color: var(--green); }
 .prog-row { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; margin-top: 2px; }
 .prog-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-3); margin-right: 2px; }
-/* Switch deslizante "mantener/progresa" (F1): pista glass translúcida con un
-   pulgar que se desliza y se ilumina del color correspondiente por detrás. */
+/* Indicador de progresión "mantener/sube" (F1): pastilla glass translúcida,
+   un pulgar animado que se ilumina del color correspondiente por detrás.
+   Alterna de estado con una pulsación simple — sin gestos de arrastre. */
+.prog-switch-hit {
+  position: relative; min-width: 44px; min-height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: none; padding: 0; margin: 0; flex-shrink: 0;
+  cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
 .prog-switch {
   position: relative; width: 50px; height: 25px; border-radius: 13px;
   background: rgba(255,255,255,0.05); border: 1px solid var(--border);
   backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-  flex-shrink: 0; transition: background 0.3s ease, border-color 0.3s ease;
+  flex-shrink: 0; pointer-events: none; transition: background 0.3s ease, border-color 0.3s ease;
 }
-.switch-tap {
-  position: absolute; inset: 0; width: 50%; height: 100%;
-  background: none; border: none; padding: 0; cursor: pointer; z-index: 2;
-}
-.switch-tap.right { left: 50%; }
 .switch-thumb {
   position: absolute; top: 2px; left: 2px; width: 19px; height: 19px; border-radius: 50%;
   background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.35);
@@ -2829,7 +2831,8 @@ function renderExercises() {
     const id = safeId(ex), total = getSeries(currentDay, ex), done = sChecks[ex] >= total || sState[ex].done, checked = sChecks[ex] || 0;
     let dots = "";
     for (let i = 0; i < total; i++) dots += `<button class="dot ${i<checked?"on":""}" onclick="tickDot('${ex}',${i})"></button>`;
-    const progRow = canProg ? `<div class="prog-row"><span class="prog-lbl">Próxima vez</span><div class="prog-switch${sState[ex].prog==="eq"?" state-eq":""}${sState[ex].prog==="up"?" state-up":""}"><button type="button" class="switch-tap left" onclick="toggleProg('${ex}','eq')" aria-label="Mantener peso"></button><button type="button" class="switch-tap right" onclick="toggleProg('${ex}','up')" aria-label="Subir peso"></button><span class="switch-thumb"></span></div></div>` : "";
+    const progAria = sState[ex].prog === "up" ? "Progresión: subir peso. Toca para cambiar a mantener." : "Progresión: mantener peso. Toca para cambiar a subir.";
+    const progRow = canProg ? `<div class="prog-row"><span class="prog-lbl">Próxima vez</span><button type="button" class="prog-switch-hit" onclick="toggleProg('${ex}')" aria-label="${progAria}"><span class="prog-switch${sState[ex].prog==="eq"?" state-eq":""}${sState[ex].prog==="up"?" state-up":""}"><span class="switch-thumb"></span></span></button></div>` : "";
     const equivTxt = pesoEquivKgText(ex);
     const card = document.createElement("div");
     card.className = "ex-card" + (done ? " done" : "");
@@ -3008,14 +3011,16 @@ function updateSt(inp) {
   } else sState[ex][f] = inp.value;
   persistDraft();
 }
-function toggleProg(ex, val) {
+function toggleProg(ex) {
   if (!sState[ex]) sState[ex] = { peso: "", series: "", done: false, prog: null };
-  sState[ex].prog = sState[ex].prog === val ? null : val;
+  sState[ex].prog = sState[ex].prog === "eq" ? "up" : "eq";
   haptic(8);
   const card = document.getElementById(safeId(ex));
   if (card) {
     const sw = card.querySelector(".prog-switch");
+    const hit = card.querySelector(".prog-switch-hit");
     if (sw) sw.className = "prog-switch" + (sState[ex].prog === "eq" ? " state-eq" : "") + (sState[ex].prog === "up" ? " state-up" : "");
+    if (hit) hit.setAttribute("aria-label", sState[ex].prog === "up" ? "Progresión: subir peso. Toca para cambiar a mantener." : "Progresión: mantener peso. Toca para cambiar a subir.");
   }
   persistDraft();
 }
