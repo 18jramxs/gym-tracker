@@ -772,11 +772,6 @@ body::after {
 .medidas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
 .m-grp { display: flex; flex-direction: column; gap: 5px; transition: opacity 0.18s ease, transform 0.18s ease; }
 .m-lbl { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
-#m-grp-cintura .m-lbl, #m-grp-brazo .m-lbl, #m-grp-cintura .m-input, #m-grp-brazo .m-input { cursor: pointer; }
-/* Transición animada al alternar variante de cintura/brazo (E1) — un pulso
-   breve, no un salto seco. */
-.m-grp.variant-flip { animation: medVariantFlip 0.26s ease; }
-@keyframes medVariantFlip { 0% { opacity: 0.35; transform: scale(0.97); } 100% { opacity: 1; transform: scale(1); } }
 .m-input {
   background: var(--bg-input);
   border: 1px solid var(--border);
@@ -2029,10 +2024,12 @@ input:focus, select:focus, textarea:focus {
         <div class="f-row" style="margin-bottom:8px"><input type="date" id="med-date" class="date-input" style="flex:1" onchange="renderMedidasSection()"></div>
         <div class="f-info" id="med-info"></div>
         <div class="medidas-grid">
-          <div class="m-grp" id="m-grp-cintura"><label class="m-lbl" for="m-cintura" id="m-lbl-cintura" ondblclick="toggleMedVariant('cintura')">Cintura (cm)</label><input type="number" inputmode="decimal" class="m-input" id="m-cintura" step="0.1" min="0" max="300" ondblclick="toggleMedVariant('cintura')"></div>
+          <div class="m-grp"><label class="m-lbl" for="m-cintura-estrecha">Cintura · Estrecha (cm)</label><input type="number" inputmode="decimal" class="m-input" id="m-cintura-estrecha" step="0.1" min="0" max="300"></div>
+          <div class="m-grp"><label class="m-lbl" for="m-cintura-ombligo">Cintura · Ombligo (cm)</label><input type="number" inputmode="decimal" class="m-input" id="m-cintura-ombligo" step="0.1" min="0" max="300"></div>
           <div class="m-grp"><label class="m-lbl" for="m-cadera">Cadera (cm)</label><input type="number" inputmode="decimal" class="m-input" id="m-cadera" step="0.1" min="0" max="300"></div>
           <div class="m-grp"><label class="m-lbl" for="m-pecho">Pecho (cm)</label><input type="number" inputmode="decimal" class="m-input" id="m-pecho" step="0.1" min="0" max="300"></div>
-          <div class="m-grp" id="m-grp-brazo"><label class="m-lbl" for="m-brazo" id="m-lbl-brazo" ondblclick="toggleMedVariant('brazo')">Brazo (cm)</label><input type="number" inputmode="decimal" class="m-input" id="m-brazo" step="0.1" min="0" max="120" ondblclick="toggleMedVariant('brazo')"></div>
+          <div class="m-grp"><label class="m-lbl" for="m-brazo-relajado">Brazo · Relajado (cm)</label><input type="number" inputmode="decimal" class="m-input" id="m-brazo-relajado" step="0.1" min="0" max="120"></div>
+          <div class="m-grp"><label class="m-lbl" for="m-brazo-contraido">Brazo · Contraído (cm)</label><input type="number" inputmode="decimal" class="m-input" id="m-brazo-contraido" step="0.1" min="0" max="120"></div>
           <div class="m-grp"><label class="m-lbl" for="m-muslo">Muslo (cm)</label><input type="number" inputmode="decimal" class="m-input" id="m-muslo" step="0.1" min="0" max="150"></div>
           <div class="m-grp"><label class="m-lbl" for="m-cuello">Cuello (cm)</label><input type="number" inputmode="decimal" class="m-input" id="m-cuello" step="0.1" min="0" max="100"></div>
         </div>
@@ -2066,7 +2063,7 @@ input:focus, select:focus, textarea:focus {
       <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;width:100%;box-sizing:border-box;padding:0 16px 16px;"><div class="chart-lbl">Semana a semana</div><div class="week-chips" id="week-chips"></div><div id="week-detail"></div></div>
       <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;width:100%;box-sizing:border-box;padding:0 16px 16px;"><div class="chart-lbl">Peso corporal (kg)</div><canvas id="peso-chart" height="160"></canvas></div>
       <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;width:100%;box-sizing:border-box;padding:0 16px 16px;"><div class="chart-lbl">% Grasa corporal</div><canvas id="bf-chart" height="160"></canvas></div>
-      <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;width:100%;box-sizing:border-box;padding:0 16px 16px;"><div class="chart-lbl">Medidas corporales (cm)</div><select class="medida-select" id="med-chart-sel" onchange="renderMedidasChart()"><option value="cintura">Cintura</option><option value="cadera">Cadera</option><option value="pecho">Pecho</option><option value="brazo">Brazo</option><option value="muslo">Muslo</option></select><canvas id="med-chart" height="160"></canvas></div>
+      <div class="corpo-slide" style="scroll-snap-align:start;min-width:100%;width:100%;box-sizing:border-box;padding:0 16px 16px;"><div class="chart-lbl">Medidas corporales (cm)</div><select class="medida-select" id="med-chart-sel" onchange="renderMedidasChart()"><option value="cintura:estrecha">Cintura (estrecha)</option><option value="cintura:ombligo">Cintura (ombligo)</option><option value="cadera">Cadera</option><option value="pecho">Pecho</option><option value="brazo:relajado">Brazo (relajado)</option><option value="brazo:contraido">Brazo (contraído)</option><option value="muslo">Muslo</option></select><canvas id="med-chart" height="160"></canvas></div>
     </div>
   </div>
 </div>
@@ -2271,12 +2268,10 @@ const DAY_IDX   = { lunes:1, martes:2, jueves:4, viernes:5, sabado:6 };
 const PIERNA = ["martes","sabado"];
 const SINGLE_REF = ["ABS"];
 const MED_FIELDS = ["cintura","cadera","pecho","brazo","muslo","cuello"];
-// Cintura y brazo tienen dos variantes cada uno (E1): se alternan con doble
-// toque o deslizando sobre el campo, cada una con su propio histórico dentro
-// de medidas[mk].cintura / .brazo (objeto {variante: valor}, no un número).
+// Cintura y brazo tienen dos variantes cada uno (E1): ambas se muestran a la
+// vez como campos independientes, cada una con su propio histórico dentro de
+// medidas[mk].cintura / .brazo (objeto {variante: valor}, no un número).
 const MED_VARIANTS = { cintura: ["estrecha","ombligo"], brazo: ["relajado","contraido"] };
-const MED_VARIANT_LBL = { estrecha:"ESTRECHA", ombligo:"OMBLIGO", relajado:"RELAJADO", contraido:"CONTRAÍDO" };
-let medVariant = { cintura: "estrecha", brazo: "relajado" };
 const DOM_GOAL = 17;
 const ALTURA_M = 1.78;
 const DOB = new Date("2004-01-18");
@@ -3740,49 +3735,24 @@ function savePeso() {
   flashSuccess(document.getElementById("peso-btn"));
   showToast("Peso guardado", "ok");
 }
-function updateMedVariantLabels() {
-  Object.keys(MED_VARIANTS).forEach(field => {
-    const lbl = document.getElementById("m-lbl-" + field);
-    if (lbl) lbl.textContent = field.charAt(0).toUpperCase() + field.slice(1) + " · " + MED_VARIANT_LBL[medVariant[field]] + " (cm)";
-  });
-}
-// Doble toque o deslizar sobre el campo alterna la variante (E1); cada
-// variante tiene su propio histórico independiente dentro de medidas[mk].
-function toggleMedVariant(field) {
-  const opts = MED_VARIANTS[field]; if (!opts) return;
-  medVariant[field] = medVariant[field] === opts[0] ? opts[1] : opts[0];
-  haptic(8);
-  const grp = document.getElementById("m-grp-" + field);
-  if (grp) { grp.classList.add("variant-flip"); setTimeout(() => grp.classList.remove("variant-flip"), 260); }
-  renderMedidasSection();
-}
-function wireMedVariantSwipe(field) {
-  const grp = document.getElementById("m-grp-" + field); if (!grp) return;
-  let startX = null;
-  grp.addEventListener("touchstart", e => { startX = e.touches[0].clientX; }, { passive: true });
-  grp.addEventListener("touchend", e => {
-    if (startX === null) return;
-    const dx = e.changedTouches[0].clientX - startX;
-    if (Math.abs(dx) > 30) toggleMedVariant(field);
-    startX = null;
-  }, { passive: true });
-}
 function renderMedidasSection() {
   const f = getFisico(); const m = f.medidas || {};
   const di = document.getElementById("med-date"); if (!di.value) di.value = todayStr();
   const mk = monthKey(di.value); const al = m[mk];
   document.getElementById("med-info").textContent = al ? "Medidas de " + mk + " (editables)" : "Sin medidas este mes";
   MED_FIELDS.forEach(field => {
-    const inp = document.getElementById("m-" + field);
     if (MED_VARIANTS[field]) {
       const obj = al && al[field] && typeof al[field] === "object" ? al[field] : {};
-      const v = obj[medVariant[field]];
-      inp.value = v != null ? v : "";
+      MED_VARIANTS[field].forEach(variant => {
+        const inp = document.getElementById("m-" + field + "-" + variant);
+        const v = obj[variant];
+        inp.value = v != null ? v : "";
+      });
     } else {
+      const inp = document.getElementById("m-" + field);
       inp.value = al && al[field] ? al[field] : "";
     }
   });
-  updateMedVariantLabels();
 }
 function saveMedidas() {
   const di = document.getElementById("med-date"); const mk = monthKey(di.value || todayStr());
@@ -3790,15 +3760,20 @@ function saveMedidas() {
   const existing = f.medidas[mk] || {};
   const entry = {}; let hasInvalid = false;
   MED_FIELDS.forEach(field => {
-    const raw = document.getElementById("m-" + field).value;
     if (MED_VARIANTS[field]) {
       const prevObj = (existing[field] && typeof existing[field] === "object") ? existing[field] : {};
-      if (!raw) { if (Object.keys(prevObj).length) entry[field] = prevObj; return; }
-      const v = parseFloat(raw);
-      if (isNaN(v) || v <= 0 || v > 300) { hasInvalid = true; return; }
-      entry[field] = { ...prevObj, [medVariant[field]]: v };
+      const obj = { ...prevObj };
+      MED_VARIANTS[field].forEach(variant => {
+        const raw = document.getElementById("m-" + field + "-" + variant).value;
+        if (!raw) return;
+        const v = parseFloat(raw);
+        if (isNaN(v) || v <= 0 || v > 300) { hasInvalid = true; return; }
+        obj[variant] = v;
+      });
+      if (Object.keys(obj).length) entry[field] = obj;
       return;
     }
+    const raw = document.getElementById("m-" + field).value;
     if (!raw) return;
     const v = parseFloat(raw);
     if (isNaN(v) || v <= 0 || v > 300) { hasInvalid = true; return; }
@@ -4417,8 +4392,8 @@ function renderBfChart() {
 function renderMedidasChart() {
   const f = getFisico(); const m = f.medidas || {};
   const etapaStart = f.etapa?.fechaInicio; const sd = getStartDate(fisicoPeriod, etapaStart);
-  const field = document.getElementById("med-chart-sel").value;
-  const valOf = v => MED_VARIANTS[field] ? (v[field] && typeof v[field] === "object" ? v[field][medVariant[field]] : undefined) : v[field];
+  const [field, variant] = document.getElementById("med-chart-sel").value.split(":");
+  const valOf = v => variant ? (v[field] && typeof v[field] === "object" ? v[field][variant] : undefined) : v[field];
   const entries = Object.entries(m).filter(([mk]) => (mk + "-01") >= sd).sort(([a],[b]) => a.localeCompare(b)).filter(([, v]) => valOf(v) !== undefined);
   if (medChart) medChart.destroy();
   medChart = new Chart(document.getElementById("med-chart").getContext("2d"), buildLineConfig(entries.map(([mk]) => mk), entries.map(([, v]) => valOf(v)), "var(--cyan)", "rgba(90,200,250,0.10)", "cm", "month"));
@@ -5123,7 +5098,6 @@ function refreshCurrentScreen() {
 // ─── INIT ─────────────────────────────────────────────────────
 migrateDataOct2026();
 migrateMedidasVariantes();
-wireMedVariantSwipe("cintura"); wireMedVariantSwipe("brazo");
 updateNavIndicator(document.querySelector(".nav-btn.active"));
 document.getElementById("session-date").value = todayStr();
 populateProgSel(); updateHeaderStage();
