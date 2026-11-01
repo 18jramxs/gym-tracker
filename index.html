@@ -943,6 +943,10 @@ body::after {
   border: 1px solid var(--border);
 }
 .sett-row span { font-size: 14px; font-weight: 600; }
+.paso-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid var(--border); }
+.paso-row:first-child { border-top: none; }
+.paso-row .paso-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.paso-row .paso-input { width: 72px; text-align: center; }
 .sett-row.danger span { color: var(--red); }
 
 /* —— AVISOS DE SISTEMA (actualización, recordatorio de backup) ———— */
@@ -1073,6 +1077,14 @@ body::after {
   border-radius: 3px;
   margin: 0 auto 18px;
 }
+.sheet-field { margin-bottom: 14px; }
+.sheet-label { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; font-weight: 700; }
+.sheet-input {
+  background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px;
+  color: var(--text); font-size: 15px; padding: 12px 14px; outline: none; width: 100%;
+  font-family: inherit; color-scheme: dark;
+}
+.sheet-input:focus { border-color: var(--border-3); }
 
 /* ============================================================
    NEW v2 STUFF
@@ -1925,6 +1937,14 @@ input:focus, select:focus, textarea:focus {
     <div id="sustituidos-list"></div>
   </div>
 
+  <div class="chart-wrap" id="ajustes-tecnicos-wrap" style="padding:14px 16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div class="chart-lbl" style="margin-bottom:0;">Ajustes técnicos</div>
+      <button onclick="openAjusteTecnicoModal()" style="background:none;border:1px solid var(--border);color:var(--text-2);border-radius:100px;width:26px;height:26px;font-size:16px;line-height:1;cursor:pointer;">+</button>
+    </div>
+    <div id="ajustes-tecnicos-list"></div>
+  </div>
+
   <div id="prog-empty" class="empty-state"></div>
 </div>
 
@@ -2152,6 +2172,15 @@ input:focus, select:focus, textarea:focus {
   </div>
 
   <div class="sett-group">
+    <div class="sett-group-title">Ejercicios</div>
+    <div class="sett-note">De cuánto en cuánto sube el peso en cada ejercicio (disco, mancuerna, polea…). Si cambias de gimnasio o de discos, ajústalo aquí.</div>
+    <div class="sett-row" onclick="openPesoStepModal()">
+      <div class="sett-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></div>
+      <span>Incremento por ejercicio</span>
+    </div>
+  </div>
+
+  <div class="sett-group">
     <div class="sett-group-title">Peligro</div>
     <div class="sett-row danger" onclick="clearAll()">
       <div class="sett-icon" style="background:rgba(255,69,58,0.08);border-color:rgba(255,69,58,0.22)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></div>
@@ -2214,6 +2243,54 @@ input:focus, select:focus, textarea:focus {
     <div class="sys-modal-note" id="hist-fix-note"></div>
     <div class="sys-modal-actions">
       <button class="sys-modal-btn primary" onclick="dismissHistFixModal()">Entendido</button>
+    </div>
+  </div>
+</div>
+
+<!-- ───── INCREMENTO POR EJERCICIO ───── -->
+<div id="peso-step-modal" class="modal-shroud" onclick="closePesoStepModal()">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-grab"></div>
+    <div style="font-family:var(--font-disp);font-size:24px;letter-spacing:0.5px;margin-bottom:14px;text-transform:uppercase;">Incremento por ejercicio</div>
+    <div id="peso-step-list" style="max-height:60vh;overflow-y:auto;margin-bottom:18px;"></div>
+    <button class="cta-save" onclick="closePesoStepModal()" style="width:100%;border:none;border-radius:14px;padding:14px;font-family:var(--font-disp);font-size:17px;letter-spacing:0.8px;cursor:pointer;text-transform:uppercase;">Listo</button>
+  </div>
+</div>
+
+<!-- ───── AJUSTE TÉCNICO ───── -->
+<div id="ajuste-tecnico-modal" class="modal-shroud" onclick="closeAjusteTecnicoModal()">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-grab"></div>
+    <div style="font-family:var(--font-disp);font-size:24px;letter-spacing:0.5px;margin-bottom:18px;text-transform:uppercase;">Ajuste técnico</div>
+    <div class="sheet-field">
+      <div class="sheet-label">Ejercicio</div>
+      <select id="at-ejercicio-input" class="sheet-input"></select>
+    </div>
+    <div class="sheet-field">
+      <div class="sheet-label">Fecha</div>
+      <input type="date" id="at-fecha-input" class="sheet-input">
+    </div>
+    <div class="sheet-field">
+      <div class="sheet-label">Qué cambio</div>
+      <input type="text" id="at-que-cambio-input" class="sheet-input" placeholder="p.ej. empezar de pie, cadera atrás, straps">
+    </div>
+    <div class="sheet-field">
+      <div class="sheet-label">Por qué</div>
+      <input type="text" id="at-por-que-input" class="sheet-input" placeholder="p.ej. no sentía el femoral y cargaba lumbar">
+    </div>
+    <div class="sheet-field" style="display:flex;gap:10px;">
+      <div style="flex:1;">
+        <div class="sheet-label">Peso antes</div>
+        <input type="number" id="at-peso-antes-input" class="sheet-input" inputmode="decimal">
+      </div>
+      <div style="flex:1;">
+        <div class="sheet-label">Peso después <span style="text-transform:none;font-weight:500;">(opcional)</span></div>
+        <input type="number" id="at-peso-despues-input" class="sheet-input" inputmode="decimal" placeholder="por medir">
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="cta-save" id="at-delete-btn" style="display:none;flex:1;border:1px solid rgba(255,69,58,0.35);background:none;color:var(--red);border-radius:14px;padding:14px;font-family:var(--font-disp);font-size:15px;letter-spacing:0.6px;cursor:pointer;text-transform:uppercase;" onclick="deleteAjusteTecnico()">Borrar</button>
+      <button class="cta-save" style="flex:2;border:none;border-radius:14px;padding:14px;font-family:var(--font-disp);font-size:17px;letter-spacing:0.8px;cursor:pointer;text-transform:uppercase;" onclick="saveAjusteTecnicoModal()">Guardar</button>
     </div>
   </div>
 </div>
@@ -2315,8 +2392,8 @@ input:focus, select:focus, textarea:focus {
    ============================================================ */
 
 // ─── VERSIÓN Y BACKUPS ───────────────────────────────────────────
-const APP_VERSION = 2;
-const APP_BUILD_DATE = "01 nov 2026 11:28";
+const APP_VERSION = 3;
+const APP_BUILD_DATE = "01 nov 2026 21:35";
 
 const IDB_NAME = "gymtracker_backups_db";
 const IDB_STORE = "snapshots";
@@ -2456,6 +2533,57 @@ const SERIES = {
   viernes:{DOMINADAS:4,"REMO HAMMER":4,"JALÓN AL PECHO":2,"JM PRESS":3,"EXTENSIÓN TRÍCEPS UNILATERAL":3,"CURL INVERTIDO":3},
   sabado:{default:2,SÓLEO:3,"HIP THRUST":4,ADUCTORES:3,ABS:3}
 };
+// Incremento mínimo real de cada ejercicio, en kg (disco y mancuerna → 2,5 ·
+// polea y pincho → 5). Para DOMINADAS se aplica al lastre, no al peso
+// corporal. Editable desde Ajustes (ver gymtracker_peso_step/getPesoStep) —
+// estos valores son solo el valor de fábrica.
+const PESO_STEP = {
+  "PÉNDULO": 2.5, "SÓLEO": 2.5, "PRESS INCLINADO": 2.5, "SLDL": 2.5, "JM PRESS": 2.5,
+  "CURL PREDICADOR": 2.5, "CURL INVERTIDO": 2.5, "HIP THRUST": 2.5, "REMO HAMMER": 2.5,
+  "PRESS MILITAR": 2.5, "CURL MANCUERNA": 2.5, "DOMINADAS": 2.5,
+  "JALÓN AL PECHO": 5, "APERTURAS PAD": 5, "APERTURAS": 5, "EXTENSIÓN POSTERIOR": 5,
+  "EXTENSIÓN TRÍCEPS UNILATERAL": 5, "EXTENSIÓN TRÍCEPS": 5, "EXTENSIÓN CUÁDRICEPS": 5,
+  "EXTENSIÓN FEMORAL": 5, "ELEVACIONES LATERALES": 5, "GEMELO": 5, "ADUCTORES": 5, "ABS": 5
+};
+const PESO_STEP_DEFAULT = 2.5;
+function getPesoStepOverrides() { try { return JSON.parse(localStorage.getItem("gymtracker_peso_step") || "{}"); } catch { return {}; } }
+function savePesoStepOverrides(o) { localStorage.setItem("gymtracker_peso_step", JSON.stringify(o)); }
+function getPesoStep(ejercicio) {
+  const o = getPesoStepOverrides();
+  if (o[ejercicio] != null) return o[ejercicio];
+  return PESO_STEP[ejercicio] || PESO_STEP_DEFAULT;
+}
+function setPesoStep(ejercicio, step) {
+  const o = getPesoStepOverrides();
+  o[ejercicio] = step;
+  savePesoStepOverrides(o);
+}
+// Pega un peso casi-redondo al múltiplo real que toca en ese ejercicio — solo
+// corrige deriva de redondeo (p.ej. 89,8 kg que debería ser 90), nunca un
+// valor legítimo: la tolerancia de 0,5 kg es la que evita que un peso
+// introducido en libras (185 lb = 83,9 kg) se "pegue" a 85 kg y falsee el dato.
+// Se aplica al guardar y al mostrar, jamás al valor que se está tecleando.
+function pegarAlStep(kg, ejercicio) {
+  const n = parseFloat(kg);
+  if (!isFinite(n)) return kg;
+  const step = getPesoStep(ejercicio);
+  const cerca = Math.round(n / step) * step;
+  return Math.abs(n - cerca) < 0.5 ? cerca : n;
+}
+function openPesoStepModal() {
+  renderPesoStepList();
+  document.getElementById("peso-step-modal").classList.add("open");
+}
+function closePesoStepModal() { document.getElementById("peso-step-modal").classList.remove("open"); }
+function renderPesoStepList() {
+  const exs = [...new Set(Object.values(ROUTINE).flat())].sort();
+  document.getElementById("peso-step-list").innerHTML = exs.map(ex => `<div class="paso-row"><span class="paso-name">${ex}</span><input class="ex-input paso-input" type="number" step="0.5" min="0.5" value="${getPesoStep(ex)}" onchange="updatePesoStepInput('${ex}', this.value)"></div>`).join("");
+}
+function updatePesoStepInput(ex, val) {
+  const n = parseFloat(val);
+  if (!isFinite(n) || n <= 0) return;
+  setPesoStep(ex, n);
+}
 // HACK se renombró a PÉNDULO (28/09/2026): mismo movimiento, el nombre
 // estaba mal puesto — no es una sustitución, por eso no aparece en
 // EJERCICIOS SUSTITUIDOS. migrateExerciseData() renombra también el
@@ -2533,8 +2661,12 @@ function pesoEquivKgText(ex) {
   return kg === "" ? "" : "≈ " + kg + " kg";
 }
 function fmtWeightRecord(r) {
-  if (!r.pesoUnidad) return fmtWeightKg(r.peso);
-  const raw = (r.pesoRaw !== undefined && r.pesoRaw !== "") ? r.pesoRaw : r.peso;
+  // Pegado al step solo en el espacio donde el número es un kg real: records
+  // legacy (sin pesoUnidad) y records escritos en kg. Un valor escrito en lb
+  // se deja intacto — no hay "step en libras" que tenga sentido físico.
+  if (!r.pesoUnidad) return fmtWeightKg(pegarAlStep(r.peso, r.name));
+  let raw = (r.pesoRaw !== undefined && r.pesoRaw !== "") ? r.pesoRaw : r.peso;
+  if (r.pesoUnidad === "kg") raw = pegarAlStep(raw, r.name);
   const v = pesoRawToUnit(raw, r.pesoUnidad, weightUnit);
   return v === "" ? "" : v + " " + weightUnit;
 }
@@ -2560,6 +2692,108 @@ function saveDomExtraData(d) { localStorage.setItem("gymtracker_dominadas_extra"
 // de la app (no hay un id separado — el name ya es único e inmutable, ver A4).
 function getSustituciones() { try { return JSON.parse(localStorage.getItem("gymtracker_sustituidos") || "[]"); } catch { return []; } }
 function saveSustituciones(d) { localStorage.setItem("gymtracker_sustituidos", JSON.stringify(d)); }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+// Ajustes técnicos: mismo ejercicio, misma máquina, técnica distinta — a
+// diferencia de una sustitución, el histórico anterior no se renombra ni se
+// toca, solo cambia desde dónde se cuentan los PR y la referencia de Entreno
+// (ver getAjusteTecnicoVigente). [{id, ejercicio, fecha, queCambio, porQue,
+// pesoAntes, pesoDespues}] — pesoDespues puede ser null ("por medir").
+function getAjustesTecnicos() { try { return JSON.parse(localStorage.getItem("gymtracker_ajustes_tecnicos") || "[]"); } catch { return []; } }
+function saveAjustesTecnicos(d) { localStorage.setItem("gymtracker_ajustes_tecnicos", JSON.stringify(d)); }
+// El ajuste técnico vigente para ese ejercicio en esa fecha: el más reciente
+// con fecha <= beforeDate. Si hay varios ajustes a lo largo del tiempo, cada
+// sesión se juzga contra la línea técnica que tenía activa en su momento.
+function getAjusteTecnicoVigente(ejercicio, beforeDate) {
+  const ajustes = getAjustesTecnicos().filter(a => a.ejercicio === ejercicio && (!beforeDate || a.fecha <= beforeDate));
+  if (!ajustes.length) return null;
+  return ajustes.slice().sort((a, b) => b.fecha.localeCompare(a.fecha))[0];
+}
+// Peso de después, calculado si no se guardó uno explícito: el primer peso
+// registrado en una sesión con fecha >= la del ajuste. No se persiste — se
+// deriva en vivo, así nunca queda desactualizado si se edita esa sesión.
+function ajustePesoDespuesEfectivo(ajuste) {
+  if (ajuste.pesoDespues != null && ajuste.pesoDespues !== "") return parseFloat(ajuste.pesoDespues);
+  const data = getData().filter(s => s.date >= ajuste.fecha).sort((a, b) => a.date.localeCompare(b.date));
+  for (const s of data) {
+    const e = s.exercises.find(x => x.name === ajuste.ejercicio && x.peso);
+    if (e) return parseFloat(e.peso);
+  }
+  return null;
+}
+// Semilla de los dos primeros ajustes técnicos, igual patrón que
+// SUSTITUCIONES_SEED/migrateAperturasPad(): se insertan una sola vez
+// (comprobación por ejercicio+fecha, no por flag) y no se duplican.
+const AJUSTES_TECNICOS_SEED = [
+  { ejercicio: "SLDL", fecha: "2026-11-03",
+    queCambio: "Empezar de pie en vez de desde el suelo · rodilla ligeramente flexionada y fija · cadera hacia atrás · cuello neutro · straps · bajar solo hasta donde la espalda siga recta",
+    porQue: "No notaba el femoral, se escapaba la barra y cargaba la lumbar",
+    pesoAntes: 90, pesoDespues: null },
+  { ejercicio: "PRESS INCLINADO", fecha: "2026-11-05",
+    queCambio: "Bajar el asiento para que los agarres queden a la altura del pecho alto, no de los pezones",
+    porQue: "Enfocar la porción clavicular del pectoral",
+    pesoAntes: 70, pesoDespues: null }
+];
+function migrateAjustesTecnicosSeed() {
+  const ajustes = getAjustesTecnicos();
+  let changed = false;
+  AJUSTES_TECNICOS_SEED.forEach(seed => {
+    if (!ajustes.some(a => a.ejercicio === seed.ejercicio && a.fecha === seed.fecha)) {
+      ajustes.push(Object.assign({ id: uid() }, seed));
+      changed = true;
+    }
+  });
+  if (changed) saveAjustesTecnicos(ajustes);
+}
+let editingAjusteTecnicoId = null;
+function openAjusteTecnicoModal(id) {
+  editingAjusteTecnicoId = id || null;
+  const exs = [...new Set(Object.values(ROUTINE).flat())].sort();
+  const sel = document.getElementById("at-ejercicio-input");
+  sel.innerHTML = exs.map(ex => `<option value="${ex}">${ex}</option>`).join("");
+  const a = id ? getAjustesTecnicos().find(x => x.id === id) : null;
+  document.getElementById("at-fecha-input").value = a ? a.fecha : todayStr();
+  sel.value = a ? a.ejercicio : exs[0];
+  document.getElementById("at-que-cambio-input").value = a ? a.queCambio : "";
+  document.getElementById("at-por-que-input").value = a ? a.porQue : "";
+  document.getElementById("at-peso-antes-input").value = a && a.pesoAntes != null ? a.pesoAntes : "";
+  document.getElementById("at-peso-despues-input").value = a && a.pesoDespues != null ? a.pesoDespues : "";
+  document.getElementById("at-delete-btn").style.display = a ? "block" : "none";
+  document.getElementById("ajuste-tecnico-modal").classList.add("open");
+}
+function closeAjusteTecnicoModal() { document.getElementById("ajuste-tecnico-modal").classList.remove("open"); }
+function saveAjusteTecnicoModal() {
+  const ejercicio = document.getElementById("at-ejercicio-input").value;
+  const fecha = document.getElementById("at-fecha-input").value;
+  if (!fecha) { showToast("Elige una fecha"); return; }
+  const queCambio = document.getElementById("at-que-cambio-input").value.trim();
+  const porQue = document.getElementById("at-por-que-input").value.trim();
+  const pesoAntesRaw = document.getElementById("at-peso-antes-input").value;
+  const pesoDespuesRaw = document.getElementById("at-peso-despues-input").value;
+  const pesoAntes = pesoAntesRaw === "" ? null : parseFloat(pesoAntesRaw);
+  const pesoDespues = pesoDespuesRaw === "" ? null : parseFloat(pesoDespuesRaw);
+  const ajustes = getAjustesTecnicos();
+  if (editingAjusteTecnicoId) {
+    const a = ajustes.find(x => x.id === editingAjusteTecnicoId);
+    if (a) Object.assign(a, { ejercicio, fecha, queCambio, porQue, pesoAntes, pesoDespues });
+  } else {
+    ajustes.push({ id: uid(), ejercicio, fecha, queCambio, porQue, pesoAntes, pesoDespues });
+  }
+  saveAjustesTecnicos(ajustes);
+  closeAjusteTecnicoModal();
+  renderAjustesTecnicos();
+  showToast("Ajuste guardado", "ok");
+}
+function deleteAjusteTecnico() {
+  if (!editingAjusteTecnicoId) return;
+  quickDeleteAjusteTecnico(editingAjusteTecnicoId);
+  closeAjusteTecnicoModal();
+}
+function quickDeleteAjusteTecnico(id) {
+  if (!confirm("¿Borrar este ajuste técnico? Los PR volverán a calcularse sobre todo el histórico.")) return;
+  saveAjustesTecnicos(getAjustesTecnicos().filter(a => a.id !== id));
+  renderAjustesTecnicos();
+  showToast("Ajuste borrado");
+}
 
 // ─── MIGRACIÓN DE DATOS ──────────────────────────────────────────
 // Todo cambio de histórico vive aquí dentro, cada uno con su propia guarda
@@ -2569,6 +2803,25 @@ function migrateExerciseData() {
   migrateOct2026();
   migrateCurlInvertido20kg();
   migrateAperturasPad();
+  migratePesoStepCleanup();
+  migrateAjustesTecnicosSeed();
+}
+// Aviso de histórico corregido: una lista de bloques, no uno solo — más de
+// una migración puede tener correcciones pendientes la primera vez que se
+// abre la app tras una actualización (p.ej. CURL INVERTIDO y los decimales
+// de conversión a la vez), y todas deben verse en el mismo aviso.
+function pushHistFix(block) {
+  if (!block || !block.corrections || !block.corrections.length) return;
+  let pending; try { pending = JSON.parse(localStorage.getItem("gt_hist_fix_pending") || "[]"); } catch { pending = []; }
+  if (!Array.isArray(pending)) pending = pending ? [pending] : [];
+  pending.push(block);
+  localStorage.setItem("gt_hist_fix_pending", JSON.stringify(pending));
+}
+function histFixRowsHtml(corrections) {
+  const shown = corrections.slice(0, 2);
+  let html = shown.map(c => `${c.label}&nbsp;&nbsp;${c.from}&nbsp;→&nbsp;${c.to}`).join("<br>");
+  if (corrections.length > 2) html += `<br>${corrections.length - 2} registros más`;
+  return html;
 }
 function migrateOct2026() {
   if (localStorage.getItem("gt_migration_2026_10_applied")) return;
@@ -2629,8 +2882,55 @@ function migrateCurlInvertido20kg() {
     }
     if (corrections.length) saveData(data);
   }
-  if (corrections.length) localStorage.setItem("gt_hist_fix_pending", JSON.stringify({ ex: "CURL INVERTIDO", nota: "vuelta a 20 kg", corrections }));
+  if (corrections.length) pushHistFix({ titulo: "CURL INVERTIDO · vuelta a 20 kg", corrections: corrections.map(c => ({ label: fmtDate(c.date), from: c.from + " kg", to: "20 kg" })) });
   localStorage.setItem("gt_migration_curl_invertido_20", "1");
+}
+// La conversión kg/lb (antes de B1, ver pesoInputToKg/captureInputs) dejó
+// decimales imposibles en el histórico — un disco no sube de 0,1 en 0,1. Pega
+// cada peso/lastre guardado al múltiplo real del ejercicio (pegarAlStep ya
+// protege los valores legítimos escritos en libras con su tolerancia de
+// 0,5 kg) y lista lo corregido en el mismo aviso de histórico corregido.
+function migratePesoStepCleanup() {
+  if (localStorage.getItem("gt_migration_peso_step_applied")) return;
+  const data = getData();
+  const corrections = [];
+  let changed = false;
+  data.forEach(s => {
+    s.exercises.forEach(e => {
+      if (e.name === "DOMINADAS") {
+        if (Array.isArray(e.lastre)) {
+          e.lastre = e.lastre.map(v => {
+            const n = parseFloat(v);
+            if (!isFinite(n)) return v;
+            const nuevo = pegarAlStep(n, "DOMINADAS");
+            if (nuevo !== n) { corrections.push({ ex: "DOMINADAS (lastre)", from: n, to: nuevo }); changed = true; }
+            return nuevo;
+          });
+        }
+        return;
+      }
+      if (!e.peso) return;
+      const n = parseFloat(e.peso);
+      if (!isFinite(n)) return;
+      const nuevo = pegarAlStep(e.peso, e.name);
+      if (nuevo !== n) {
+        corrections.push({ ex: e.name, from: n, to: nuevo });
+        e.peso = String(nuevo);
+        if (e.pesoRaw !== undefined && (e.pesoUnidad || "kg") === "kg") e.pesoRaw = String(nuevo);
+        changed = true;
+      }
+    });
+  });
+  if (changed) saveData(data);
+  if (corrections.length) {
+    // Siempre en kg, sea la que sea la unidad de pantalla elegida ahora — esto
+    // es limpieza del dato guardado (discos reales), no una lectura en vivo.
+    pushHistFix({
+      titulo: "Decimales de conversión",
+      corrections: corrections.map(c => ({ label: c.ex, from: c.from.toLocaleString("es") + " kg", to: c.to.toLocaleString("es") + " kg" }))
+    });
+  }
+  localStorage.setItem("gt_migration_peso_step_applied", "1");
 }
 // APERTURAS → APERTURAS PAD (15/10/2026): cambio de máquina (agarre con
 // manos → contractora con pads en el antebrazo), es una sustitución real, no
@@ -2649,10 +2949,11 @@ function migrateAperturasPad() {
 // cerrarlo para no volver a mostrarlo.
 function showHistFixModalIfPending() {
   let pending; try { pending = JSON.parse(localStorage.getItem("gt_hist_fix_pending") || "null"); } catch { pending = null; }
-  if (!pending || !pending.corrections || !pending.corrections.length) return;
-  const note = document.getElementById("hist-fix-note");
-  const rows = pending.corrections.map(c => `${fmtDate(c.date)}&nbsp;&nbsp;${c.from} kg&nbsp;→&nbsp;20 kg`).join("<br>");
-  note.innerHTML = `<b>${pending.ex} · ${pending.nota}</b><br><br>${rows}`;
+  if (!pending) return;
+  const blocks = Array.isArray(pending) ? pending : [pending];
+  const valid = blocks.filter(b => b && b.corrections && b.corrections.length);
+  if (!valid.length) return;
+  document.getElementById("hist-fix-note").innerHTML = valid.map(b => `<b>${b.titulo}</b><br><br>${histFixRowsHtml(b.corrections)}`).join("<br><br>");
   document.getElementById("hist-fix-modal").classList.add("open");
 }
 function dismissHistFixModal() {
@@ -2700,6 +3001,9 @@ function weekDateForDay(day) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 function fmtDate(s) { if (!s) return ""; const [y,m,d] = s.split("-"); return `${d}/${m}/${y}`; }
+// "3 NOV 2026" — usa MONTH_ABBR (definido más abajo, ya cargado antes de que
+// esto se llame nunca desde una interacción real).
+function fmtDateShort(s) { if (!s) return ""; const [y,m,d] = s.split("-"); return `${parseInt(d,10)} ${MONTH_ABBR[parseInt(m,10)-1]} ${y}`; }
 function fmtDateLong(s) {
   if (!s) return "";
   const [y,m,d] = s.split("-");
@@ -2943,13 +3247,34 @@ function getDomMode(day, ds) { if (day === "lunes") return "emom"; if (day === "
 function getLastN(exName, n, beforeDate, mode = "normal") {
   const data = getData(); const results = [];
   const sorted = data.filter(s => s.date < beforeDate).sort((a,b) => b.date.localeCompare(a.date));
+  const matchesEntry = e => mode === "emom" ? (e.emomReps || e.emomMins)
+                           : mode === "test" ? e.testReps
+                           : (e.peso || e.series);
+  // Modo normal: si hay un ajuste técnico vigente, Última vez/Anterior solo
+  // compara con sesiones de la misma línea (después del ajuste). Si no hay
+  // suficientes, se rellena con las de antes marcadas tecnicaAnterior — el
+  // llamador las etiqueta "Técnica anterior" en vez de como comparables.
+  const ajuste = mode === "normal" ? getAjusteTecnicoVigente(exName, beforeDate) : null;
+  if (ajuste) {
+    for (const s of sorted) {
+      if (s.date < ajuste.fecha) break;
+      const e = s.exercises.find(x => x.name === exName);
+      if (!e || !matchesEntry(e)) continue;
+      results.push({...e, date: s.date, day: s.day, tecnicaAnterior: false});
+      if (results.length >= n) return results;
+    }
+    for (const s of sorted) {
+      if (s.date >= ajuste.fecha) continue;
+      const e = s.exercises.find(x => x.name === exName);
+      if (!e || !matchesEntry(e)) continue;
+      results.push({...e, date: s.date, day: s.day, tecnicaAnterior: true});
+      if (results.length >= n) break;
+    }
+    return results;
+  }
   for (const s of sorted) {
     const e = s.exercises.find(x => x.name === exName);
-    if (!e) continue;
-    const matches = mode === "emom" ? (e.emomReps || e.emomMins)
-                  : mode === "test" ? e.testReps
-                  : (e.peso || e.series);
-    if (!matches) continue;
+    if (!e || !matchesEntry(e)) continue;
     results.push({...e, date: s.date, day: s.day});
     if (results.length >= n) break;
   }
@@ -3130,7 +3455,7 @@ function renderExercises() {
     if (!refs.length) refHtml = `<div class="ex-lbl">Referencia</div><div class="ref-val empty">Sin datos previos</div>`;
     else refHtml = refs.map((r, i) => {
       const val = r.peso ? fmtWeightRecord(r) + (r.series ? " · " + r.series : "") : r.series || "";
-      const lbl = nRefs > 1 ? (i === 0 ? "Última vez" : "Anterior") : "Última vez";
+      const lbl = r.tecnicaAnterior ? "Técnica anterior" : (nRefs > 1 ? (i === 0 ? "Última vez" : "Anterior") : "Última vez");
       return `<div class="ex-lbl">${lbl} · ${fmtDate(r.date)}</div><div class="ref-val">${val}</div>`;
     }).join("");
     const id = safeId(ex), total = getSeries(currentDay, ex), done = sChecks[ex] >= total || sState[ex].done, checked = sChecks[ex] || 0;
@@ -3393,10 +3718,17 @@ function saveSession() {
     if (mode === "test") return { name: ex, testReps: st.testReps || "", pesoCorporal: getPesoCorporalAt(currentDate), done: st.done || false };
     if (ex === "DOMINADAS") {
       const total = getSeries(currentDay, ex);
-      const la = lastreArr({ lastre: st.lastre }, total);
+      const la = lastreArr({ lastre: st.lastre }, total).map(v => pegarAlStep(v, "DOMINADAS"));
       return { name: ex, lastre: la, series: st.series || "", pesoCorporal: getPesoCorporalAt(currentDate), done: st.done || false, seriesDone: sChecks[ex] || 0 };
     }
-    return { name: ex, peso: st.peso || "", pesoRaw: st.pesoRaw !== undefined ? st.pesoRaw : (st.peso || ""), pesoUnidad: st.pesoUnidad || "kg", series: st.series || "", done: st.done || false, seriesDone: sChecks[ex] || 0, prog: st.prog || null };
+    // Pegado al step al guardar (nunca mientras se teclea, ver updateSt/
+    // captureCardInputs): si el usuario tecleó en kg, pesoRaw vive en el
+    // mismo espacio que peso y se corrige igual; si tecleó en lb, pesoRaw no
+    // se toca — el step es un concepto en kg, no hay equivalente en libras.
+    const pesoOut = String(pegarAlStep(st.peso || "", ex));
+    let pesoRawOut = st.pesoRaw !== undefined ? st.pesoRaw : (st.peso || "");
+    if ((st.pesoUnidad || "kg") === "kg" && pesoRawOut !== "") pesoRawOut = pesoOut;
+    return { name: ex, peso: pesoOut, pesoRaw: pesoRawOut, pesoUnidad: st.pesoUnidad || "kg", series: st.series || "", done: st.done || false, seriesDone: sChecks[ex] || 0, prog: st.prog || null };
   })};
   const data = getData();
   const idx = data.findIndex(s => s.date === session.date && s.day === session.day);
@@ -3429,8 +3761,11 @@ function checkPR(session) {
   session.exercises.forEach(ex => {
     if (!ex.peso) return;
     const nW = parseFloat(ex.peso);
+    // Un ajuste técnico no bloquea el récord nuevo: el peso de antes de la
+    // técnica no cuenta para el PR de la línea de después (ver A2.2).
+    const ajuste = getAjusteTecnicoVigente(ex.name, session.date);
     const prev = data
-      .filter(s => s.date < session.date)
+      .filter(s => s.date < session.date && (!ajuste || s.date >= ajuste.fecha))
       .flatMap(s => s.exercises)
       .filter(e => e.name === ex.name && e.peso)
       .map(e => parseFloat(e.peso));
@@ -3549,7 +3884,8 @@ function renderHist() {
     const hasPR = s.exercises.some(e => {
       if (!e.peso) return false;
       const nW = parseFloat(e.peso);
-      const prev = getData().filter(x => x.date < s.date).flatMap(x => x.exercises).filter(x => x.name === e.name && x.peso).map(x => parseFloat(x.peso));
+      const ajuste = getAjusteTecnicoVigente(e.name, s.date);
+      const prev = getData().filter(x => x.date < s.date && (!ajuste || x.date >= ajuste.fecha)).flatMap(x => x.exercises).filter(x => x.name === e.name && x.peso).map(x => parseFloat(x.peso));
       return prev.length && nW - Math.max(...prev) > PR_TOLERANCE_KG;
     });
     const exRows = s.exercises.map(e => {
@@ -3743,7 +4079,12 @@ function renderProgress() {
   animateNumber(document.getElementById("s-sess"), allData.length, { decimals: 0 });
   animateNumber(document.getElementById("s-last"), vals[vals.length - 1], { decimals: 1 });
   if (progChart) progChart.destroy();
-  progChart = new Chart(document.getElementById("prog-chart").getContext("2d"), buildLineConfig(allData.map(s => s.date), vals, "#fff", "rgba(255,255,255,0.07)", "kg"));
+  // Ajustes técnicos de este ejercicio dentro del rango mostrado: marca
+  // vertical sin partir la serie (A2.2) — todo el histórico sigue entero.
+  const marks = getAjustesTecnicos()
+    .filter(a => a.ejercicio === ex && a.fecha >= sd)
+    .map(a => ({ x: new Date(a.fecha + "T12:00:00"), label: a.queCambio || ("Ajuste técnico · " + fmtDate(a.fecha)) }));
+  progChart = new Chart(document.getElementById("prog-chart").getContext("2d"), buildLineConfig(allData.map(s => s.date), vals, "#fff", "rgba(255,255,255,0.07)", "kg", "day", marks));
 }
 
 // ─── EJERCICIOS SUSTITUIDOS (Bloque C) ──────────────────────────
@@ -3775,6 +4116,36 @@ function renderSustituidos() {
         (maxW > 0 ? `<div class="hist-ex-row"><span class="hist-ex-name">Peso máximo</span><span class="hist-ex-data">${fmtWeightKg(maxW)}</span></div>` : "")
       : `<div style="color:var(--text-3);font-size:13px;padding:6px 0">Sin registros</div>`;
     return `<div class="hist-session" style="animation:fadeUp 0.32s cubic-bezier(0.22,1,0.36,1) ${i*0.04}s both"><div class="hist-hdr" onclick="toggleHist('sust${i}')"><div><div class="hist-date">${s.nombreAntiguo} <span style="color:var(--text-3)">→</span> ${s.nombreNuevo}</div><div class="hist-meta"><span class="hist-chip">Sustituido el ${fmtDate(s.fecha)}</span></div><div class="ex-ref" style="margin-top:8px">${refHtml}</div></div><div class="hist-controls"><button class="toggle-btn" id="arr-sust${i}">›</button></div></div><div class="hist-body" id="hb-sust${i}">${fullHtml}</div></div>`;
+  }).join("");
+}
+
+// ─── AJUSTES TÉCNICOS (Bloque A2) ────────────────────────────────
+// Tarjetas planas (sin colapsar, a diferencia de EJERCICIOS SUSTITUIDOS: aquí
+// no hay histórico largo que ocultar, son dos líneas de contexto y dos
+// pesos). El peso de después se deriva en vivo si no se guardó uno
+// explícito — ver ajustePesoDespuesEfectivo().
+function renderAjustesTecnicos() {
+  const wrap = document.getElementById("ajustes-tecnicos-list");
+  if (!wrap) return;
+  const ajustes = getAjustesTecnicos().slice().sort((a, b) => b.fecha.localeCompare(a.fecha));
+  if (!ajustes.length) { wrap.innerHTML = `<div class="empty-state">${emptyStateHTML("Sin ajustes técnicos")}</div>`; return; }
+  wrap.innerHTML = ajustes.map(a => {
+    const despues = ajustePesoDespuesEfectivo(a);
+    const antesTxt = a.pesoAntes != null ? fmtWeightKg(a.pesoAntes) : "—";
+    const despuesTxt = despues != null ? fmtWeightKg(despues) : "por medir";
+    return `<div class="hist-session" style="padding:12px 0;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;">
+        <div class="hist-date">${a.ejercicio}</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+          <span class="hist-chip">${fmtDateShort(a.fecha)}</span>
+          <button class="edit-date-btn" onclick="openAjusteTecnicoModal('${a.id}')" aria-label="Editar">✎</button>
+          <button class="del-btn" onclick="quickDeleteAjusteTecnico('${a.id}')" aria-label="Borrar">✕</button>
+        </div>
+      </div>
+      ${a.queCambio ? `<div style="font-size:13px;color:var(--text-2);margin-top:6px;line-height:1.4;">${a.queCambio}</div>` : ""}
+      ${a.porQue ? `<div style="font-size:12px;color:var(--text-3);margin-top:3px;">→ ${a.porQue}</div>` : ""}
+      <div style="font-size:14px;color:var(--text);font-weight:700;margin-top:8px;">${antesTxt} <span style="color:var(--text-3);font-weight:500;">→</span> ${despuesTxt}</div>
+    </div>`;
   }).join("");
 }
 
@@ -4615,12 +4986,54 @@ function tooltipStyle({ format } = {}) {
     callbacks: format ? { label: ctx => format(ctx.parsed.y) } : undefined
   };
 }
-function buildLineConfig(dates, values, color, fillColor, unit, granularity = "day") {
+// Línea vertical discreta en la fecha de un ajuste técnico — sin plugin de
+// terceros, Chart.js ya deja registrar plugins por-instancia. No parte la
+// serie (los datasets no se tocan), solo se dibuja encima. Un toque cerca de
+// la línea muestra su etiqueta en el toast ya existente de la app.
+function verticalMarksPlugin(marks) {
   return {
+    id: "verticalMarks",
+    afterDraw(chart) {
+      const xScale = chart.scales.x; if (!xScale) return;
+      const area = chart.chartArea;
+      const ctx = chart.ctx;
+      marks.forEach(m => {
+        const px = xScale.getPixelForValue(m.x);
+        if (px < area.left || px > area.right) return;
+        ctx.save();
+        ctx.beginPath();
+        ctx.setLineDash([4, 4]);
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = "rgba(255,255,255,0.35)";
+        ctx.moveTo(px, area.top);
+        ctx.lineTo(px, area.bottom);
+        ctx.stroke();
+        ctx.restore();
+      });
+    }
+  };
+}
+function marksOnClickHandler(marks, innerOnClick) {
+  return (evt, els, chart) => {
+    const xScale = chart.scales.x;
+    if (xScale && evt.x != null) {
+      const near = marks.find(m => Math.abs(evt.x - xScale.getPixelForValue(m.x)) <= 10);
+      if (near) { showToast(near.label); return; }
+    }
+    if (innerOnClick) innerOnClick(evt, els, chart);
+  };
+}
+function buildLineConfig(dates, values, color, fillColor, unit, granularity = "day", marks) {
+  const cfg = {
     type: "line",
     data: { datasets: [{ data: toTimePoints(dates, values, granularity), borderColor: color, backgroundColor: fillColor, borderWidth: 2.5, pointBackgroundColor: color, pointBorderColor: "#0a0a0c", pointBorderWidth: 1.5, pointRadius: 4.5, pointHoverRadius: 7, tension: 0.35, fill: true }] },
     options: { ...chartBase(granularity), plugins: { legend: { display: false }, tooltip: tooltipStyle({ format: v => v.toFixed(1) + " " + (unit || "") }) } }
   };
+  if (marks && marks.length) {
+    cfg.plugins = [verticalMarksPlugin(marks)];
+    cfg.options.onClick = marksOnClickHandler(marks, cfg.options.onClick);
+  }
+  return cfg;
 }
 function setFisicoPeriod(p, el) { fisicoPeriod = p; document.querySelectorAll("#fisico-period-row .pill").forEach(b => b.classList.remove("active")); el.classList.add("active"); renderFisicoCharts(); renderMedidasChart(); }
 function renderFisicoCharts() {
@@ -4787,14 +5200,14 @@ function showScreen(name, btn) {
       cur.classList.remove("active"); cur.style.animation = "";
       next.classList.add("active");
       if (name === "historial") renderHist();
-      if (name === "progreso") { populateProgSel(); renderProgress(); renderActivityMap(); renderSustituidos(); }
+      if (name === "progreso") { populateProgSel(); renderProgress(); renderActivityMap(); renderSustituidos(); renderAjustesTecnicos(); }
       if (name === "fisico") initFisico();
       if (name === "informe") renderInforme();
     }, 160);
   } else {
     next.classList.add("active");
     if (name === "historial") renderHist();
-    if (name === "progreso") { populateProgSel(); renderProgress(); renderActivityMap(); renderSustituidos(); }
+    if (name === "progreso") { populateProgSel(); renderProgress(); renderActivityMap(); renderSustituidos(); renderAjustesTecnicos(); }
     if (name === "fisico") initFisico();
     if (name === "informe") renderInforme();
   }
@@ -5417,7 +5830,7 @@ function refreshCurrentScreen() {
     renderDomExtraCard();
   }
   else if (name === "historial") renderHist();
-  else if (name === "progreso") { populateProgSel(); renderProgress(); renderActivityMap(); renderSustituidos(); }
+  else if (name === "progreso") { populateProgSel(); renderProgress(); renderActivityMap(); renderSustituidos(); renderAjustesTecnicos(); }
   else if (name === "fisico") initFisico();
   else if (name === "informe") renderInforme();
 }
