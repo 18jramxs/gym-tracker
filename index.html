@@ -506,6 +506,10 @@ body::after {
 .prog-switch.state-eq .switch-thumb { transform: translateX(0); background: rgba(255,214,10,0.55); box-shadow: 0 0 10px rgba(255,214,10,0.55); }
 .prog-switch.state-up { background: rgba(182,255,46,0.14); border-color: rgba(182,255,46,0.35); }
 .prog-switch.state-up .switch-thumb { transform: translateX(23px); background: rgba(182,255,46,0.55); box-shadow: 0 0 10px rgba(182,255,46,0.55); }
+.lastre-grid { display: grid; gap: 6px; }
+.lastre-serie { display: flex; flex-direction: column; gap: 4px; }
+.lastre-serie-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-3); text-align: center; }
+.lastre-serie .ex-input { padding: 8px 4px; text-align: center; }
 .ex-input {
   background: var(--bg-input);
   border: 1px solid var(--border);
@@ -2204,6 +2208,15 @@ input:focus, select:focus, textarea:focus {
     </div>
   </div>
 </div>
+<div class="sys-modal-bg" id="hist-fix-modal">
+  <div class="sys-modal">
+    <div class="sys-modal-title">Histórico corregido</div>
+    <div class="sys-modal-note" id="hist-fix-note"></div>
+    <div class="sys-modal-actions">
+      <button class="sys-modal-btn primary" onclick="dismissHistFixModal()">Entendido</button>
+    </div>
+  </div>
+</div>
 
 <!-- ───── TOAST ───── -->
 <div class="toast" id="toast"></div>
@@ -2302,8 +2315,8 @@ input:focus, select:focus, textarea:focus {
    ============================================================ */
 
 // ─── VERSIÓN Y BACKUPS ───────────────────────────────────────────
-const APP_VERSION = 1;
-const APP_BUILD_DATE = "20 oct 2026 14:01";
+const APP_VERSION = 2;
+const APP_BUILD_DATE = "01 nov 2026 11:28";
 
 const IDB_NAME = "gymtracker_backups_db";
 const IDB_STORE = "snapshots";
@@ -2430,16 +2443,16 @@ function reloadForUpdate() { location.reload(); }
 
 // ─── ROUTINE / SERIES / DOM CONSTS ──────────────────────────────
 const ROUTINE = {
-  lunes:["DOMINADAS","REMO HAMMER","JALÓN AL PECHO","PRESS MILITAR","PRESS INCLINADO","ELEVACIONES LATERALES","APERTURAS","EXTENSIÓN POSTERIOR","JM PRESS","EXTENSIÓN TRÍCEPS UNILATERAL","CURL PREDICADOR","CURL MANCUERNA","CURL INVERTIDO"],
+  lunes:["DOMINADAS","REMO HAMMER","JALÓN AL PECHO","PRESS MILITAR","PRESS INCLINADO","ELEVACIONES LATERALES","APERTURAS PAD","EXTENSIÓN POSTERIOR","JM PRESS","EXTENSIÓN TRÍCEPS UNILATERAL","CURL PREDICADOR","CURL MANCUERNA","CURL INVERTIDO"],
   martes:["PÉNDULO","SLDL","EXTENSIÓN CUÁDRICEPS","HIP THRUST","EXTENSIÓN FEMORAL","GEMELO","ADUCTORES","ABS"],
-  jueves:["PRESS MILITAR","PRESS INCLINADO","ELEVACIONES LATERALES","APERTURAS","EXTENSIÓN POSTERIOR","CURL PREDICADOR","CURL MANCUERNA"],
+  jueves:["PRESS MILITAR","PRESS INCLINADO","ELEVACIONES LATERALES","APERTURAS PAD","EXTENSIÓN POSTERIOR","CURL PREDICADOR","CURL MANCUERNA"],
   viernes:["DOMINADAS","REMO HAMMER","JALÓN AL PECHO","JM PRESS","EXTENSIÓN TRÍCEPS UNILATERAL","CURL INVERTIDO"],
   sabado:["PÉNDULO","SLDL","EXTENSIÓN CUÁDRICEPS","HIP THRUST","EXTENSIÓN FEMORAL","SÓLEO","ADUCTORES","ABS"]
 };
 const SERIES = {
   lunes:{default:2,DOMINADAS:4,"CURL INVERTIDO":3,"JALÓN AL PECHO":2},
   martes:{default:2,GEMELO:3,"HIP THRUST":4,ADUCTORES:3,ABS:3},
-  jueves:{"PRESS MILITAR":2,"PRESS INCLINADO":3,"ELEVACIONES LATERALES":2,APERTURAS:3,"EXTENSIÓN POSTERIOR":2,"CURL PREDICADOR":3,"CURL MANCUERNA":3},
+  jueves:{"PRESS MILITAR":2,"PRESS INCLINADO":3,"ELEVACIONES LATERALES":2,"APERTURAS PAD":3,"EXTENSIÓN POSTERIOR":2,"CURL PREDICADOR":3,"CURL MANCUERNA":3},
   viernes:{DOMINADAS:4,"REMO HAMMER":4,"JALÓN AL PECHO":2,"JM PRESS":3,"EXTENSIÓN TRÍCEPS UNILATERAL":3,"CURL INVERTIDO":3},
   sabado:{default:2,SÓLEO:3,"HIP THRUST":4,ADUCTORES:3,ABS:3}
 };
@@ -2447,10 +2460,11 @@ const SERIES = {
 // estaba mal puesto — no es una sustitución, por eso no aparece en
 // EJERCICIOS SUSTITUIDOS. migrateExerciseData() renombra también el
 // histórico para que "PÉNDULO" siga siendo la clave de enlace.
-// EXTENSIÓN TRÍCEPS → EXTENSIÓN TRÍCEPS UNILATERAL sí es una sustitución real
-// (bilateral con barra en V → unilateral con brazo apoyado): el nombre viejo
-// se retira de la rutina pero su histórico se deja intacto bajo su propio
-// nombre, consultable desde EJERCICIOS SUSTITUIDOS (ver SUSTITUCIONES_SEED).
+// EXTENSIÓN TRÍCEPS → EXTENSIÓN TRÍCEPS UNILATERAL y APERTURAS → APERTURAS PAD
+// sí son sustituciones reales (cambio de movimiento/máquina, no de nombre):
+// el nombre viejo se retira de la rutina pero su histórico se deja intacto
+// bajo su propio nombre, consultable desde EJERCICIOS SUSTITUIDOS
+// (ver migrateAperturasPad() / gymtracker_sustituidos).
 const DAY_TITLE = { lunes:"TORSO", martes:"PIERNA", jueves:"TORSO", viernes:"TORSO", sabado:"PIERNA" };
 const DAY_BG    = { lunes:"PUSH PULL", martes:"LEG DAY", jueves:"PUSH PULL", viernes:"PUSH PULL", sabado:"LEG DAY" };
 const DAY_IDX   = { lunes:1, martes:2, jueves:4, viernes:5, sabado:6 };
@@ -2484,7 +2498,7 @@ function roundW(n) { return String(Math.round(n * 10) / 10); }
 function pesoInputToKg(raw) {
   if (weightUnit !== "lb" || raw === "" || raw == null) return raw;
   const n = parseFloat(raw);
-  return isNaN(n) ? raw : roundW(lbToKg(n));
+  return isNaN(n) ? raw : String(Math.round(lbToKg(n) * 1000) / 1000);
 }
 function fmtWeightKg(kgVal) {
   const n = parseFloat(kgVal);
@@ -2503,7 +2517,7 @@ function pesoRawToUnit(raw, fromUnit, toUnit) {
   const n = parseFloat(raw);
   if (isNaN(n)) return "";
   if (fromUnit === toUnit) return String(raw);
-  if (fromUnit === "kg") return String(Math.round(kgToLb(n)));
+  if (fromUnit === "kg") return roundW(kgToLb(n));
   return roundW(lbToKg(n));
 }
 function pesoDisplayValue(ex) {
@@ -2547,10 +2561,16 @@ function saveDomExtraData(d) { localStorage.setItem("gymtracker_dominadas_extra"
 function getSustituciones() { try { return JSON.parse(localStorage.getItem("gymtracker_sustituidos") || "[]"); } catch { return []; } }
 function saveSustituciones(d) { localStorage.setItem("gymtracker_sustituidos", JSON.stringify(d)); }
 
-// ─── MIGRACIÓN DE DATOS (octubre 2026) ──────────────────────────
-// Se ejecuta una sola vez (flag en localStorage) para no pisar ediciones
-// manuales futuras del usuario sobre estos mismos ejercicios/fechas.
-function migrateDataOct2026() {
+// ─── MIGRACIÓN DE DATOS ──────────────────────────────────────────
+// Todo cambio de histórico vive aquí dentro, cada uno con su propia guarda
+// en localStorage para no aplicarse dos veces ni pisar ediciones manuales
+// futuras del usuario sobre esos mismos ejercicios/fechas.
+function migrateExerciseData() {
+  migrateOct2026();
+  migrateCurlInvertido20kg();
+  migrateAperturasPad();
+}
+function migrateOct2026() {
   if (localStorage.getItem("gt_migration_2026_10_applied")) return;
   const data = getData();
   let changed = false;
@@ -2579,6 +2599,65 @@ function migrateDataOct2026() {
     saveSustituciones(sust);
   }
   localStorage.setItem("gt_migration_2026_10_applied", "1");
+}
+// CURL INVERTIDO volvió a la barra Z con 20 kg (16/10/2026→en adelante) tras
+// probar otros pesos/agarres en polea por una molestia de muñeca. Esos
+// registros sueltos de prueba rompen la línea del histórico: una vez que la
+// línea de los 20 kg queda establecida (dos registros consecutivos a 20),
+// cualquier registro posterior que se desvíe de 20 es ese experimento
+// puntual, no progresión real, y se corrige a 20. Lo anterior a la línea no
+// se toca — ahí sí puede haber progresión real hasta llegar a los 20.
+function migrateCurlInvertido20kg() {
+  if (localStorage.getItem("gt_migration_curl_invertido_20")) return;
+  const data = getData();
+  const entries = [];
+  data.forEach(s => s.exercises.forEach(e => { if (e.name === "CURL INVERTIDO" && e.peso) entries.push({ s, e }); }));
+  entries.sort((a, b) => a.s.date.localeCompare(b.s.date));
+  let lineIdx = -1;
+  for (let i = 0; i < entries.length - 1; i++) {
+    if (parseFloat(entries[i].e.peso) === 20 && parseFloat(entries[i + 1].e.peso) === 20) { lineIdx = i; break; }
+  }
+  const corrections = [];
+  if (lineIdx >= 0) {
+    for (let i = lineIdx; i < entries.length; i++) {
+      const { s, e } = entries[i];
+      if (parseFloat(e.peso) !== 20) {
+        corrections.push({ date: s.date, from: e.peso });
+        e.peso = "20";
+        if (e.pesoRaw !== undefined) { e.pesoRaw = "20"; e.pesoUnidad = "kg"; }
+      }
+    }
+    if (corrections.length) saveData(data);
+  }
+  if (corrections.length) localStorage.setItem("gt_hist_fix_pending", JSON.stringify({ ex: "CURL INVERTIDO", nota: "vuelta a 20 kg", corrections }));
+  localStorage.setItem("gt_migration_curl_invertido_20", "1");
+}
+// APERTURAS → APERTURAS PAD (15/10/2026): cambio de máquina (agarre con
+// manos → contractora con pads en el antebrazo), es una sustitución real, no
+// un renombrado — el histórico de APERTURAS se queda intacto bajo su propio
+// nombre y el ejercicio nuevo arranca sin referencias (mismo patrón que
+// EXTENSIÓN TRÍCEPS → EXTENSIÓN TRÍCEPS UNILATERAL).
+function migrateAperturasPad() {
+  const sust = getSustituciones();
+  if (sust.some(x => x.idAntiguo === "APERTURAS")) return;
+  sust.push({ idAntiguo: "APERTURAS", nombreAntiguo: "APERTURAS", idNuevo: "APERTURAS PAD", nombreNuevo: "APERTURAS PAD", fecha: "2026-10-15" });
+  saveSustituciones(sust);
+}
+// Aviso de histórico corregido (CURL INVERTIDO) — se enseña una sola vez;
+// la guarda de migrateCurlInvertido20kg() ya impide que se recalculen
+// correcciones en una segunda pasada, y aquí se borra el pendiente al
+// cerrarlo para no volver a mostrarlo.
+function showHistFixModalIfPending() {
+  let pending; try { pending = JSON.parse(localStorage.getItem("gt_hist_fix_pending") || "null"); } catch { pending = null; }
+  if (!pending || !pending.corrections || !pending.corrections.length) return;
+  const note = document.getElementById("hist-fix-note");
+  const rows = pending.corrections.map(c => `${fmtDate(c.date)}&nbsp;&nbsp;${c.from} kg&nbsp;→&nbsp;20 kg`).join("<br>");
+  note.innerHTML = `<b>${pending.ex} · ${pending.nota}</b><br><br>${rows}`;
+  document.getElementById("hist-fix-modal").classList.add("open");
+}
+function dismissHistFixModal() {
+  localStorage.removeItem("gt_hist_fix_pending");
+  document.getElementById("hist-fix-modal").classList.remove("open");
 }
 // Cintura/brazo pasan a tener dos variantes cada uno; los datos previos a esta
 // versión eran un número plano → se asignan a la variante que ya se medía.
@@ -2636,8 +2715,9 @@ function calcVol(exArr) {
   exArr.forEach(e => {
     if (e.name === "DOMINADAS" && (e.lastre !== undefined || e.pesoCorporal !== undefined)) {
       if (e.pesoCorporal == null || !e.series) return;
-      const w = e.pesoCorporal + (parseFloat(e.lastre) || 0);
-      parseSeries(e.series).forEach(({series,reps}) => { v += w * series * reps; });
+      const total = seriesCount(e.series) || (Array.isArray(e.lastre) ? e.lastre.length : 0);
+      const la = lastreArr(e, total);
+      expandSeriesReps(e.series, total).forEach((reps, i) => { v += (e.pesoCorporal + (la[i] || 0)) * reps; });
       return;
     }
     if (!e.peso || !e.series) return;
@@ -2647,6 +2727,28 @@ function calcVol(exArr) {
   return Math.round(v);
 }
 function parseSeries(str) { if (!str) return []; return str.trim().split(/[\s,]+/).reduce((a,p) => { const m = p.match(/^(\d+)x(\d+)$/i); if (m) a.push({ series: parseInt(m[1]), reps: parseInt(m[2]) }); return a; }, []); }
+// Número total de series que describe la notación (p.ej. "2x8 2x6" → 4).
+function seriesCount(str) { return parseSeries(str).reduce((a, p) => a + p.series, 0); }
+// Expande la notación a un array de reps, una entrada por serie
+// ("4x8" → [8,8,8,8], "2x8 2x6" → [8,8,6,6]); si no llega a `total`, las que
+// faltan se quedan a 0 (notación incompleta respecto al número real de series).
+function expandSeriesReps(str, total) {
+  const arr = [];
+  parseSeries(str).forEach(p => { for (let i = 0; i < p.series; i++) arr.push(p.reps); });
+  while (arr.length < total) arr.push(0);
+  return arr.slice(0, total);
+}
+// Lastre de DOMINADAS normalizado a array (uno por serie). Los registros
+// antiguos (previos al lastre-por-serie) tienen `lastre` como número/string
+// plano — se expanden a un array del mismo valor repetido, nSeries veces,
+// para que todo el código de lectura pueda asumir siempre un array.
+function lastreArr(e, nSeries) {
+  if (Array.isArray(e.lastre)) return e.lastre.map(v => parseFloat(v) || 0);
+  const v = parseFloat(e.lastre) || 0;
+  return Array(Math.max(nSeries, 0)).fill(v);
+}
+// Texto de lastre por serie para mostrar (p.ej. "10 kg · 10 kg · sin · sin").
+function lastreListText(la) { return la.map(v => v > 0 ? v + " kg" : "sin").join(" · "); }
 function calc1RM(peso, ser) { if (!peso || !ser) return null; const w = parseFloat(peso); if (!w) return null; const p = parseSeries(ser); if (!p.length) return null; return parseFloat(Math.max(...p.map(({reps}) => w * (1 + reps / 30))).toFixed(1)); }
 
 // ─── VOLUMEN POR GRUPO MUSCULAR ─────────────────────────────────
@@ -2655,7 +2757,7 @@ const MUSCLE = {
   "CURL PREDICADOR":"Bíceps", "CURL MANCUERNA":"Bíceps",
   "CURL INVERTIDO":"Antebrazo",
   "PRESS MILITAR":"Hombro", "ELEVACIONES LATERALES":"Hombro", "EXTENSIÓN POSTERIOR":"Hombro",
-  "PRESS INCLINADO":"Pecho", "APERTURAS":"Pecho",
+  "PRESS INCLINADO":"Pecho", "APERTURAS":"Pecho", "APERTURAS PAD":"Pecho",
   "JM PRESS":"Tríceps", "EXTENSIÓN TRÍCEPS":"Tríceps", "EXTENSIÓN TRÍCEPS UNILATERAL":"Tríceps",
   "PÉNDULO":"Cuádriceps", "EXTENSIÓN CUÁDRICEPS":"Cuádriceps",
   "SLDL":"Femoral", "EXTENSIÓN FEMORAL":"Femoral",
@@ -2931,7 +3033,7 @@ function loadSession() {
       const mode = e.name === "DOMINADAS" ? getDomMode(currentDay, currentDate) : "normal";
       if (mode === "emom") sState[e.name] = { emomReps: e.emomReps || "", emomMins: e.emomMins || "", emomTotal: e.emomTotal || 0, lastre: e.lastre || "", done: e.done || false };
       else if (mode === "test") sState[e.name] = { testReps: e.testReps || "", done: e.done || false };
-      else if (e.name === "DOMINADAS") { sState[e.name] = { lastre: e.lastre || "", series: e.series || "", done: e.done || false }; sChecks[e.name] = e.done ? getSeries(currentDay, e.name) : (e.seriesDone || 0); }
+      else if (e.name === "DOMINADAS") { sState[e.name] = { lastre: lastreArr(e, getSeries(currentDay, e.name)), series: e.series || "", done: e.done || false }; sChecks[e.name] = e.done ? getSeries(currentDay, e.name) : (e.seriesDone || 0); }
       else { sState[e.name] = { peso: e.peso || "", pesoRaw: e.pesoRaw !== undefined ? e.pesoRaw : (e.peso || ""), pesoUnidad: e.pesoUnidad || "kg", series: e.series || "", done: e.done || false, prog: e.prog || null }; sChecks[e.name] = e.done ? getSeries(currentDay, e.name) : (e.seriesDone || 0); }
     });
   }
@@ -2942,6 +3044,27 @@ function loadSession() {
     showToast("Borrador restaurado", "ok");
   }
 }
+// Lectura compartida de los ".ex-input" de una tarjeta hacia sState — usada
+// tanto por captureInputs() como por tickDot() (que necesita capturar antes
+// de marcar un ejercicio como completado). El campo "peso" solo se reescribe
+// si el input difiere de data-rendered (lo que la propia app pintó): si el
+// usuario no ha tocado el campo, leerlo y re-guardarlo como si fuese una
+// edición real es lo que causaba el bug de redondeo acumulado al alternar
+// kg/lb (ver B1 — pesoRaw/pesoUnidad solo deben cambiar con una edición real).
+function captureCardInputs(ex, card) {
+  const inp = card.querySelectorAll(".ex-input");
+  if (!sState[ex]) sState[ex] = { done: false };
+  inp.forEach(i => {
+    const f = i.dataset.field; if (!f) return;
+    if (f === "peso") {
+      if (i.value === i.dataset.rendered) return;
+      sState[ex].peso = pesoInputToKg(i.value); sState[ex].pesoRaw = i.value; sState[ex].pesoUnidad = weightUnit;
+    } else if (ex === "DOMINADAS" && f === "lastre") {
+      if (!Array.isArray(sState[ex].lastre)) sState[ex].lastre = [];
+      sState[ex].lastre[parseInt(i.dataset.idx) || 0] = i.value;
+    } else sState[ex][f] = i.value;
+  });
+}
 function captureInputs() {
   if (!currentDay) return;
   ROUTINE[currentDay].forEach(ex => {
@@ -2950,9 +3073,7 @@ function captureInputs() {
     // don't get misread as weight/series values.
     if (ex === "DOMINADAS" && getDomMode(currentDay, currentDate) !== "normal") return;
     const card = document.getElementById(safeId(ex)); if (!card) return;
-    const inp = card.querySelectorAll(".ex-input");
-    if (!sState[ex]) sState[ex] = { done: false };
-    inp.forEach(i => { const f = i.dataset.field; if (!f) return; if (f === "peso") { sState[ex].peso = pesoInputToKg(i.value); sState[ex].pesoRaw = i.value; sState[ex].pesoUnidad = weightUnit; } else sState[ex][f] = i.value; });
+    captureCardInputs(ex, card);
   });
 }
 
@@ -2993,7 +3114,7 @@ function renderExercises() {
         if (!sState[ex]) sState[ex] = { testReps: "", done: false };
         list.appendChild(buildTestCard(ex)); return;
       } else {
-        if (!sState[ex]) sState[ex] = { lastre: "", series: "", done: false };
+        if (!sState[ex]) sState[ex] = { lastre: [], series: "", done: false };
         if (sChecks[ex] === undefined) sChecks[ex] = 0;
         list.appendChild(buildDominadasNormalCard(ex)); return;
       }
@@ -3023,34 +3144,62 @@ function renderExercises() {
     card.id = id;
     card.dataset.ex = ex; card.dataset.kind = "normal";
     observeReveal(card);
-    card.innerHTML = `<div class="ex-header"><span class="ex-name">${ex}${nameBadge}</span><div class="dots-row"><span class="dot-count tnum" id="dc-${id}">${checked}/${total}</span>${dots}</div></div><div class="ex-body"><div class="ex-ref">${refHtml}</div><div class="ex-in-grp"><div class="ex-in-hdr"><span class="ex-lbl">Hoy</span><button type="button" class="unit-toggle" onclick="toggleWeightUnit()">${weightUnit}</button></div><input class="ex-input" placeholder="Peso (${weightUnit})" type="number" inputmode="decimal" value="${pesoDisplayValue(ex)}" ${done?"disabled":""} data-ex="${ex}" data-field="peso" oninput="updateSt(this)"><span class="peso-equiv tnum" id="pe-${id}">${equivTxt}</span><input class="ex-input" placeholder="Series" value="${sState[ex].series}" ${done?"disabled":""} data-ex="${ex}" data-field="series" oninput="updateSt(this)"></div>${progRow}</div>`;
+    card.innerHTML = `<div class="ex-header"><span class="ex-name">${ex}${nameBadge}</span><div class="dots-row"><span class="dot-count tnum" id="dc-${id}">${checked}/${total}</span>${dots}</div></div><div class="ex-body"><div class="ex-ref">${refHtml}</div><div class="ex-in-grp"><div class="ex-in-hdr"><span class="ex-lbl">Hoy</span><button type="button" class="unit-toggle" onclick="toggleWeightUnit()">${weightUnit}</button></div><input class="ex-input" placeholder="Peso (${weightUnit})" type="number" inputmode="decimal" value="${pesoDisplayValue(ex)}" data-rendered="${pesoDisplayValue(ex)}" ${done?"disabled":""} data-ex="${ex}" data-field="peso" oninput="updateSt(this)"><span class="peso-equiv tnum" id="pe-${id}">${equivTxt}</span><input class="ex-input" placeholder="Series" value="${sState[ex].series}" ${done?"disabled":""} data-ex="${ex}" data-field="series" oninput="updateSt(this)"></div>${progRow}</div>`;
     list.appendChild(card);
   });
   updateProg();
 }
 
-// Dominadas normales (viernes, semanas sin test): lastre en vez de peso — el
-// peso corporal se congela solo, en saveSession(), a partir de FÍSICO.
+// Dominadas normales (viernes, semanas sin test): un lastre por serie en vez
+// de uno solo para todo el ejercicio (así se pueden mezclar series lastradas
+// y sin lastre el mismo día) — el peso corporal se congela solo, en
+// saveSession(), a partir de FÍSICO.
+let lastrePressTimer = null;
+function lastrePressStart(ex) {
+  clearTimeout(lastrePressTimer);
+  lastrePressTimer = setTimeout(() => copyLastreToAll(ex), 550);
+}
+function lastrePressCancel() { clearTimeout(lastrePressTimer); }
+// Toque largo sobre la serie 1: copia su valor al resto de series.
+function copyLastreToAll(ex) {
+  const card = document.getElementById(safeId(ex)); if (!card) return;
+  const inputs = card.querySelectorAll('[data-field="lastre"]');
+  if (inputs.length < 2) return;
+  const v = inputs[0].value;
+  if (!sState[ex]) return;
+  if (!Array.isArray(sState[ex].lastre)) sState[ex].lastre = [];
+  inputs.forEach((inp, i) => { inp.value = v; sState[ex].lastre[i] = v; });
+  haptic(14);
+  persistDraft();
+}
 function buildDominadasNormalCard(ex) {
   const refs = getLastN(ex, 2, currentDate);
   let refHtml = "";
   if (!refs.length) refHtml = `<div class="ex-lbl">Referencia</div><div class="ref-val empty">Sin datos previos</div>`;
   else refHtml = refs.map((r, i) => {
-    const la = parseFloat(r.lastre) || 0;
-    const val = (la > 0 ? la + " kg lastre" : "sin lastre") + (r.series ? " · " + r.series : "");
+    const rTotal = seriesCount(r.series) || (Array.isArray(r.lastre) ? r.lastre.length : getSeries(currentDay, ex));
+    const val = lastreListText(lastreArr(r, rTotal)) + (r.series ? " · " + r.series : "");
     const lbl = i === 0 ? "Última vez" : "Anterior";
     return `<div class="ex-lbl">${lbl} · ${fmtDate(r.date)}</div><div class="ref-val">${val}</div>`;
   }).join("");
   const st = sState[ex];
   const id = safeId(ex), total = getSeries(currentDay, ex), done = sChecks[ex] >= total || st.done, checked = sChecks[ex] || 0;
+  if (!Array.isArray(st.lastre)) st.lastre = lastreArr({ lastre: st.lastre }, total);
+  while (st.lastre.length < total) st.lastre.push("");
   let dots = "";
   for (let i = 0; i < total; i++) dots += `<button class="dot ${i<checked?"on":""}" onclick="tickDot('${ex}',${i})"></button>`;
+  let lastreInputs = "";
+  for (let i = 0; i < total; i++) {
+    const v = st.lastre[i] || "";
+    const pressAttrs = i === 0 ? `onpointerdown="lastrePressStart('${ex}')" onpointerup="lastrePressCancel()" onpointerleave="lastrePressCancel()" onpointercancel="lastrePressCancel()"` : "";
+    lastreInputs += `<div class="lastre-serie"><span class="lastre-serie-lbl">serie ${i + 1}</span><input class="ex-input" placeholder="—" type="number" inputmode="decimal" value="${v}" ${done?"disabled":""} data-ex="${ex}" data-field="lastre" data-idx="${i}" oninput="updateSt(this)" ${pressAttrs}></div>`;
+  }
   const card = document.createElement("div");
   card.className = "ex-card" + (done ? " done" : "");
   card.id = id;
   card.dataset.ex = ex; card.dataset.kind = "normal";
   observeReveal(card);
-  card.innerHTML = `<div class="ex-header"><span class="ex-name">${ex}</span><div class="dots-row"><span class="dot-count" id="dc-${id}">${checked}/${total}</span>${dots}</div></div><div class="ex-body"><div class="ex-ref">${refHtml}</div><div class="ex-in-grp"><div class="ex-in-hdr"><span class="ex-lbl">Hoy</span></div><input class="ex-input" placeholder="Lastre (kg, opcional)" type="number" inputmode="decimal" value="${st.lastre||""}" ${done?"disabled":""} data-ex="${ex}" data-field="lastre" oninput="updateSt(this)"><input class="ex-input" placeholder="Series" value="${st.series||""}" ${done?"disabled":""} data-ex="${ex}" data-field="series" oninput="updateSt(this)"></div></div>`;
+  card.innerHTML = `<div class="ex-header"><span class="ex-name">${ex}</span><div class="dots-row"><span class="dot-count" id="dc-${id}">${checked}/${total}</span>${dots}</div></div><div class="ex-body"><div class="ex-ref">${refHtml}</div><div class="ex-in-grp"><div class="ex-in-hdr"><span class="ex-lbl">Hoy</span></div><div class="lastre-grid" style="grid-template-columns:repeat(${total},1fr)">${lastreInputs}</div><input class="ex-input" placeholder="Series" value="${st.series||""}" ${done?"disabled":""} data-ex="${ex}" data-field="series" oninput="updateSt(this)"></div></div>`;
   return card;
 }
 function buildEMOMCard(ex) {
@@ -3162,9 +3311,7 @@ function tickDot(ex, idx) {
     // setTimeout below — so an immediate "Guardar sesión" (eg. tapping save
     // right after the last dot) persists done:true instead of racing the
     // animation delay and saving done:false despite seriesDone===total.
-    const inp = card.querySelectorAll(".ex-input");
-    if (!sState[ex]) sState[ex] = { done: false };
-    inp.forEach(i => { const f = i.dataset.field; if (!f) return; if (f === "peso") { sState[ex].peso = pesoInputToKg(i.value); sState[ex].pesoRaw = i.value; sState[ex].pesoUnidad = weightUnit; } else sState[ex][f] = i.value; });
+    captureCardInputs(ex, card);
     sState[ex].done = true;
     restStop();
     haptic([14, 50, 14]); // ejercicio completo: vibración doble, más marcada que el tick normal
@@ -3192,6 +3339,9 @@ function updateSt(inp) {
     sState[ex].pesoUnidad = weightUnit;
     const eq = document.getElementById("pe-" + safeId(ex));
     if (eq) eq.textContent = pesoEquivKgText(ex);
+  } else if (ex === "DOMINADAS" && f === "lastre") {
+    if (!Array.isArray(sState[ex].lastre)) sState[ex].lastre = [];
+    sState[ex].lastre[parseInt(inp.dataset.idx) || 0] = inp.value;
   } else sState[ex][f] = inp.value;
   persistDraft();
 }
@@ -3241,7 +3391,11 @@ function saveSession() {
     const st = sState[ex] || {}; const mode = ex === "DOMINADAS" ? getDomMode(currentDay, currentDate) : "normal";
     if (mode === "emom") return { name: ex, emomReps: st.emomReps || "", emomMins: st.emomMins || "", emomTotal: st.emomTotal || 0, lastre: st.lastre || "", pesoCorporal: getPesoCorporalAt(currentDate), done: st.done || false };
     if (mode === "test") return { name: ex, testReps: st.testReps || "", pesoCorporal: getPesoCorporalAt(currentDate), done: st.done || false };
-    if (ex === "DOMINADAS") return { name: ex, lastre: st.lastre || "", series: st.series || "", pesoCorporal: getPesoCorporalAt(currentDate), done: st.done || false, seriesDone: sChecks[ex] || 0 };
+    if (ex === "DOMINADAS") {
+      const total = getSeries(currentDay, ex);
+      const la = lastreArr({ lastre: st.lastre }, total);
+      return { name: ex, lastre: la, series: st.series || "", pesoCorporal: getPesoCorporalAt(currentDate), done: st.done || false, seriesDone: sChecks[ex] || 0 };
+    }
     return { name: ex, peso: st.peso || "", pesoRaw: st.pesoRaw !== undefined ? st.pesoRaw : (st.peso || ""), pesoUnidad: st.pesoUnidad || "kg", series: st.series || "", done: st.done || false, seriesDone: sChecks[ex] || 0, prog: st.prog || null };
   })};
   const data = getData();
@@ -3267,6 +3421,9 @@ function celebrateSessionComplete() {
   haptic([16, 60, 16, 60, 24]);
   setTimeout(() => el.remove(), 950);
 }
+// Dos pesos que difieran menos de esto se consideran el mismo peso — evita
+// que un arrastre de redondeo (kg/lb, o un registro antiguo) dispare un PR falso.
+const PR_TOLERANCE_KG = 0.05;
 function checkPR(session) {
   const data = getData();
   session.exercises.forEach(ex => {
@@ -3277,7 +3434,7 @@ function checkPR(session) {
       .flatMap(s => s.exercises)
       .filter(e => e.name === ex.name && e.peso)
       .map(e => parseFloat(e.peso));
-    if (prev.length && nW > Math.max(...prev)) {
+    if (prev.length && nW - Math.max(...prev) > PR_TOLERANCE_KG) {
       const old = Math.max(...prev);
       setTimeout(() => showPR(ex.name, nW, old, ex.series), 600);
     }
@@ -3393,16 +3550,25 @@ function renderHist() {
       if (!e.peso) return false;
       const nW = parseFloat(e.peso);
       const prev = getData().filter(x => x.date < s.date).flatMap(x => x.exercises).filter(x => x.name === e.name && x.peso).map(x => parseFloat(x.peso));
-      return prev.length && nW > Math.max(...prev);
+      return prev.length && nW - Math.max(...prev) > PR_TOLERANCE_KG;
     });
     const exRows = s.exercises.map(e => {
       let dataStr = "";
       if (e.emomReps || e.emomMins) dataStr = `EMOM ${e.emomReps || "—"}r × ${e.emomMins || "—"}m = ${e.emomTotal || "—"}`;
       else if (e.testReps) dataStr = `TEST ${e.testReps} reps` + (e.pesoCorporal != null ? ` · ${e.pesoCorporal} kg pc` : "");
       else if (e.name === "DOMINADAS" && (e.lastre !== undefined || e.pesoCorporal !== undefined)) {
-        const pc = e.pesoCorporal, la = parseFloat(e.lastre) || 0;
-        const totW = pc != null ? Math.round((pc + la) * 10) / 10 : null;
-        const wPart = totW != null ? (totW + " kg" + (la ? ` (${pc}+${la})` : "")) : (la ? la + " kg lastre" : "");
+        const pc = e.pesoCorporal;
+        const total = seriesCount(e.series) || (Array.isArray(e.lastre) ? e.lastre.length : 0);
+        const la = lastreArr(e, total);
+        const uniform = !la.length || la.every(v => v === la[0]);
+        let wPart;
+        if (uniform) {
+          const l0 = la[0] || 0;
+          const totW = pc != null ? Math.round((pc + l0) * 10) / 10 : null;
+          wPart = totW != null ? (totW + " kg" + (l0 ? ` (${pc}+${l0})` : "")) : (l0 ? l0 + " kg lastre" : "");
+        } else {
+          wPart = lastreListText(la);
+        }
         dataStr = [wPart, e.series || ""].filter(Boolean).join(" · ");
       }
       else if (e.peso || e.series) dataStr = (e.peso ? e.peso + " kg" : "") + (e.peso && e.series ? " · " : "") + (e.series || "");
@@ -3452,13 +3618,15 @@ function domTotalDayBreakdown(ds) {
   if (sess) {
     const e = sess.exercises.find(x => x.name === "DOMINADAS");
     if (e) {
-      const w = (e.pesoCorporal || 0) + (parseFloat(e.lastre) || 0);
       if (sess.day === "lunes" && (e.emomReps || e.emomMins || e.emomTotal)) {
+        const w = (e.pesoCorporal || 0) + (parseFloat(e.lastre) || 0);
         const reps = e.emomTotal || 0;
         sources.push({ lbl: "EMOM lunes", reps, ton: reps * w });
       } else if (sess.day === "viernes" && e.series && !e.testReps) {
+        const total = seriesCount(e.series) || (Array.isArray(e.lastre) ? e.lastre.length : 0);
+        const la = lastreArr(e, total);
         let reps = 0, ton = 0;
-        parseSeries(e.series).forEach(({ series, reps: r }) => { reps += series * r; ton += series * r * w; });
+        expandSeriesReps(e.series, total).forEach((r, i) => { reps += r; ton += r * ((e.pesoCorporal || 0) + (la[i] || 0)); });
         sources.push({ lbl: "Viernes · 4 series", reps, ton });
       }
     }
@@ -3713,7 +3881,8 @@ function computeDomLastreSeries() {
   const pcByDate = {}, laByDate = {};
   getGymDominadasEntries().forEach(e => {
     if (e.pesoCorporal != null) pcByDate[e.date] = e.pesoCorporal;
-    const la = parseFloat(e.lastre);
+    const total = seriesCount(e.series) || (Array.isArray(e.lastre) ? e.lastre.length : 1);
+    const la = Array.isArray(e.lastre) ? Math.max(...lastreArr(e, total), 0) : (parseFloat(e.lastre) || 0);
     if (la > 0) laByDate[e.date] = la;
   });
   Object.entries(getDomExtra()).forEach(([ds, arr]) => {
@@ -5060,19 +5229,22 @@ async function exportInformePDF() {
   doc.text("Generado por Gym Tracker · jo$e",                M, doc.internal.pageSize.getHeight() - 38);
   doc.text(new Date().toLocaleDateString("es-ES"), W - M, doc.internal.pageSize.getHeight() - 38, { align: "right" });
 
-  doc.save(`gym-tracker-informe-${d.etapa.fechaInicio || "etapa"}.pdf`);
+  doc.save("gym-tracker-informe.pdf");
   showToast("PDF descargado", "ok");
 }
 
 // ─── EXPORT / IMPORT ───────────────────────────────────────────
 function exportJSON() {
+  // Nombre de archivo fijo a propósito: así reemplaza al backup anterior en
+  // vez de acumular un archivo nuevo por cada exportación (la fecha ya vive
+  // dentro del JSON, en exportedAt, que es donde sirve de algo). El import
+  // sigue aceptando archivos antiguos con fecha en el nombre — lo que vale
+  // es el contenido, no cómo se llame.
   const payload = { app: "gym-tracker", appVersion: APP_VERSION, exportedAt: new Date().toISOString(), data: snapshotAllLocalStorage() };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-  const d = new Date();
-  const pad = n => String(n).padStart(2, "0");
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = `gym-tracker-backup-${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}.json`;
+  a.download = "gym-tracker-backup.json";
   a.click();
   localStorage.setItem("gt_last_export_ts", String(Date.now()));
   showToast("Backup exportado", "ok");
@@ -5292,8 +5464,9 @@ function refreshCurrentScreen() {
 
 // ─── INIT ─────────────────────────────────────────────────────
 checkBackupRestoreOffer();
-migrateDataOct2026();
+migrateExerciseData();
 migrateMedidasVariantes();
+showHistFixModalIfPending();
 updateNavIndicator(document.querySelector(".nav-btn.active"));
 document.getElementById("session-date").value = todayStr();
 populateProgSel(); updateHeaderStage();
