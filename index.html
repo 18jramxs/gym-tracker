@@ -268,15 +268,15 @@ body::after {
   animation: shine 2.4s ease-out 0.4s both;
   pointer-events: none;
 }
-/* Escudo de fondo (sección 4, ajustado en D6.1): marca de agua, no
+/* Escudo de fondo (sección 4, ajustado en D6.1 y E5): marca de agua, no
    decoración — por eso tan tenue y recortada contra el borde. Tiene que
-   verse casi entero con solo un mordisco a la derecha, no solo el centro
-   ampliado: por eso se reduce el tamaño en vez de mover la posición.
-   Si al mirar la pantalla se lee antes el escudo que el día, está
+   verse alrededor de tres cuartos del escudo, con el resto cortado por el
+   borde derecho — por eso ahora se mueve la posición (el tamaño ya estaba
+   bien). Si al mirar la pantalla se lee antes el escudo que el día, está
    demasiado fuerte; subir de 0.06 es el límite. */
 .hero-escudo {
   position: absolute;
-  right: -4%;
+  right: -16%;
   top: 50%;
   transform: translateY(-50%);
   width: 150px; height: 150px;
@@ -520,7 +520,9 @@ body::after {
 .dot.on::before {
   opacity: 1; transform: scale(1);
 }
-.dot.on::after { content: ""; position: absolute; width: 10px; height: 10px; background: radial-gradient(circle at 35% 30%, #1a1d24 0%, #050505 90%); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%,-50%); box-shadow: inset 0 1px 1px rgba(0,0,0,0.6); }
+/* El punto marcado es blanco sólido (sección 4) — antes había un ::after
+   aquí dibujando un círculo oscuro en el centro (un agujero), también
+   visible durante el rebote de .pop porque escalaba junto con .dot. */
 .dot:active { transform: scale(1.18); }
 .dot.pop   { animation: popIn 0.32s cubic-bezier(0.16,1,0.3,1); }
 .dot.pop::before { animation: dotBurst 0.65s ease-out; }
@@ -583,14 +585,17 @@ body::after {
 /* Última vez · anterior, como panel superpuesto (D3.3): cubre exactamente
    el rectángulo de .ex-in-grp (que ya tiene su alto fijado por los campos
    reales, en flujo normal) sin añadir ni un píxel a la altura de la
-   tarjeta. Entra/sale con un fundido corto — nada se desplaza. */
+   tarjeta. Entra/sale con un fundido corto — nada se desplaza.
+   Fondo casi opaco (sección 2): lo de debajo (Peso/Series) no se tiene que
+   leer en absoluto — la versión translúcida de antes dejaba "Técnica
+   anterior · 90 kg" mezclado encima de los campos, ilegible. */
 .ex-ref-overlay {
   position: absolute; inset: 0;
   display: flex; flex-direction: column; justify-content: center; gap: 8px;
-  padding: 14px;
+  padding: 18px;
   border-radius: var(--r-xs);
-  background: var(--bg-glass-strong);
-  backdrop-filter: var(--glass-strong); -webkit-backdrop-filter: var(--glass-strong);
+  background: rgba(14,14,16,0.92);
+  backdrop-filter: blur(18px) saturate(115%); -webkit-backdrop-filter: blur(18px) saturate(115%);
   border: 1px solid var(--border-2);
   opacity: 0; pointer-events: none;
   transition: opacity 0.2s ease;
@@ -2563,8 +2568,8 @@ input:focus, select:focus, textarea:focus {
    ============================================================ */
 
 // ─── VERSIÓN Y BACKUPS ───────────────────────────────────────────
-const APP_VERSION = 6;
-const APP_BUILD_DATE = "02 nov 2026 16:40";
+const APP_VERSION = 7;
+const APP_BUILD_DATE = "02 nov 2026 18:05";
 
 const IDB_NAME = "gymtracker_backups_db";
 const IDB_STORE = "snapshots";
@@ -2790,6 +2795,12 @@ let calSign = -1, etapaOpt = null;
 // Editable desde Ajustes (A3) — "false" vuelve a la lista vertical de antes.
 let carouselMode = localStorage.getItem("gymtracker_carousel_mode") !== "0";
 let exCarouselIndex = 0;
+// Índice "visual" de la barra de progreso (sección 1.1): lo mueve
+// paintExCarousel() en cada frame, siguiendo al dedo. exCarouselIndex en
+// cambio solo se actualiza al asentarse el scroll (reconcileExCarouselScroll),
+// porque de él dependen cosas que no deben repetirse en cada frame — la
+// vibración, cerrar el panel de última vez, qué tarjeta lleva blur propio.
+let exBarVisualIndex = 0;
 
 // ─── ÚLTIMA VEZ COMO PANEL SUPERPUESTO (sección 3.3) ─────────────
 // Nombre del ejercicio cuyo panel está abierto, o null — solo uno a la vez.
@@ -3686,13 +3697,26 @@ function buildNormalExerciseCard(ex) {
   const refs = getLastN(ex, nRefs, currentDate);
   const canProg = ex !== "DOMINADAS";
   const nameBadge = (canProg && refs[0] && refs[0].prog) ? `<span class="prog-ref-badge ${refs[0].prog}">${refs[0].prog === "up" ? "↑" : "="}</span>` : "";
+  // Color de progresión (sección 3): se compara contra el peso posterior al
+  // ajuste técnico vigente, si lo hay (cmpRef) — comparar con la técnica
+  // vieja no significa nada (ver getLastN, tecnicaAnterior).
+  const cmpRef = refs.find(r => !r.tecnicaAnterior);
+  const ajusteVigente = getAjusteTecnicoVigente(ex, currentDate);
   let refHtml = "";
-  if (!refs.length) refHtml = `<div class="ex-lbl">Referencia</div><div class="ref-val empty">Sin datos previos</div>`;
-  else refHtml = refs.map((r, i) => {
-    const val = r.peso ? fmtWeightRecord(r) + (r.series ? " · " + r.series : "") : r.series || "";
-    const lbl = r.tecnicaAnterior ? "Técnica anterior" : (nRefs > 1 ? (i === 0 ? "Última vez" : "Anterior") : "Última vez");
-    return `<div class="ex-lbl">${lbl} · ${fmtDate(r.date)}</div><div class="ref-val">${val}</div>`;
-  }).join("");
+  if (ajusteVigente && !cmpRef) {
+    // Ajuste técnico vigente y ningún registro posterior todavía: enseñar
+    // el peso de antes del ajuste no sirve, ya no es comparable. El
+    // histórico de antes sigue consultable en Progreso.
+    refHtml = `<div class="ex-lbl">Técnica nueva desde el ${fmtDate(ajusteVigente.fecha)}</div><div class="ref-val empty">Sin registros todavía</div>`;
+  } else if (!refs.length) {
+    refHtml = `<div class="ex-lbl">Referencia</div><div class="ref-val empty">Sin datos previos</div>`;
+  } else {
+    refHtml = refs.map((r, i) => {
+      const val = r.peso ? fmtWeightRecord(r) + (r.series ? " · " + r.series : "") : r.series || "";
+      const lbl = r.tecnicaAnterior ? "Técnica anterior" : (nRefs > 1 ? (i === 0 ? "Última vez" : "Anterior") : "Última vez");
+      return `<div class="ex-lbl">${lbl} · ${fmtDate(r.date)}</div><div class="ref-val">${val}</div>`;
+    }).join("");
+  }
   const id = safeId(ex), total = getSeries(currentDay, ex), done = sChecks[ex] >= total || sState[ex].done, checked = sChecks[ex] || 0;
   let dots = "";
   for (let i = 0; i < total; i++) dots += `<button class="dot ${i<checked?"on":""}" onclick="tickDot('${ex}',${i})"></button>`;
@@ -3702,10 +3726,6 @@ function buildNormalExerciseCard(ex) {
   const refOpen = showLastAlways || openRefPanel === ex;
   const refOverlayHtml = `<div class="ex-ref-overlay${refOpen ? " open" : ""}" id="ref-${id}">${refHtml}</div>`;
   const refToggleHtml = `<button type="button" class="ref-toggle" id="reftog-${id}" onclick="toggleRefFold(event,'${ex}')" aria-expanded="${refOpen}" aria-label="${refOpen ? "Ocultar última vez" : "Mostrar última vez"}">i</button>`;
-  // Color de progresión (sección 3): se compara contra el peso posterior al
-  // ajuste técnico vigente, si lo hay (cmpRef) — comparar con la técnica
-  // vieja no significa nada (ver getLastN, tecnicaAnterior).
-  const cmpRef = refs.find(r => !r.tecnicaAnterior);
   const lastPesoKg = cmpRef && cmpRef.peso ? parseFloat(cmpRef.peso) : null;
   const pesoProg = progInputAttrs(sState[ex].peso, lastPesoKg);
   const card = document.createElement("div");
@@ -3753,21 +3773,46 @@ function cacheExSlidePos() {
   exSlidePos = Array.from(track.children).map(s => s.offsetLeft + s.offsetWidth / 2);
 }
 let exRaf = null;
-// La escala/opacidad siguen la posición real del dedo en cada frame, no una
-// clase que llega después de que el scroll pare (C1.1) — solo transform y
-// opacity, para que todo el trabajo quede en la GPU.
+// La escala/opacidad/blur siguen la posición real del dedo en cada frame,
+// no una clase que llega después de que el scroll pare (C1.1) — solo
+// transform/opacity/filter, para que todo el trabajo quede en la GPU.
+// Zona muerta (sección 1.2): hasta el 18% de desplazamiento la tarjeta se
+// queda a opacidad/escala 1 y sin desenfoque — nunca se apaga la que
+// realmente estás mirando, solo empieza a atenuarse cuando de verdad sale
+// de centro. La barra de progreso (updateExBarActive) se mueve aquí mismo,
+// con el dedo, no al soltar (sección 1.1).
 function paintExCarousel() {
   exRaf = null;
   const track = document.getElementById("ex-carousel-track");
   if (!track) return;
   const center = track.scrollLeft + track.clientWidth / 2;
   const w = track.clientWidth || 1;
+  let nearest = exBarVisualIndex, nearestD = Infinity;
   Array.from(track.children).forEach((s, i) => {
     const pos = exSlidePos[i]; if (pos == null) return;
-    const d = Math.min(1, Math.abs(pos - center) / w);
-    s.style.transform = carouselDepthEffect ? `scale(${1 - 0.08 * d})` : "";
-    s.style.opacity = String(1 - 0.55 * d);
+    const raw = Math.abs(pos - center) / w;
+    if (raw < nearestD) { nearestD = raw; nearest = parseInt(s.dataset.idx, 10); }
+    const d = Math.max(0, Math.min(1, (raw - 0.18) / 0.5));
+    s.style.transform = carouselDepthEffect ? `scale(${1 - 0.07 * d})` : "";
+    s.style.opacity = String(1 - 0.5 * d);
+    s.style.filter = (carouselDepthEffect && d > 0) ? `blur(${(2.5 * d).toFixed(2)}px)` : "";
   });
+  if (nearest !== exBarVisualIndex) {
+    exBarVisualIndex = nearest;
+    updateExBarActive(nearest);
+  }
+}
+// Actualización barata del índice visual de la barra (sección 1.1): solo
+// cambia qué segmento está "active" y el número del contador — nunca
+// reconstruye el innerHTML de la barra (eso sigue siendo cosa de
+// renderExIndexBar, para cuando cambia el estado done/no-done de verdad) y
+// nunca vibra ni toca el panel de última vez (eso es de reconcile, al
+// asentarse el scroll).
+function updateExBarActive(idx) {
+  const track = document.getElementById("ex-index-track");
+  const countEl = document.getElementById("ex-index-count");
+  if (track) Array.from(track.children).forEach((seg, i) => seg.classList.toggle("active", i === idx));
+  if (countEl) { const exs = ROUTINE[currentDay] || []; countEl.textContent = (idx + 1) + "/" + exs.length; }
 }
 // Monta las trece tarjetas de golpe — solo se llama al cambiar de día o de
 // fecha (selectDay/onDateChange), nunca al deslizar.
@@ -3782,6 +3827,7 @@ function renderExCarousel(opts) {
   if (!exs.length) { track.innerHTML = ""; updateProg(); return; }
   if (exCarouselIndex > exs.length - 1) exCarouselIndex = exs.length - 1;
   if (exCarouselIndex < 0) exCarouselIndex = 0;
+  exBarVisualIndex = exCarouselIndex;
   track.innerHTML = "";
   let activeSlide = null;
   exs.forEach((ex, idx) => {
@@ -3833,6 +3879,7 @@ function reconcileExCarouselScroll() {
     if (d < nearestDist) { nearestDist = d; nearest = s; }
   });
   const newIndex = parseInt(nearest.dataset.idx, 10);
+  exBarVisualIndex = newIndex; // ya lo habrá dejado así paintExCarousel, esto es solo para no desincronizarse
   if (newIndex === exCarouselIndex) return;
   haptic(8); // misma vibración corta que el resto de cambios de estado ligeros de la app
   slides.forEach(s => s.classList.toggle("ex-slide-active", parseInt(s.dataset.idx, 10) === newIndex));
@@ -3897,24 +3944,30 @@ function copyLastreToAll(ex) {
 }
 function buildDominadasNormalCard(ex) {
   const refs = getLastN(ex, 2, currentDate);
+  // Color de progresión (sección 3): el lastre tiene su propia comparación,
+  // serie contra serie, respetando el ajuste técnico vigente igual que el
+  // peso (ver getLastN, tecnicaAnterior).
+  const cmpRef = refs.find(r => !r.tecnicaAnterior);
+  const ajusteVigente = getAjusteTecnicoVigente(ex, currentDate);
   let refHtml = "";
-  if (!refs.length) refHtml = `<div class="ex-lbl">Referencia</div><div class="ref-val empty">Sin datos previos</div>`;
-  else refHtml = refs.map((r, i) => {
-    const rTotal = seriesCount(r.series) || (Array.isArray(r.lastre) ? r.lastre.length : getSeries(currentDay, ex));
-    const val = lastreListText(lastreArr(r, rTotal)) + (r.series ? " · " + r.series : "");
-    const lbl = i === 0 ? "Última vez" : "Anterior";
-    return `<div class="ex-lbl">${lbl} · ${fmtDate(r.date)}</div><div class="ref-val">${val}</div>`;
-  }).join("");
+  if (ajusteVigente && !cmpRef) {
+    refHtml = `<div class="ex-lbl">Técnica nueva desde el ${fmtDate(ajusteVigente.fecha)}</div><div class="ref-val empty">Sin registros todavía</div>`;
+  } else if (!refs.length) {
+    refHtml = `<div class="ex-lbl">Referencia</div><div class="ref-val empty">Sin datos previos</div>`;
+  } else {
+    refHtml = refs.map((r, i) => {
+      const rTotal = seriesCount(r.series) || (Array.isArray(r.lastre) ? r.lastre.length : getSeries(currentDay, ex));
+      const val = lastreListText(lastreArr(r, rTotal)) + (r.series ? " · " + r.series : "");
+      const lbl = r.tecnicaAnterior ? "Técnica anterior" : (i === 0 ? "Última vez" : "Anterior");
+      return `<div class="ex-lbl">${lbl} · ${fmtDate(r.date)}</div><div class="ref-val">${val}</div>`;
+    }).join("");
+  }
   const st = sState[ex];
   const id = safeId(ex), total = getSeries(currentDay, ex), done = sChecks[ex] >= total || st.done, checked = sChecks[ex] || 0;
   if (!Array.isArray(st.lastre)) st.lastre = lastreArr({ lastre: st.lastre }, total);
   while (st.lastre.length < total) st.lastre.push("");
   let dots = "";
   for (let i = 0; i < total; i++) dots += `<button class="dot ${i<checked?"on":""}" onclick="tickDot('${ex}',${i})"></button>`;
-  // Color de progresión (sección 3): el lastre tiene su propia comparación,
-  // serie contra serie, respetando el ajuste técnico vigente igual que el
-  // peso (ver getLastN, tecnicaAnterior).
-  const cmpRef = refs.find(r => !r.tecnicaAnterior);
   const lastLastre = cmpRef ? lastreArr(cmpRef, total) : [];
   let lastreInputs = "";
   for (let i = 0; i < total; i++) {
