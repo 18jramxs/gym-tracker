@@ -1,9 +1,10 @@
-const APP_VERSION = 4;
+const APP_VERSION = 5;
 const CACHE_NAME = `gymtracker-v${APP_VERSION}`;
 const CORE_ASSETS = [
   './',
   './index.html',
   './icon.jpeg',
+  './escudo.png',
   './vendor/chart.umd.min.js',
   './vendor/chartjs-adapter-date-fns.bundle.min.js',
   './vendor/jspdf.umd.min.js',
