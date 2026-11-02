@@ -141,7 +141,11 @@ body::after {
   border-bottom: 1px solid var(--border);
   padding: calc(env(safe-area-inset-top) + 14px) 20px 14px;
   display: flex; align-items: center; justify-content: space-between;
-  position: sticky; top: 0; z-index: 100;
+  position: sticky; top: 0; z-index: 150;
+  /* Capa de composición propia y estable (sección 7): con muchas capas
+     nuevas apareciendo/desapareciendo en el contenido (carrusel), Safari
+     puede desubicar un position:sticky/fixed que no tenga la suya. */
+  transform: translateZ(0);
 }
 .header h1 {
   font-size: 12.5px; font-weight: 700; letter-spacing: 1.6px;
@@ -180,7 +184,7 @@ body::after {
 }
 /* —— Bottom Nav ————————————————————————————————— */
 .bottom-nav {
-  position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+  position: fixed; bottom: 18px; left: 50%;
   width: calc(100% - 32px); max-width: 420px;
   background: rgba(14,14,18,0.6);
   backdrop-filter: blur(40px) saturate(200%);
@@ -189,7 +193,8 @@ body::after {
   border-radius: var(--r-pill);
   display: flex; padding: 6px; gap: 2px;
   box-shadow: var(--shadow-nav);
-  z-index: 100;
+  z-index: 150;
+  transform: translateX(-50%) translateZ(0);
 }
 .nav-btn {
   flex: 1; background: none; border: none;
@@ -263,15 +268,18 @@ body::after {
   animation: shine 2.4s ease-out 0.4s both;
   pointer-events: none;
 }
-/* Escudo de fondo (sección 4): marca de agua, no decoración — por eso tan
-   tenue y recortada contra el borde. Si al mirar la pantalla se lee antes
-   el escudo que el día, está demasiado fuerte; subir de 0.06 es el límite. */
+/* Escudo de fondo (sección 4, ajustado en D6.1): marca de agua, no
+   decoración — por eso tan tenue y recortada contra el borde. Tiene que
+   verse casi entero con solo un mordisco a la derecha, no solo el centro
+   ampliado: por eso se reduce el tamaño en vez de mover la posición.
+   Si al mirar la pantalla se lee antes el escudo que el día, está
+   demasiado fuerte; subir de 0.06 es el límite. */
 .hero-escudo {
   position: absolute;
-  right: -8%;
+  right: -4%;
   top: 50%;
   transform: translateY(-50%);
-  width: 180px; height: 180px;
+  width: 150px; height: 150px;
   background: url("escudo.png") center/contain no-repeat;
   opacity: 0.05;
   pointer-events: none;
@@ -290,7 +298,10 @@ body::after {
 }
 .today-hero .today-title {
   font-family: var(--font-disp);
-  font-size: 44px; font-weight: 400; letter-spacing: 0px;
+  /* D6.2: es el título de la pantalla — tiene que pesar más que el
+     contador de ejercicios/series de al lado, que ahora además bajó a la
+     línea de la fecha (D6.3) y quedó aún más pequeño en comparación. */
+  font-size: 56px; font-weight: 400; letter-spacing: 0px;
   line-height: 1; color: var(--text);
   margin-bottom: 6px;
   text-transform: uppercase;
@@ -300,9 +311,12 @@ body::after {
 }
 .today-hero .today-sub b { color: #fff; font-weight: 600; }
 .today-top-row {
-  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  display: flex; align-items: baseline; gap: 10px;
   position: relative;
 }
+/* D6.3: el contador de ejercicios/series vive ahora en la línea de la
+   fecha (.today-date-row), alineado a la derecha — arriba solo queda el
+   nombre del día, grande y limpio, con el escudo detrás. */
 .today-meta {
   font-size: 11px; font-weight: 700; color: var(--text-3);
   text-transform: uppercase; letter-spacing: 0.7px;
@@ -381,7 +395,7 @@ body::after {
    ejercicio, en blanco (sin verde ni azul: el blanco no compite con nada y
    funciona igual en torso que en pierna). Vive pegado encima del
    carrusel/lista, en los dos modos — ver A3. */
-.ex-index-bar { display: flex; align-items: center; gap: 10px; padding: 2px 0 12px; }
+.ex-index-bar { display: flex; align-items: center; gap: 10px; padding: 2px 6% 12px; }
 .ex-index-track { flex: 1; display: flex; align-items: center; gap: 3px; min-width: 0; }
 .ex-index-seg {
   flex: 1 1 0; height: 4px; min-width: 0; border-radius: 4px;
@@ -410,7 +424,12 @@ body::after {
   overscroll-behavior-x: contain;
   scrollbar-width: none;
   gap: 10px;
-  padding: 2px 0;
+  /* 6% a cada lado: la mitad del 12% que sobra de flex:0 0 88% — sin esto
+     no hay margen para que la tarjeta llegue al centro y queda pegada a la
+     izquierda (sección 2). scroll-padding-inline hace que el primer/último
+     ejercicio también puedan centrarse, no solo los del medio. */
+  padding: 2px 6%;
+  scroll-padding-inline: 6%;
 }
 .ex-carousel-track::-webkit-scrollbar { display: none; }
 .ex-slide {
@@ -419,9 +438,13 @@ body::after {
   scroll-snap-align: center;
   transform: scale(0.92);
   opacity: 0.45;
-  will-change: transform, opacity;
-  contain: layout paint;
 }
+/* will-change solo durante el gesto, nunca permanente (sección 7): trece
+   capas compuestas a la vez es lo que puede confundir al compositor de
+   Safari y hacer que position:fixed/sticky (header, bottom-nav) "flote" en
+   mitad de la pantalla. Se añade al arrancar el scroll y se quita en
+   cuanto se asienta (ver onExCarouselScroll/reconcileExCarouselScroll). */
+.ex-carousel-track.ex-scrolling .ex-slide { will-change: transform, opacity; }
 /* Sin transition en .ex-slide (C1.1): la escala/opacidad la fija
    paintExCarousel() en cada frame de scroll según la posición real del
    dedo — tanto en el swipe como en el scrollIntoView suave de
@@ -510,10 +533,18 @@ body::after {
   100% { opacity: 0; transform: scale(2.6); filter: blur(10px); }
 }
 
-/* padding-bottom extra: deja hueco para el icono de "última vez" (.ref-toggle),
-   que flota en la esquina inferior derecha de .ex-card sin ocupar celda de grid. */
-.ex-body { padding: 12px 14px 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.ex-ref, .ex-in-grp { display: flex; flex-direction: column; gap: 5px; justify-content: space-between; }
+/* .ex-ref: contenedor genérico de "etiqueta + valor" (.ex-lbl/.ref-val),
+   reusado tal cual por la tarjeta de "Ejercicios sustituidos" de Progreso —
+   independiente de .ex-in-grp/.ex-ref-overlay de abajo, que son del
+   carrusel de Entreno. */
+.ex-ref { display: flex; flex-direction: column; gap: 5px; }
+/* Tarjeta de ejercicio cuadrada (D3): un único ancho de columna — el campo
+   de peso y el de series ocupan todo el ancho de la tarjeta, con el mismo
+   margen a los dos lados. Ya no hay columna de "última vez" en la
+   retícula: esa información vive en .ex-ref-overlay, un panel superpuesto
+   que no reserva espacio propio. */
+.ex-body { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.ex-in-grp { position: relative; display: flex; flex-direction: column; gap: 10px; }
 .ex-in-hdr { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
 .unit-toggle {
   font-family: var(--font-mono); font-size: 9px; font-weight: 800;
@@ -529,9 +560,13 @@ body::after {
   min-height: 12px; line-height: 1;
 }
 .ex-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-3); }
+/* Campos de "hoy" más altos y con tipografía más grande (D3.1) — es lo que
+   se toca con el móvil en la mano, no un formulario de escritorio. 16px de
+   font-size también evita que iOS haga zoom automático al enfocar. */
+.ex-in-grp .ex-input { height: 52px; font-size: 16px; padding: 0 14px; }
 .ref-val {
   font-size: 13px; color: var(--text-2);
-  background: rgba(255,255,255,0.035);
+  background: rgba(255,255,255,0.06);
   border: 1px solid var(--border);
   border-radius: var(--r-xs);
   padding: 7px 10px; min-height: 30px; line-height: 1.4;
@@ -545,35 +580,40 @@ body::after {
 }
 .prog-ref-badge.eq { background: var(--amber-bg); color: var(--amber); }
 .prog-ref-badge.up { background: var(--green-bg); color: var(--green); }
-/* Última vez, plegada por defecto (sección 2): el bloque se colapsa a
-   max-height:0 y el toggle lo expande midiendo el alto real con JS (ver
-   toggleRefFold) — animar a un valor exacto en vez de a un tope genérico es
-   lo que hace que la altura crezca de forma continua y no a saltos. */
-.ex-ref.ex-ref-fold {
-  max-height: 0;
-  opacity: 0;
-  overflow: hidden;
-  transition: max-height 0.32s var(--ease-out-soft, ease), opacity 0.22s ease;
+/* Última vez · anterior, como panel superpuesto (D3.3): cubre exactamente
+   el rectángulo de .ex-in-grp (que ya tiene su alto fijado por los campos
+   reales, en flujo normal) sin añadir ni un píxel a la altura de la
+   tarjeta. Entra/sale con un fundido corto — nada se desplaza. */
+.ex-ref-overlay {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; justify-content: center; gap: 8px;
+  padding: 14px;
+  border-radius: var(--r-xs);
+  background: var(--bg-glass-strong);
+  backdrop-filter: var(--glass-strong); -webkit-backdrop-filter: var(--glass-strong);
+  border: 1px solid var(--border-2);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 2;
 }
-.ex-ref.ex-ref-fold.open { opacity: 1; }
+.ex-ref-overlay.open { opacity: 1; pointer-events: auto; }
 .ref-toggle {
-  position: absolute;
-  right: 10px;
-  bottom: 8px;
-  width: 22px; height: 22px;
-  border-radius: 50%;
+  width: 26px; height: 26px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   background: rgba(255,255,255,0.05);
   border: 1px solid var(--border);
   color: var(--text-3);
   font-family: var(--font-mono);
-  font-size: 11px; font-style: italic; font-weight: 700;
-  cursor: pointer; padding: 0;
+  font-size: 12px; font-style: italic; font-weight: 700;
+  cursor: pointer; padding: 0; flex-shrink: 0;
   transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
 }
 .ref-toggle:active { transform: scale(0.88); }
 .ref-toggle[aria-expanded="true"] { color: var(--text-2); background: rgba(255,255,255,0.1); border-color: var(--border-3); }
-.prog-row { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; margin-top: 2px; }
+/* Próxima vez + (i), en la misma línea (D3.2): la etiqueta/interruptor a la
+   izquierda, el icono a la derecha — sin fila entera vacía debajo. */
+.prog-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 2px; }
+.prog-row-left { display: flex; align-items: center; gap: 8px; min-height: 26px; }
 .prog-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-3); margin-right: 2px; }
 /* Indicador de progresión "mantener/sube" (F1): pastilla glass translúcida,
    un pulgar animado que se ilumina del color correspondiente por detrás.
@@ -831,6 +871,14 @@ body::after {
 .sec-title { font-size: 16px; font-weight: 700; }
 .sec-sub   { font-size: 12px; color: var(--text-3); margin-top: 2px; font-family: var(--font-mono); }
 .sec-body  { padding: 0 16px 16px; }
+/* Tarjeta de dominadas sueltas, plegada por defecto (sección 5): mismo
+   .sec-hdr/.sec-body que el resto de tarjetas de Físico, con un modificador
+   propio para no tocar esas reglas compartidas. */
+.dom-extra-hdr { cursor: pointer; padding-bottom: 16px; }
+.dom-extra-title-wrap { flex: 1; min-width: 0; }
+.dom-extra-summary { font-size: 12px; color: var(--text-3); font-family: var(--font-mono); flex-shrink: 0; }
+.dom-extra-body { display: none; }
+.dom-extra-body.open { display: block; }
 
 .f-row { display: flex; align-items: center; gap: 9px; margin-bottom: 9px; }
 .f-input {
@@ -1410,10 +1458,12 @@ body::after {
 .section-eyebrow {
   font-size: 10px; color: var(--text-3); font-weight: 800;
   letter-spacing: 1.6px; text-transform: uppercase;
-  margin: 8px 4px 8px;
-  display: flex; align-items: center; gap: 8px;
+  /* mismo margen lateral que el carrusel (sección 2), para que quede en la
+     misma retícula que las tarjetas de debajo (sección 4). */
+  margin: 8px 6%;
+  display: flex; align-items: center; gap: 8px; justify-content: center;
 }
-.section-eyebrow::after {
+.section-eyebrow::before, .section-eyebrow::after {
   content: ""; flex: 1; height: 1px; background: var(--border);
 }
 
@@ -1922,7 +1972,6 @@ input:focus, select:focus, textarea:focus {
     <div class="today-bg-text" id="today-bg-text">TRAIN</div>
     <div class="today-top-row">
       <div class="today-title" id="today-title">SELECCIONA DÍA</div>
-      <div class="today-meta" id="today-meta" style="display:none"></div>
     </div>
     <div class="today-sub" id="today-sub"><span class="tag">Toca un día para comenzar</span></div>
     <div class="today-date-row">
@@ -1931,6 +1980,7 @@ input:focus, select:focus, textarea:focus {
         <input type="date" id="session-date" class="date-input date-input-hidden" onchange="onDateChange()">
         <span class="date-input-label" id="session-date-label">—</span>
       </div>
+      <div class="today-meta" id="today-meta" style="display:none"></div>
     </div>
   </div>
 
@@ -1949,11 +1999,13 @@ input:focus, select:focus, textarea:focus {
   </button>
 
   <div class="fisico-card" id="dom-extra-card">
-    <div class="sec-hdr">
+    <div class="sec-hdr dom-extra-hdr" onclick="toggleDomExtra()">
       <div class="sec-icon" style="background:rgba(41,121,255,0.08);border-color:rgba(41,121,255,0.22)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--blue2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6-6 6 6"/><path d="M6 15l6 6 6-6"/><line x1="12" y1="4" x2="12" y2="20"/></svg></div>
-      <div><div class="sec-title">Dominadas</div><div class="sec-sub" id="dom-extra-date-lbl">—</div></div>
+      <div class="dom-extra-title-wrap"><div class="sec-title">Dominadas</div><div class="sec-sub" id="dom-extra-date-lbl">—</div></div>
+      <span class="dom-extra-summary" id="dom-extra-summary">0 reps esta sem</span>
+      <button type="button" class="toggle-btn" id="dom-extra-arrow" aria-label="Mostrar dominadas sueltas" onclick="event.stopPropagation(); toggleDomExtra();">›</button>
     </div>
-    <div class="sec-body">
+    <div class="sec-body dom-extra-body" id="dom-extra-body">
       <div class="f-row">
         <label class="sr-only" for="dom-extra-input">Repeticiones de dominadas</label>
         <input type="number" inputmode="numeric" class="f-input" id="dom-extra-input" placeholder="Reps" min="0">
@@ -2511,8 +2563,8 @@ input:focus, select:focus, textarea:focus {
    ============================================================ */
 
 // ─── VERSIÓN Y BACKUPS ───────────────────────────────────────────
-const APP_VERSION = 5;
-const APP_BUILD_DATE = "02 nov 2026 15:20";
+const APP_VERSION = 6;
+const APP_BUILD_DATE = "02 nov 2026 16:40";
 
 const IDB_NAME = "gymtracker_backups_db";
 const IDB_STORE = "snapshots";
@@ -2739,11 +2791,11 @@ let calSign = -1, etapaOpt = null;
 let carouselMode = localStorage.getItem("gymtracker_carousel_mode") !== "0";
 let exCarouselIndex = 0;
 
-// ─── ÚLTIMA VEZ PLEGADA (sección 2) ──────────────────────────────
-// Plegada por defecto en todas las tarjetas; se despliega solo la que se
-// toca y se recuerda mientras dura la sesión (se reinicia al cambiar de día
-// o de fecha, igual que sState/sChecks) — nunca entre aperturas de la app.
-let lastSeenOpen = {};
+// ─── ÚLTIMA VEZ COMO PANEL SUPERPUESTO (sección 3.3) ─────────────
+// Nombre del ejercicio cuyo panel está abierto, o null — solo uno a la vez.
+// Se cierra al cambiar de ejercicio en el carrusel (nunca sobrevive a un
+// cambio de día/fecha porque la tarjeta se remonta entera).
+let openRefPanel = null;
 let showLastAlways = localStorage.getItem("gymtracker_show_last_always") === "1";
 
 // ─── UNIDAD DE PESO (Entreno) ─────────────────────────────────────
@@ -3349,9 +3401,21 @@ function saveDomExtra() {
   flashSuccess(document.querySelector('#dom-extra-card .f-btn'));
   showToast("Dominadas guardadas", "ok");
 }
+// Plegada por defecto (sección 5) — domExtraOpen es puramente de sesión
+// (vuelve a cerrarse en cada carga de la app, nunca se guarda).
+let domExtraOpen = false;
+function toggleDomExtra() {
+  domExtraOpen = !domExtraOpen;
+  const body = document.getElementById("dom-extra-body");
+  const arrow = document.getElementById("dom-extra-arrow");
+  if (body) body.classList.toggle("open", domExtraOpen);
+  if (arrow) arrow.textContent = domExtraOpen ? "⌄" : "›";
+  haptic(8);
+}
 function renderDomExtraCard() {
   const lblEl = document.getElementById("dom-extra-date-lbl");
   const weekEl = document.getElementById("dom-extra-week");
+  const summaryEl = document.getElementById("dom-extra-summary");
   if (!lblEl || !weekEl) return;
   const ds = domExtraDate();
   lblEl.textContent = fmtDate(ds) + (ds === todayStr() ? " · hoy" : "");
@@ -3362,6 +3426,9 @@ function renderDomExtraCard() {
   let total = 0;
   Object.entries(d).forEach(([day, arr]) => { if (day >= wk && day <= wkEndS) total += arr.reduce((a, t) => a + (t.reps || 0), 0); });
   weekEl.innerHTML = `<div class="semana-row"><span class="semana-lbl">Total semana</span><span class="semana-val">${total} reps</span></div>`;
+  // Resumen de la fila plegada (sección 5): el total semanal se ve sin
+  // tener que abrir la tarjeta.
+  if (summaryEl) summaryEl.textContent = `${total} reps esta sem`;
 }
 function getStartDate(p, etapaStart) { const d = new Date(todayStr() + "T12:00:00"); if (p === "semana") d.setDate(d.getDate() - 7); else if (p === "mes") d.setMonth(d.getMonth() - 1); else if (p === "anual") d.setFullYear(d.getFullYear() - 1); else if (p === "etapa" && etapaStart) return etapaStart; else if (p === "todo") return "2000-01-01"; else d.setMonth(d.getMonth() - 1); return d.toISOString().split("T")[0]; }
 
@@ -3501,7 +3568,7 @@ function updateTodayHero() {
 
 // ─── DAY SELECT ─────────────────────────────────────────────────
 function selectDay(day) {
-  currentDay = day; sState = {}; sChecks = {}; dayCompleteFlashed = false; exCarouselIndex = 0; lastSeenOpen = {};
+  currentDay = day; sState = {}; sChecks = {}; dayCompleteFlashed = false; exCarouselIndex = 0; openRefPanel = null;
   currentDate = weekDateForDay(day);
   document.getElementById("session-date").value = currentDate;
   document.querySelectorAll(".day-btn").forEach((b, i) =>
@@ -3515,7 +3582,7 @@ function onDateChange() {
   currentDate = document.getElementById("session-date").value || todayStr();
   renderDomExtraCard();
   if (!currentDay) { updateTodayHero(); return; }
-  sState = {}; sChecks = {}; dayCompleteFlashed = false; exCarouselIndex = 0; lastSeenOpen = {}; loadSession(); renderExercises(); updateTodayHero();
+  sState = {}; sChecks = {}; dayCompleteFlashed = false; exCarouselIndex = 0; openRefPanel = null; loadSession(); renderExercises(); updateTodayHero();
 }
 function loadSession() {
   const ex = getData().find(s => s.date === currentDate && s.day === currentDay);
@@ -3630,10 +3697,10 @@ function buildNormalExerciseCard(ex) {
   let dots = "";
   for (let i = 0; i < total; i++) dots += `<button class="dot ${i<checked?"on":""}" onclick="tickDot('${ex}',${i})"></button>`;
   const progAria = sState[ex].prog === "up" ? "Progresión: subir peso. Toca para cambiar a mantener." : "Progresión: mantener peso. Toca para cambiar a subir.";
-  const progRow = canProg ? `<div class="prog-row"><span class="prog-lbl">Próxima vez</span><button type="button" class="prog-switch-hit" onclick="toggleProg('${ex}')" aria-label="${progAria}"><span class="prog-switch${sState[ex].prog==="eq"?" state-eq":""}${sState[ex].prog==="up"?" state-up":""}"><span class="switch-thumb"></span></span></button></div>` : "";
+  const progLeft = canProg ? `<span class="prog-lbl">Próxima vez</span><button type="button" class="prog-switch-hit" onclick="toggleProg('${ex}')" aria-label="${progAria}"><span class="prog-switch${sState[ex].prog==="eq"?" state-eq":""}${sState[ex].prog==="up"?" state-up":""}"><span class="switch-thumb"></span></span></button>` : "";
   const equivTxt = pesoEquivKgText(ex);
-  const refOpen = showLastAlways || !!lastSeenOpen[ex];
-  const refBlockHtml = `<div class="ex-ref ex-ref-fold${refOpen ? " open" : ""}" id="ref-${id}">${refHtml}</div>`;
+  const refOpen = showLastAlways || openRefPanel === ex;
+  const refOverlayHtml = `<div class="ex-ref-overlay${refOpen ? " open" : ""}" id="ref-${id}">${refHtml}</div>`;
   const refToggleHtml = `<button type="button" class="ref-toggle" id="reftog-${id}" onclick="toggleRefFold(event,'${ex}')" aria-expanded="${refOpen}" aria-label="${refOpen ? "Ocultar última vez" : "Mostrar última vez"}">i</button>`;
   // Color de progresión (sección 3): se compara contra el peso posterior al
   // ajuste técnico vigente, si lo hay (cmpRef) — comparar con la técnica
@@ -3646,7 +3713,7 @@ function buildNormalExerciseCard(ex) {
   card.id = id;
   card.dataset.ex = ex; card.dataset.kind = "normal";
   observeReveal(card);
-  card.innerHTML = `<div class="ex-header"><span class="ex-name">${ex}${nameBadge}</span><div class="dots-row"><span class="dot-count tnum" id="dc-${id}">${checked}/${total}</span>${dots}</div></div><div class="ex-body">${refBlockHtml}<div class="ex-in-grp"><div class="ex-in-hdr"><span class="ex-lbl">Hoy</span><button type="button" class="unit-toggle" onclick="toggleWeightUnit()">${weightUnit}</button></div><input class="ex-input${pesoProg.cls}"${pesoProg.style} placeholder="Peso (${weightUnit})" type="number" inputmode="decimal" value="${pesoDisplayValue(ex)}" data-rendered="${pesoDisplayValue(ex)}" data-last-val="${lastPesoKg != null ? lastPesoKg : ""}" ${done?"disabled":""} data-ex="${ex}" data-field="peso" oninput="updateSt(this)"><span class="peso-equiv tnum" id="pe-${id}">${equivTxt}</span><input class="ex-input" placeholder="Series" value="${sState[ex].series}" ${done?"disabled":""} data-ex="${ex}" data-field="series" oninput="updateSt(this)"></div>${progRow}</div>${refToggleHtml}`;
+  card.innerHTML = `<div class="ex-header"><span class="ex-name">${ex}${nameBadge}</span><div class="dots-row"><span class="dot-count tnum" id="dc-${id}">${checked}/${total}</span>${dots}</div></div><div class="ex-body"><div class="ex-in-grp"><div class="ex-in-hdr"><span class="ex-lbl">Hoy</span><button type="button" class="unit-toggle" onclick="toggleWeightUnit()">${weightUnit}</button></div><input class="ex-input${pesoProg.cls}"${pesoProg.style} placeholder="Peso (${weightUnit})" type="number" inputmode="decimal" value="${pesoDisplayValue(ex)}" data-rendered="${pesoDisplayValue(ex)}" data-last-val="${lastPesoKg != null ? lastPesoKg : ""}" ${done?"disabled":""} data-ex="${ex}" data-field="peso" oninput="updateSt(this)"><span class="peso-equiv tnum" id="pe-${id}">${equivTxt}</span><input class="ex-input" placeholder="Series" value="${sState[ex].series}" ${done?"disabled":""} data-ex="${ex}" data-field="series" oninput="updateSt(this)">${refOverlayHtml}</div><div class="prog-row"><div class="prog-row-left">${progLeft}</div>${refToggleHtml}</div></div>`;
   return card;
 }
 function renderExercises() {
@@ -3663,23 +3730,17 @@ function renderExercises() {
 }
 
 // ─── CARRUSEL DE EJERCICIOS (C1) ─────────────────────────────────
-// Virtualización (C1.2): con 13 ejercicios no tiene sentido montar los 13 de
-// golpe. Solo existen en el DOM, como máximo, la tarjeta activa y una a cada
-// lado — exCarouselWindow() calcula cuáles. Al asentarse el scroll (swipe o
-// un salto a un segmento vecino ya montado) se reindexa y se reconstruye esa
-// ventana de 3 alrededor del nuevo activo.
-function exCarouselWindow() {
-  const exs = ROUTINE[currentDay] || [];
-  const win = [];
-  if (exCarouselIndex > 0) win.push(exCarouselIndex - 1);
-  win.push(exCarouselIndex);
-  if (exCarouselIndex < exs.length - 1) win.push(exCarouselIndex + 1);
-  return win;
-}
-// Efecto de profundidad (C1.5): si en según qué iPhone pintar tres tarjetas
-// escalando a la vez sigue tirando, este interruptor (Ajustes) deja las
-// laterales a scale(1) y las diferencia solo con opacidad — scroll nativo
-// puro, sin nada que calcular por frame.
+// Sin virtualizar (D1): las trece tarjetas se montan de una vez al cambiar
+// de día/fecha y el track queda estático mientras dura la sesión — nunca se
+// inserta ni se quita nada al deslizar. Mover los hijos de un contenedor
+// con scroll-snap-type obliga al navegador a recalcular los puntos de
+// anclaje en el acto, que es justo el tropezón/repintado que había antes
+// (la virtualización ahorraba DOM que, con solo 13 divs ligeros, no hacía
+// falta ahorrar).
+// Efecto de profundidad (C1.5): si en según qué iPhone escalar las tarjetas
+// al deslizar sigue tirando, este interruptor (Ajustes) deja todas a
+// scale(1) y las diferencia solo con opacidad — scroll nativo puro, sin
+// nada que calcular por frame.
 let carouselDepthEffect = localStorage.getItem("gymtracker_carousel_depth") !== "0";
 
 // Centros horizontales de cada tarjeta, cacheados al montar o al
@@ -3708,6 +3769,8 @@ function paintExCarousel() {
     s.style.opacity = String(1 - 0.55 * d);
   });
 }
+// Monta las trece tarjetas de golpe — solo se llama al cambiar de día o de
+// fecha (selectDay/onDateChange), nunca al deslizar.
 function renderExCarousel(opts) {
   opts = opts || {};
   const outer = document.getElementById("ex-carousel");
@@ -3719,11 +3782,9 @@ function renderExCarousel(opts) {
   if (!exs.length) { track.innerHTML = ""; updateProg(); return; }
   if (exCarouselIndex > exs.length - 1) exCarouselIndex = exs.length - 1;
   if (exCarouselIndex < 0) exCarouselIndex = 0;
-  const win = exCarouselWindow();
   track.innerHTML = "";
   let activeSlide = null;
-  win.forEach(idx => {
-    const ex = exs[idx];
+  exs.forEach((ex, idx) => {
     const card = buildExerciseCard(ex);
     const slide = document.createElement("div");
     slide.className = "ex-slide" + (idx === exCarouselIndex ? " ex-slide-active" : "");
@@ -3737,57 +3798,31 @@ function renderExCarousel(opts) {
   if (activeSlide) activeSlide.scrollIntoView({ inline: "center", block: "nearest", behavior: opts.smooth ? "smooth" : "auto" });
   updateProg();
 }
-// Virtualización incremental (C1.2): al asentarse el scroll, la ventana de 3
-// se actualiza añadiendo o quitando solo las tarjetas que entran o salen —
-// nunca se desmonta la que el usuario tiene delante, que por definición ya
-// forma parte de la ventana nueva. Solo la usa el reconcile del scroll;
-// un salto directo a un ejercicio lejano (jumpToExercise) sigue usando
-// renderExCarousel entero, porque ahí no hay nada que un usuario esté
-// mirando a medio gesto.
-function syncExCarouselWindow() {
-  const track = document.getElementById("ex-carousel-track");
-  if (!track) return;
-  const exs = ROUTINE[currentDay] || [];
-  const win = exCarouselWindow();
-  const winSet = new Set(win);
-  Array.from(track.children).forEach(slide => {
-    if (!winSet.has(parseInt(slide.dataset.idx, 10))) slide.remove();
-  });
-  const mounted = new Set(Array.from(track.children).map(s => parseInt(s.dataset.idx, 10)));
-  win.forEach(idx => {
-    if (mounted.has(idx)) return;
-    const card = buildExerciseCard(exs[idx]);
-    const slide = document.createElement("div");
-    slide.className = "ex-slide" + (idx === exCarouselIndex ? " ex-slide-active" : "");
-    slide.dataset.idx = idx;
-    slide.appendChild(card);
-    const before = Array.from(track.children).find(s => parseInt(s.dataset.idx, 10) > idx);
-    if (before) track.insertBefore(slide, before); else track.appendChild(slide);
-  });
-  cacheExSlidePos();
-  paintExCarousel();
-}
 // El scroll nativo (swipe o un scrollIntoView suave) dispara muchos eventos
 // de scroll seguidos. onExCarouselScroll pinta cada frame en tiempo real
 // (C1.1) y, aparte, espera a que el scroll se asiente para reindexar.
 // scrollend (C1.3), donde el navegador lo soporta, dispara justo en ese
 // instante sin los 140ms de espera a ciegas; si no, el setTimeout de
-// siempre hace de respaldo.
+// siempre hace de respaldo. will-change solo se añade mientras dura el
+// gesto (sección 7) — trece capas compuestas permanentes es lo que podía
+// desubicar la barra inferior/cabecera en Safari.
 let exCarouselScrollTimer = null;
 let exCarouselHasScrollend = false;
 function onExCarouselScroll() {
+  const track = document.getElementById("ex-carousel-track");
+  if (track) track.classList.add("ex-scrolling");
   if (exRaf == null) exRaf = requestAnimationFrame(paintExCarousel);
   if (exCarouselHasScrollend) return;
   clearTimeout(exCarouselScrollTimer);
   exCarouselScrollTimer = setTimeout(reconcileExCarouselScroll, 140);
 }
-// Reconcile partido en dos (C1.2): lo barato —reindexar, barra de progreso,
-// contador, vibración— va al instante, aquí mismo. Lo caro —qué tarjetas
-// montar— se difiere a requestIdleCallback: nunca se reconstruye la tarjeta
-// activa justo en el momento en que el usuario acaba de soltar el dedo.
+// Al asentarse el scroll: solo lo barato — reindexar, barra de progreso,
+// contador, vibración. Nunca toca el DOM de las tarjetas (D1): con el
+// track estático no hace falta montar ni desmontar nada aquí.
 function reconcileExCarouselScroll() {
   const track = document.getElementById("ex-carousel-track");
   if (!track) return;
+  track.classList.remove("ex-scrolling");
   const slides = Array.from(track.children);
   if (!slides.length) return;
   const trackCenter = track.scrollLeft + track.clientWidth / 2;
@@ -3802,10 +3837,8 @@ function reconcileExCarouselScroll() {
   haptic(8); // misma vibración corta que el resto de cambios de estado ligeros de la app
   slides.forEach(s => s.classList.toggle("ex-slide-active", parseInt(s.dataset.idx, 10) === newIndex));
   exCarouselIndex = newIndex;
+  closeRefPanel();
   updateProg();
-  const run = () => syncExCarouselWindow();
-  if ("requestIdleCallback" in window) requestIdleCallback(run, { timeout: 300 });
-  else setTimeout(run, 250);
 }
 (function setupExCarouselScrollend() {
   const track = document.getElementById("ex-carousel-track");
@@ -3828,19 +3861,16 @@ function refreshCarouselDepthSwitch() {
   if (sw) sw.classList.toggle("state-on", carouselDepthEffect);
 }
 // Al completar la última serie de un ejercicio (ver tickDot) — si no es el
-// último, desliza solo al siguiente. El siguiente ya está montado (es
-// exCarouselIndex+1, parte de la ventana de 3), así que es un scroll nativo
-// de verdad, no una reconstrucción: reconcileExCarouselScroll() se encarga
-// de reindexar y recortar la ventana cuando el scroll se asiente, igual que
-// si el usuario hubiese deslizado a mano.
+// último, desliza solo al siguiente, que ya está montado (D1: las 13 están
+// siempre en el DOM) — scroll nativo puro, nunca una reconstrucción.
 function advanceExCarousel() {
   const exs = ROUTINE[currentDay] || [];
   const nextIdx = exCarouselIndex + 1;
   if (nextIdx >= exs.length) return;
+  closeRefPanel();
   const track = document.getElementById("ex-carousel-track");
   const nextSlide = track && track.querySelector(`.ex-slide[data-idx="${nextIdx}"]`);
   if (nextSlide) nextSlide.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
-  else { exCarouselIndex = nextIdx; renderExCarousel(); }
 }
 
 // Dominadas normales (viernes, semanas sin test): un lastre por serie en vez
@@ -3894,15 +3924,15 @@ function buildDominadasNormalCard(ex) {
     const pressAttrs = i === 0 ? `onpointerdown="lastrePressStart('${ex}')" onpointerup="lastrePressCancel()" onpointerleave="lastrePressCancel()" onpointercancel="lastrePressCancel()"` : "";
     lastreInputs += `<div class="lastre-serie"><span class="lastre-serie-lbl">serie ${i + 1}</span><input class="ex-input${prog.cls}"${prog.style} placeholder="—" type="number" inputmode="decimal" value="${v}" data-last-val="${lastV || ""}" ${done?"disabled":""} data-ex="${ex}" data-field="lastre" data-idx="${i}" oninput="updateSt(this)" ${pressAttrs}></div>`;
   }
-  const refOpen = showLastAlways || !!lastSeenOpen[ex];
-  const refBlockHtml = `<div class="ex-ref ex-ref-fold${refOpen ? " open" : ""}" id="ref-${id}">${refHtml}</div>`;
+  const refOpen = showLastAlways || openRefPanel === ex;
+  const refOverlayHtml = `<div class="ex-ref-overlay${refOpen ? " open" : ""}" id="ref-${id}">${refHtml}</div>`;
   const refToggleHtml = `<button type="button" class="ref-toggle" id="reftog-${id}" onclick="toggleRefFold(event,'${ex}')" aria-expanded="${refOpen}" aria-label="${refOpen ? "Ocultar última vez" : "Mostrar última vez"}">i</button>`;
   const card = document.createElement("div");
   card.className = "ex-card" + (done ? " done" : "");
   card.id = id;
   card.dataset.ex = ex; card.dataset.kind = "normal";
   observeReveal(card);
-  card.innerHTML = `<div class="ex-header"><span class="ex-name">${ex}</span><div class="dots-row"><span class="dot-count" id="dc-${id}">${checked}/${total}</span>${dots}</div></div><div class="ex-body">${refBlockHtml}<div class="ex-in-grp"><div class="ex-in-hdr"><span class="ex-lbl">Hoy</span></div><div class="lastre-grid" style="grid-template-columns:repeat(${total},1fr)">${lastreInputs}</div><input class="ex-input" placeholder="Series" value="${st.series||""}" ${done?"disabled":""} data-ex="${ex}" data-field="series" oninput="updateSt(this)"></div></div>${refToggleHtml}`;
+  card.innerHTML = `<div class="ex-header"><span class="ex-name">${ex}</span><div class="dots-row"><span class="dot-count" id="dc-${id}">${checked}/${total}</span>${dots}</div></div><div class="ex-body"><div class="ex-in-grp"><div class="ex-in-hdr"><span class="ex-lbl">Hoy</span></div><div class="lastre-grid" style="grid-template-columns:repeat(${total},1fr)">${lastreInputs}</div><input class="ex-input" placeholder="Series" value="${st.series||""}" ${done?"disabled":""} data-ex="${ex}" data-field="series" oninput="updateSt(this)">${refOverlayHtml}</div><div class="prog-row"><div class="prog-row-left"></div>${refToggleHtml}</div></div>`;
   return card;
 }
 function buildEMOMCard(ex) {
@@ -4077,35 +4107,44 @@ function toggleProg(ex) {
   }
   persistDraft();
 }
-// Despliega/pliega el bloque de última vez · anterior de un ejercicio
-// (sección 2). Animación de altura con el alto real medido, no un tope
-// genérico — así crece de forma continua y no a saltos. No toca el DOM de
-// ninguna otra tarjeta: dentro del carrusel esto no puede descolocar el
-// scroll-snap de las tarjetas vecinas, solo cambia el alto de la propia.
+// Última vez · anterior como panel superpuesto (sección 3.3): sale encima
+// del contenido de "hoy" sin empujar nada — la tarjeta mantiene siempre la
+// misma altura, abierta o cerrada, así que no puede descolocar el
+// scroll-snap del carrusel. Solo hay un panel abierto a la vez
+// (openRefPanel); abrir uno cierra el anterior.
+function closeRefPanel() {
+  if (!openRefPanel) return;
+  const id = safeId(openRefPanel);
+  const el = document.getElementById("ref-" + id);
+  const btn = document.getElementById("reftog-" + id);
+  if (el) el.classList.remove("open");
+  if (btn) { btn.setAttribute("aria-expanded", "false"); btn.setAttribute("aria-label", "Mostrar última vez"); }
+  openRefPanel = null;
+}
 function toggleRefFold(ev, ex) {
   if (ev) ev.stopPropagation();
+  const wasOpen = openRefPanel === ex;
+  closeRefPanel();
+  if (wasOpen) return;
   const el = document.getElementById("ref-" + safeId(ex));
   const btn = document.getElementById("reftog-" + safeId(ex));
   if (!el) return;
-  const open = !lastSeenOpen[ex];
-  lastSeenOpen[ex] = open;
-  el.style.maxHeight = el.scrollHeight + "px";
-  if (open) {
-    el.classList.add("open");
-    el.addEventListener("transitionend", function te(e) {
-      if (e.propertyName === "max-height") { el.style.maxHeight = "none"; el.removeEventListener("transitionend", te); }
-    });
-  } else {
-    requestAnimationFrame(() => { el.style.maxHeight = "0px"; el.classList.remove("open"); });
-  }
-  if (btn) {
-    btn.setAttribute("aria-expanded", String(open));
-    btn.setAttribute("aria-label", open ? "Ocultar última vez" : "Mostrar última vez");
-  }
+  el.classList.add("open");
+  if (btn) { btn.setAttribute("aria-expanded", "true"); btn.setAttribute("aria-label", "Ocultar última vez"); }
+  openRefPanel = ex;
 }
+// Tocar fuera del panel lo cierra (sección 3.3) — cualquier click que no
+// venga del propio panel abierto ni de su botón (i), mientras hay uno
+// abierto. El propio toggleRefFold ya hace stopPropagation al abrir, así
+// que ese primer click nunca llega aquí.
+document.addEventListener("click", (e) => {
+  if (!openRefPanel) return;
+  if (e.target.closest(".ex-ref-overlay, .ref-toggle")) return;
+  closeRefPanel();
+});
 // Interruptor de Ajustes: para quien prefiera ver última vez/anterior
-// siempre, como antes de esta sección — deja todas las tarjetas abiertas de
-// fábrica, sin pasar por lastSeenOpen.
+// siempre — deja todos los paneles abiertos de fábrica, sin pasar por el
+// toggle individual.
 function toggleShowLastAlways() {
   showLastAlways = !showLastAlways;
   localStorage.setItem("gymtracker_show_last_always", showLastAlways ? "1" : "0");
@@ -4143,13 +4182,9 @@ function renderExIndexBar(exs, done) {
   }).join("");
   if (countEl) countEl.textContent = carouselMode ? (exCarouselIndex + 1) + "/" + exs.length : done + "/" + exs.length;
 }
-// Tocar un segmento de la barra: en carrusel, si el destino ya está montado
-// (el vecino inmediato) es un scroll nativo suave de verdad, igual que un
-// swipe. Si es un salto largo, la virtualización no permite deslizar por
-// encima de tarjetas que no existen — se reconstruye la ventana centrada
-// ahí directamente, y el fundido de entrada de observeReveal() es lo que
-// hace que no se note como un corte seco. En lista, solo hace scroll hasta
-// la tarjeta.
+// Tocar un segmento de la barra: en carrusel, scroll nativo suave hasta la
+// tarjeta (D1: las 13 están siempre montadas, no hay "destino lejano" que
+// reconstruir). En lista, solo hace scroll hasta la tarjeta.
 function jumpToExercise(i) {
   const exs = ROUTINE[currentDay] || [];
   if (i < 0 || i >= exs.length) return;
@@ -4160,10 +4195,10 @@ function jumpToExercise(i) {
   }
   if (i === exCarouselIndex) return;
   haptic(8);
+  closeRefPanel();
   const track = document.getElementById("ex-carousel-track");
-  const mounted = track && track.querySelector(`.ex-slide[data-idx="${i}"]`);
-  if (mounted) mounted.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
-  else { exCarouselIndex = i; renderExCarousel(); }
+  const slide = track && track.querySelector(`.ex-slide[data-idx="${i}"]`);
+  if (slide) slide.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
 }
 // Al llegar el progreso del día al 100% (última serie pendiente marcada):
 // destello breve en la barra + resumen de tonelaje/series + vibración de
@@ -6191,7 +6226,7 @@ function clearAll() {
   localStorage.setItem("gt_cleared_at", String(Date.now()));
   actOverrides = {}; REST_DUR = 90; REST_ENABLED = true;
   const rtState = document.getElementById("rest-timer-state"); if (rtState) rtState.textContent = REST_DUR + "s";
-  sState = {}; sChecks = {}; currentDay = null; exCarouselIndex = 0; lastSeenOpen = {};
+  sState = {}; sChecks = {}; currentDay = null; exCarouselIndex = 0; openRefPanel = null;
   document.getElementById("ex-list").innerHTML = "";
   document.getElementById("ex-carousel-track").innerHTML = "";
   document.getElementById("save-btn").style.display = "none";
