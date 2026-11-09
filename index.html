@@ -2580,7 +2580,10 @@ input:focus, select:focus, textarea:focus {
 
 // ─── VERSIÓN Y BACKUPS ───────────────────────────────────────────
 const APP_VERSION = 7;
-const APP_BUILD_DATE = "02 nov 2026 18:05";
+// Fecha/hora de la última actualización visible en Ajustes (sin número de
+// versión) — se actualiza a mano con cada cambio, leyendo la hora real
+// (TZ=Europe/Madrid date "+%d %b %Y %H:%M"), nunca a ojo.
+const APP_UPDATED_AT = "09 nov 2026 22:25";
 
 const IDB_NAME = "gymtracker_backups_db";
 const IDB_STORE = "snapshots";
@@ -6610,7 +6613,7 @@ refreshShowLastAlwaysSwitch();
 checkExportReminder();
 
 const luEl = document.getElementById("app-last-updated");
-if (luEl) luEl.textContent = `v${APP_VERSION} · ${APP_BUILD_DATE}`;
+if (luEl) luEl.textContent = `Actualizado · ${APP_UPDATED_AT}`;
 
 // ─── SERVICE WORKER ───────────────────────────────────────────
 if ("serviceWorker" in navigator) {
