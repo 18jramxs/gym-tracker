@@ -575,6 +575,14 @@ body::after {
   font-family: var(--font-mono);
 }
 .ref-val.empty { color: var(--text-3); font-style: normal; font-family: inherit; font-size: 12px; }
+/* Referencia de otro día (sección 1.4): la mejor que había cuando no hay
+   ninguna del mismo día — se enseña igual para no dejar al usuario sin
+   referencia, pero marcada para que no se lea como comparable. */
+.ref-otro-dia { font-size: 10px; color: var(--text-3); margin-top: -2px; }
+/* Aviso de techo de repeticiones (sección 2.2): una sola línea en ámbar,
+   sin icono de alerta ni vibración — solo informa, no cambia nada. */
+.techo-aviso { font-size: 12px; color: var(--amber); line-height: 1.3; }
+.techo-aviso:empty { display: none; }
 .prog-ref-badge {
   display: inline-flex; align-items: center; justify-content: center;
   width: 16px; height: 16px; border-radius: 50%;
@@ -600,6 +608,9 @@ body::after {
   opacity: 0; pointer-events: none;
   transition: opacity 0.2s ease;
   z-index: 2;
+  /* Si el contenido del panel es más alto que la tarjeta (sección 4), hace
+     scroll por dentro — la tarjeta nunca crece para hacerle sitio. */
+  overflow-y: auto;
 }
 .ex-ref-overlay.open { opacity: 1; pointer-events: auto; }
 .ref-toggle {
@@ -1101,7 +1112,10 @@ body::after {
 .paso-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid var(--border); }
 .paso-row:first-child { border-top: none; }
 .paso-row .paso-name { font-size: 13px; font-weight: 600; color: var(--text); }
-.paso-row .paso-input { width: 72px; text-align: center; }
+.paso-inputs { display: flex; gap: 8px; flex-shrink: 0; }
+.paso-row .paso-input { width: 60px; text-align: center; }
+.paso-cols-lbl { display: flex; justify-content: flex-end; gap: 8px; padding: 0 0 6px; }
+.paso-cols-lbl span { width: 60px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-3); text-align: center; }
 .sett-row.danger span { color: var(--red); }
 
 /* —— AVISOS DE SISTEMA (actualización, recordatorio de backup) ———— */
@@ -2318,10 +2332,6 @@ input:focus, select:focus, textarea:focus {
       <div class="sett-icon" style="background:rgba(182,255,46,0.08);border-color:rgba(182,255,46,0.22)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
       <span>Importar backup (JSON)</span>
     </div>
-    <div class="sett-row" onclick="exportCSV()">
-      <div class="sett-icon" style="background:rgba(255,107,0,0.08);border-color:rgba(255,107,0,0.22)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg></div>
-      <span>Exportar a CSV (Notion)</span>
-    </div>
   </div>
 
   <div class="sett-group">
@@ -2428,6 +2438,7 @@ input:focus, select:focus, textarea:focus {
   <div class="modal-sheet" onclick="event.stopPropagation()">
     <div class="modal-grab"></div>
     <div style="font-family:var(--font-disp);font-size:24px;letter-spacing:0.5px;margin-bottom:14px;text-transform:uppercase;">Incremento por ejercicio</div>
+    <div class="paso-cols-lbl"><span>Kg</span><span>Techo</span></div>
     <div id="peso-step-list" style="max-height:60vh;overflow-y:auto;margin-bottom:18px;"></div>
     <button class="cta-save" onclick="closePesoStepModal()" style="width:100%;border:none;border-radius:14px;padding:14px;font-family:var(--font-disp);font-size:17px;letter-spacing:0.8px;cursor:pointer;text-transform:uppercase;">Listo</button>
   </div>
@@ -2696,17 +2707,17 @@ function reloadForUpdate() { location.reload(); }
 
 // ─── ROUTINE / SERIES / DOM CONSTS ──────────────────────────────
 const ROUTINE = {
-  lunes:["DOMINADAS","REMO HAMMER","JALÓN AL PECHO","PRESS MILITAR","PRESS INCLINADO","ELEVACIONES LATERALES","APERTURAS PAD","EXTENSIÓN POSTERIOR","JM PRESS","EXTENSIÓN TRÍCEPS UNILATERAL","CURL PREDICADOR","CURL MANCUERNA","CURL INVERTIDO"],
+  lunes:["DOMINADAS","REMO HAMMER UNILATERAL","JALÓN AL PECHO","PRESS MILITAR","PRESS INCLINADO","ELEVACIONES LATERALES","APERTURAS PAD","EXTENSIÓN POSTERIOR","JM PRESS","EXTENSIÓN TRÍCEPS UNILATERAL","CURL PREDICADOR","CURL MANCUERNA","CURL INVERTIDO"],
   martes:["PÉNDULO","SLDL","EXTENSIÓN CUÁDRICEPS","HIP THRUST","EXTENSIÓN FEMORAL","GEMELO","ADUCTORES","ABS"],
   jueves:["PRESS MILITAR","PRESS INCLINADO","ELEVACIONES LATERALES","APERTURAS PAD","EXTENSIÓN POSTERIOR","CURL PREDICADOR","CURL MANCUERNA"],
-  viernes:["DOMINADAS","REMO HAMMER","JALÓN AL PECHO","JM PRESS","EXTENSIÓN TRÍCEPS UNILATERAL","CURL INVERTIDO"],
+  viernes:["DOMINADAS","REMO HAMMER UNILATERAL","JALÓN AL PECHO","JM PRESS","EXTENSIÓN TRÍCEPS UNILATERAL","CURL INVERTIDO"],
   sabado:["PÉNDULO","SLDL","EXTENSIÓN CUÁDRICEPS","HIP THRUST","EXTENSIÓN FEMORAL","SÓLEO","ADUCTORES","ABS"]
 };
 const SERIES = {
   lunes:{default:2,DOMINADAS:4,"CURL INVERTIDO":3,"JALÓN AL PECHO":2},
   martes:{default:2,GEMELO:3,"HIP THRUST":4,ADUCTORES:3,ABS:3},
   jueves:{"PRESS MILITAR":2,"PRESS INCLINADO":3,"ELEVACIONES LATERALES":2,"APERTURAS PAD":3,"EXTENSIÓN POSTERIOR":2,"CURL PREDICADOR":3,"CURL MANCUERNA":3},
-  viernes:{DOMINADAS:4,"REMO HAMMER":4,"JALÓN AL PECHO":2,"JM PRESS":3,"EXTENSIÓN TRÍCEPS UNILATERAL":3,"CURL INVERTIDO":3},
+  viernes:{DOMINADAS:4,"REMO HAMMER UNILATERAL":4,"JALÓN AL PECHO":2,"JM PRESS":3,"EXTENSIÓN TRÍCEPS UNILATERAL":3,"CURL INVERTIDO":3},
   sabado:{default:2,SÓLEO:3,"HIP THRUST":4,ADUCTORES:3,ABS:3}
 };
 // Incremento mínimo real de cada ejercicio, en kg (disco y mancuerna → 2,5 ·
@@ -2715,7 +2726,7 @@ const SERIES = {
 // estos valores son solo el valor de fábrica.
 const PESO_STEP = {
   "PÉNDULO": 2.5, "SÓLEO": 2.5, "PRESS INCLINADO": 2.5, "SLDL": 2.5, "JM PRESS": 2.5,
-  "CURL PREDICADOR": 2.5, "CURL INVERTIDO": 2.5, "HIP THRUST": 2.5, "REMO HAMMER": 2.5,
+  "CURL PREDICADOR": 2.5, "CURL INVERTIDO": 2.5, "HIP THRUST": 2.5, "REMO HAMMER UNILATERAL": 2.5,
   "PRESS MILITAR": 2.5, "CURL MANCUERNA": 2.5, "DOMINADAS": 2.5,
   "JALÓN AL PECHO": 5, "APERTURAS PAD": 5, "APERTURAS": 5, "EXTENSIÓN POSTERIOR": 5,
   "EXTENSIÓN TRÍCEPS UNILATERAL": 5, "EXTENSIÓN TRÍCEPS": 5, "EXTENSIÓN CUÁDRICEPS": 5,
@@ -2753,12 +2764,78 @@ function openPesoStepModal() {
 function closePesoStepModal() { document.getElementById("peso-step-modal").classList.remove("open"); }
 function renderPesoStepList() {
   const exs = [...new Set(Object.values(ROUTINE).flat())].sort();
-  document.getElementById("peso-step-list").innerHTML = exs.map(ex => `<div class="paso-row"><span class="paso-name">${ex}</span><input class="ex-input paso-input" type="number" step="0.5" min="0.5" value="${getPesoStep(ex)}" onchange="updatePesoStepInput('${ex}', this.value)"></div>`).join("");
+  document.getElementById("peso-step-list").innerHTML = exs.map(ex => `<div class="paso-row"><span class="paso-name">${ex}</span><div class="paso-inputs"><input class="ex-input paso-input" type="number" step="0.5" min="0.5" value="${getPesoStep(ex)}" onchange="updatePesoStepInput('${ex}', this.value)" title="Incremento (kg)"><input class="ex-input paso-input" type="number" step="1" min="1" value="${techoReps(ex)}" onchange="updateTechoRepsInput('${ex}', this.value)" title="Techo de repeticiones"></div></div>`).join("");
 }
 function updatePesoStepInput(ex, val) {
   const n = parseFloat(val);
   if (!isFinite(n) || n <= 0) return;
   setPesoStep(ex, n);
+}
+function updateTechoRepsInput(ex, val) {
+  const n = parseInt(val);
+  if (!isFinite(n) || n <= 0) return;
+  setTechoReps(ex, n);
+}
+// ─── TECHO DE REPETICIONES (sección 2.2) ─────────────────────────
+// El peso solo sube cuando se llega al techo de reps en todas las series,
+// pero ese techo no puede ser igual en todos los ejercicios: el salto
+// mínimo de peso (getPesoStep) pesa muy distinto según cuánto se mueva ya
+// — un salto del 29% (tríceps unilateral) tira de las reps mucho más que
+// uno del 5% (aperturas pad). El techo se calcula a partir de ese
+// porcentaje y se puede forzar a mano desde Ajustes.
+function getTechoOverrides() { try { return JSON.parse(localStorage.getItem("gymtracker_techo_reps") || "{}"); } catch { return {}; } }
+function saveTechoOverrides(o) { localStorage.setItem("gymtracker_techo_reps", JSON.stringify(o)); }
+// Último peso registrado del ejercicio, de cualquier día — es solo la base
+// para calcular el % que supone el salto, no una referencia de progresión.
+function ultimoPeso(exName) {
+  const sesiones = getData()
+    .filter(s => s.exercises.some(e => e.name === exName && e.peso))
+    .sort((a, b) => b.date.localeCompare(a.date));
+  if (!sesiones.length) return null;
+  const e = sesiones[0].exercises.find(x => x.name === exName && x.peso);
+  return e ? e.peso : null;
+}
+function techoRepsAuto(exName) {
+  const step = getPesoStep(exName);
+  const ultimo = parseFloat(ultimoPeso(exName));
+  if (!isFinite(ultimo) || ultimo <= 0) return 10;
+  const pct = step / ultimo;
+  if (pct < 0.08) return 10;
+  if (pct < 0.15) return 12;
+  return 15;
+}
+function techoReps(exName) {
+  const o = getTechoOverrides();
+  if (o[exName] != null) return o[exName];
+  return techoRepsAuto(exName);
+}
+function setTechoReps(exName, n) {
+  const o = getTechoOverrides();
+  o[exName] = n;
+  saveTechoOverrides(o);
+}
+// Aviso discreto cuando las reps de "Hoy" llegan al techo en todas las
+// series de ESE día (sección 1.4: el techo también se evalúa por día) —
+// solo informa, nunca cambia el peso por su cuenta.
+function techoAvisoHtml(ex) {
+  if (!currentDay) return "";
+  const st = sState[ex]; if (!st) return "";
+  const total = getSeries(currentDay, ex);
+  const sets = parseSeries(st.series || "");
+  const sumSeries = sets.reduce((a, p) => a + p.series, 0);
+  if (!sets.length || sumSeries < total) return "";
+  const techo = techoReps(ex);
+  if (!sets.every(p => p.reps >= techo)) return "";
+  const pesoActual = parseFloat(st.peso);
+  if (!isFinite(pesoActual)) return "";
+  const siguiente = pesoActual + getPesoStep(ex);
+  return `↑ Techo alcanzado · la próxima a ${fmtWeightKg(siguiente)}`;
+}
+// Se llama desde updateSt() al tocar peso/series — refresca el aviso in situ
+// sin reconstruir la tarjeta entera.
+function refreshTechoAviso(ex) {
+  const el = document.getElementById("techo-" + safeId(ex));
+  if (el) el.innerHTML = techoAvisoHtml(ex);
 }
 // HACK se renombró a PÉNDULO (28/09/2026): mismo movimiento, el nombre
 // estaba mal puesto — no es una sustitución, por eso no aparece en
@@ -2922,10 +2999,18 @@ const AJUSTES_TECNICOS_SEED = [
     queCambio: "Empezar de pie en vez de desde el suelo · rodilla ligeramente flexionada y fija · cadera hacia atrás · cuello neutro · straps · bajar solo hasta donde la espalda siga recta",
     porQue: "No notaba el femoral, se escapaba la barra y cargaba la lumbar",
     pesoAntes: 90, pesoDespues: null },
-  { ejercicio: "PRESS INCLINADO", fecha: "2026-11-05",
+  { ejercicio: "PRESS INCLINADO", fecha: "2026-11-02",
     queCambio: "Bajar el asiento para que los agarres queden a la altura del pecho alto, no de los pezones",
     porQue: "Enfocar la porción clavicular del pectoral",
-    pesoAntes: 70, pesoDespues: null }
+    pesoAntes: 70, pesoDespues: null },
+  { ejercicio: "REMO HAMMER UNILATERAL", fecha: "2026-11-09",
+    queCambio: "Unilateral · agarre supino · fijado al apoyo y sujeto con el otro brazo · rango completo",
+    porQue: "No sentía el dorsal: el trabajo se iba al brazo y al trapecio",
+    pesoAntes: null, pesoDespues: 50 },
+  { ejercicio: "JALÓN AL PECHO", fecha: "2026-11-09",
+    queCambio: "Agarre cerrado a la anchura de las dominadas, en la parte recta de la barra · codos pegados al costado",
+    porQue: "Con el agarre ancho no entraba el dorsal",
+    pesoAntes: null, pesoDespues: 77 }
 ];
 function migrateAjustesTecnicosSeed() {
   const ajustes = getAjustesTecnicos();
@@ -2937,6 +3022,17 @@ function migrateAjustesTecnicosSeed() {
     }
   });
   if (changed) saveAjustesTecnicos(ajustes);
+}
+// La fecha sembrada del ajuste de PRESS INCLINADO era 2026-11-05, pero el
+// cambio real (bajar el asiento) se hizo el 2026-11-02, que es cuando se
+// registraron los 70 kg — corrige en el sitio la fecha ya insertada en vez
+// de sembrar un ajuste duplicado con la fecha buena.
+function migrateFechaAjustePressInclinado() {
+  if (localStorage.getItem("gt_migration_press_inclinado_fecha")) return;
+  const ajustes = getAjustesTecnicos();
+  const a = ajustes.find(x => x.ejercicio === "PRESS INCLINADO" && x.fecha === "2026-11-05");
+  if (a) { a.fecha = "2026-11-02"; saveAjustesTecnicos(ajustes); }
+  localStorage.setItem("gt_migration_press_inclinado_fecha", "1");
 }
 let editingAjusteTecnicoId = null;
 function openAjusteTecnicoModal(id) {
@@ -2998,7 +3094,23 @@ function migrateExerciseData() {
   migrateCurlInvertido20kg();
   migrateAperturasPad();
   migratePesoStepCleanup();
+  migrateFechaAjustePressInclinado();
+  migrateRemoHammerUnilateral();
   migrateAjustesTecnicosSeed();
+}
+// REMO HAMMER pasa a unilateral (09/11/2026): mismo movimiento con otro
+// agarre, ajuste técnico, no sustitución — se renombra también el histórico
+// para que "REMO HAMMER UNILATERAL" siga siendo la clave de enlace (mismo
+// patrón que PÉNDULO, ver migrateOct2026).
+function migrateRemoHammerUnilateral() {
+  if (localStorage.getItem("gt_migration_remo_hammer_unilateral")) return;
+  const data = getData();
+  let changed = false;
+  data.forEach(s => s.exercises.forEach(e => {
+    if (e.name === "REMO HAMMER") { e.name = "REMO HAMMER UNILATERAL"; changed = true; }
+  }));
+  if (changed) saveData(data);
+  localStorage.setItem("gt_migration_remo_hammer_unilateral", "1");
 }
 // Aviso de histórico corregido: una lista de bloques, no uno solo — más de
 // una migración puede tener correcciones pendientes la primera vez que se
@@ -3251,7 +3363,7 @@ function calc1RM(peso, ser) { if (!peso || !ser) return null; const w = parseFlo
 
 // ─── VOLUMEN POR GRUPO MUSCULAR ─────────────────────────────────
 const MUSCLE = {
-  "DOMINADAS":"Espalda", "REMO HAMMER":"Espalda", "JALÓN AL PECHO":"Espalda",
+  "DOMINADAS":"Espalda", "REMO HAMMER UNILATERAL":"Espalda", "JALÓN AL PECHO":"Espalda",
   "CURL PREDICADOR":"Bíceps", "CURL MANCUERNA":"Bíceps",
   "CURL INVERTIDO":"Antebrazo",
   "PRESS MILITAR":"Hombro", "ELEVACIONES LATERALES":"Hombro", "EXTENSIÓN POSTERIOR":"Hombro",
@@ -3453,41 +3565,66 @@ function getDomMode(day, ds) { if (day === "lunes") return "emom"; if (day === "
 // normal (peso/series). Without this, the most recent entry of ANY shape
 // (eg. last Monday's EMOM) would shadow the real reference for a different
 // mode (eg. the monthly test), showing blank/"—" values instead.
-function getLastN(exName, n, beforeDate, mode = "normal") {
-  const data = getData(); const results = [];
+// ¿Este ejercicio lleva el mismo número de series todos los días en los que
+// se hace? Si no (p.ej. PRESS INCLINADO: 2 el lunes, 3 el jueves), cada día
+// progresa por su cuenta y no son comparables entre sí (ver getLastN).
+function seriesIgualesTodosLosDias(exName) {
+  const dias = Object.keys(ROUTINE).filter(d => ROUTINE[d].includes(exName));
+  const counts = new Set(dias.map(d => getSeries(d, exName)));
+  return counts.size === 1;
+}
+// Recorre `list` (ya ordenada de más reciente a más antigua) buscando hasta
+// n coincidencias. Si filtrarPorDia está activo, prioriza las del mismo día
+// (day) — si no hay suficientes, cae a las de cualquier otro día dentro de
+// esa misma lista, marcándolas con otroDia para que el llamador las
+// etiquete como no comparables del todo (mismo patrón que tecnicaAnterior).
+function pickRefs(list, exName, matchesEntry, filtrarPorDia, day, n, tag) {
+  const results = [];
+  if (filtrarPorDia) {
+    for (const s of list) {
+      if (s.day !== day) continue;
+      const e = s.exercises.find(x => x.name === exName);
+      if (!e || !matchesEntry(e)) continue;
+      results.push(tag({...e, date: s.date, day: s.day}, false));
+      if (results.length >= n) return results;
+    }
+  }
+  for (const s of list) {
+    if (filtrarPorDia && s.day === day) continue; // ya contadas arriba
+    const e = s.exercises.find(x => x.name === exName);
+    if (!e || !matchesEntry(e)) continue;
+    results.push(tag({...e, date: s.date, day: s.day}, filtrarPorDia));
+    if (results.length >= n) break;
+  }
+  return results;
+}
+function getLastN(exName, n, beforeDate, mode = "normal", day = null) {
+  const data = getData();
   const sorted = data.filter(s => s.date < beforeDate).sort((a,b) => b.date.localeCompare(a.date));
   const matchesEntry = e => mode === "emom" ? (e.emomReps || e.emomMins)
                            : mode === "test" ? e.testReps
                            : (e.peso || e.series);
+  // El filtro por día (sección 1.4) solo aplica en modo normal, y solo si el
+  // ejercicio de verdad lleva series distintas según el día — si no, mezclar
+  // días no pierde nada y además rellena antes la referencia.
+  const filtrarPorDia = mode === "normal" && !!day && !seriesIgualesTodosLosDias(exName);
   // Modo normal: si hay un ajuste técnico vigente, Última vez/Anterior solo
   // compara con sesiones de la misma línea (después del ajuste). Si no hay
   // suficientes, se rellena con las de antes marcadas tecnicaAnterior — el
   // llamador las etiqueta "Técnica anterior" en vez de como comparables.
   const ajuste = mode === "normal" ? getAjusteTecnicoVigente(exName, beforeDate) : null;
   if (ajuste) {
-    for (const s of sorted) {
-      if (s.date < ajuste.fecha) break;
-      const e = s.exercises.find(x => x.name === exName);
-      if (!e || !matchesEntry(e)) continue;
-      results.push({...e, date: s.date, day: s.day, tecnicaAnterior: false});
-      if (results.length >= n) return results;
-    }
-    for (const s of sorted) {
-      if (s.date >= ajuste.fecha) continue;
-      const e = s.exercises.find(x => x.name === exName);
-      if (!e || !matchesEntry(e)) continue;
-      results.push({...e, date: s.date, day: s.day, tecnicaAnterior: true});
-      if (results.length >= n) break;
-    }
-    return results;
+    const post = sorted.filter(s => s.date >= ajuste.fecha);
+    const results = pickRefs(post, exName, matchesEntry, filtrarPorDia, day, n,
+      (e, otroDia) => Object.assign(e, { tecnicaAnterior: false, otroDia }));
+    if (results.length >= n) return results;
+    const pre = sorted.filter(s => s.date < ajuste.fecha);
+    const rest = pickRefs(pre, exName, matchesEntry, filtrarPorDia, day, n - results.length,
+      (e, otroDia) => Object.assign(e, { tecnicaAnterior: true, otroDia }));
+    return results.concat(rest);
   }
-  for (const s of sorted) {
-    const e = s.exercises.find(x => x.name === exName);
-    if (!e || !matchesEntry(e)) continue;
-    results.push({...e, date: s.date, day: s.day});
-    if (results.length >= n) break;
-  }
-  return results;
+  return pickRefs(sorted, exName, matchesEntry, filtrarPorDia, day, n,
+    (e, otroDia) => Object.assign(e, { otroDia }));
 }
 
 // ─── COLOR DE PROGRESIÓN (sección 3) ─────────────────────────────
@@ -3694,16 +3831,17 @@ function buildExerciseCard(ex) {
 function buildNormalExerciseCard(ex) {
   const isPierna = PIERNA.includes(currentDay), isSingle = SINGLE_REF.includes(ex);
   const nRefs = (isPierna || isSingle) ? 1 : 2;
-  const refs = getLastN(ex, nRefs, currentDate);
+  const refs = getLastN(ex, nRefs, currentDate, "normal", currentDay);
   const canProg = ex !== "DOMINADAS";
-  const nameBadge = (canProg && refs[0] && refs[0].prog) ? `<span class="prog-ref-badge ${refs[0].prog}">${refs[0].prog === "up" ? "↑" : "="}</span>` : "";
-  // Color de progresión (sección 3): se compara contra el peso posterior al
-  // ajuste técnico vigente, si lo hay (cmpRef) — comparar con la técnica
-  // vieja no significa nada (ver getLastN, tecnicaAnterior).
-  const cmpRef = refs.find(r => !r.tecnicaAnterior);
+  // Color de progresión e indicador de la cabecera (sección 1.4): comparan
+  // contra el registro posterior al ajuste técnico Y del mismo día — uno de
+  // otro día (otroDia) no es el mismo tipo de sesión y no sirve de
+  // comparación, aunque sí se enseñe como referencia visual.
+  const cmpRef = refs.find(r => !r.tecnicaAnterior && !r.otroDia);
+  const nameBadge = (canProg && cmpRef && cmpRef.prog) ? `<span class="prog-ref-badge ${cmpRef.prog}">${cmpRef.prog === "up" ? "↑" : "="}</span>` : "";
   const ajusteVigente = getAjusteTecnicoVigente(ex, currentDate);
   let refHtml = "";
-  if (ajusteVigente && !cmpRef) {
+  if (ajusteVigente && !refs.find(r => !r.tecnicaAnterior)) {
     // Ajuste técnico vigente y ningún registro posterior todavía: enseñar
     // el peso de antes del ajuste no sirve, ya no es comparable. El
     // histórico de antes sigue consultable en Progreso.
@@ -3714,7 +3852,8 @@ function buildNormalExerciseCard(ex) {
     refHtml = refs.map((r, i) => {
       const val = r.peso ? fmtWeightRecord(r) + (r.series ? " · " + r.series : "") : r.series || "";
       const lbl = r.tecnicaAnterior ? "Técnica anterior" : (nRefs > 1 ? (i === 0 ? "Última vez" : "Anterior") : "Última vez");
-      return `<div class="ex-lbl">${lbl} · ${fmtDate(r.date)}</div><div class="ref-val">${val}</div>`;
+      const otroDiaHtml = r.otroDia ? `<div class="ref-otro-dia">↳ otro día</div>` : "";
+      return `<div class="ex-lbl">${lbl} · ${fmtDate(r.date)}</div><div class="ref-val">${val}</div>${otroDiaHtml}`;
     }).join("");
   }
   const id = safeId(ex), total = getSeries(currentDay, ex), done = sChecks[ex] >= total || sState[ex].done, checked = sChecks[ex] || 0;
@@ -3728,12 +3867,13 @@ function buildNormalExerciseCard(ex) {
   const refToggleHtml = `<button type="button" class="ref-toggle" id="reftog-${id}" onclick="toggleRefFold(event,'${ex}')" aria-expanded="${refOpen}" aria-label="${refOpen ? "Ocultar última vez" : "Mostrar última vez"}">i</button>`;
   const lastPesoKg = cmpRef && cmpRef.peso ? parseFloat(cmpRef.peso) : null;
   const pesoProg = progInputAttrs(sState[ex].peso, lastPesoKg);
+  const techoHtml = canProg ? `<div class="techo-aviso" id="techo-${id}">${techoAvisoHtml(ex)}</div>` : "";
   const card = document.createElement("div");
   card.className = "ex-card" + (done ? " done" : "");
   card.id = id;
   card.dataset.ex = ex; card.dataset.kind = "normal";
   observeReveal(card);
-  card.innerHTML = `<div class="ex-header"><span class="ex-name">${ex}${nameBadge}</span><div class="dots-row"><span class="dot-count tnum" id="dc-${id}">${checked}/${total}</span>${dots}</div></div><div class="ex-body"><div class="ex-in-grp"><div class="ex-in-hdr"><span class="ex-lbl">Hoy</span><button type="button" class="unit-toggle" onclick="toggleWeightUnit()">${weightUnit}</button></div><input class="ex-input${pesoProg.cls}"${pesoProg.style} placeholder="Peso (${weightUnit})" type="number" inputmode="decimal" value="${pesoDisplayValue(ex)}" data-rendered="${pesoDisplayValue(ex)}" data-last-val="${lastPesoKg != null ? lastPesoKg : ""}" ${done?"disabled":""} data-ex="${ex}" data-field="peso" oninput="updateSt(this)"><span class="peso-equiv tnum" id="pe-${id}">${equivTxt}</span><input class="ex-input" placeholder="Series" value="${sState[ex].series}" ${done?"disabled":""} data-ex="${ex}" data-field="series" oninput="updateSt(this)">${refOverlayHtml}</div><div class="prog-row"><div class="prog-row-left">${progLeft}</div>${refToggleHtml}</div></div>`;
+  card.innerHTML = `<div class="ex-header"><span class="ex-name">${ex}${nameBadge}</span><div class="dots-row"><span class="dot-count tnum" id="dc-${id}">${checked}/${total}</span>${dots}</div></div><div class="ex-body"><div class="ex-in-grp"><div class="ex-in-hdr"><span class="ex-lbl">Hoy</span><button type="button" class="unit-toggle" onclick="toggleWeightUnit()">${weightUnit}</button></div><input class="ex-input${pesoProg.cls}"${pesoProg.style} placeholder="Peso (${weightUnit})" type="number" inputmode="decimal" value="${pesoDisplayValue(ex)}" data-rendered="${pesoDisplayValue(ex)}" data-last-val="${lastPesoKg != null ? lastPesoKg : ""}" ${done?"disabled":""} data-ex="${ex}" data-field="peso" oninput="updateSt(this)"><span class="peso-equiv tnum" id="pe-${id}">${equivTxt}</span><input class="ex-input" placeholder="Series" value="${sState[ex].series}" ${done?"disabled":""} data-ex="${ex}" data-field="series" oninput="updateSt(this)">${refOverlayHtml}</div><div class="prog-row"><div class="prog-row-left">${progLeft}</div>${refToggleHtml}</div>${techoHtml}</div>`;
   return card;
 }
 function renderExercises() {
@@ -3943,14 +4083,14 @@ function copyLastreToAll(ex) {
   persistDraft();
 }
 function buildDominadasNormalCard(ex) {
-  const refs = getLastN(ex, 2, currentDate);
+  const refs = getLastN(ex, 2, currentDate, "normal", currentDay);
   // Color de progresión (sección 3): el lastre tiene su propia comparación,
-  // serie contra serie, respetando el ajuste técnico vigente igual que el
-  // peso (ver getLastN, tecnicaAnterior).
-  const cmpRef = refs.find(r => !r.tecnicaAnterior);
+  // serie contra serie, respetando el ajuste técnico vigente y el mismo día
+  // (sección 1.4) igual que el peso (ver getLastN, tecnicaAnterior, otroDia).
+  const cmpRef = refs.find(r => !r.tecnicaAnterior && !r.otroDia);
   const ajusteVigente = getAjusteTecnicoVigente(ex, currentDate);
   let refHtml = "";
-  if (ajusteVigente && !cmpRef) {
+  if (ajusteVigente && !refs.find(r => !r.tecnicaAnterior)) {
     refHtml = `<div class="ex-lbl">Técnica nueva desde el ${fmtDate(ajusteVigente.fecha)}</div><div class="ref-val empty">Sin registros todavía</div>`;
   } else if (!refs.length) {
     refHtml = `<div class="ex-lbl">Referencia</div><div class="ref-val empty">Sin datos previos</div>`;
@@ -3959,7 +4099,8 @@ function buildDominadasNormalCard(ex) {
       const rTotal = seriesCount(r.series) || (Array.isArray(r.lastre) ? r.lastre.length : getSeries(currentDay, ex));
       const val = lastreListText(lastreArr(r, rTotal)) + (r.series ? " · " + r.series : "");
       const lbl = r.tecnicaAnterior ? "Técnica anterior" : (i === 0 ? "Última vez" : "Anterior");
-      return `<div class="ex-lbl">${lbl} · ${fmtDate(r.date)}</div><div class="ref-val">${val}</div>`;
+      const otroDiaHtml = r.otroDia ? `<div class="ref-otro-dia">↳ otro día</div>` : "";
+      return `<div class="ex-lbl">${lbl} · ${fmtDate(r.date)}</div><div class="ref-val">${val}</div>${otroDiaHtml}`;
     }).join("");
   }
   const st = sState[ex];
@@ -3991,10 +4132,11 @@ function buildDominadasNormalCard(ex) {
 function buildEMOMCard(ex) {
   const st = sState[ex] || { emomReps: "", emomMins: "", emomTotal: 0, lastre: "", done: false };
   const refs = getLastN(ex, 1, currentDate, "emom");
+  // El EMOM nunca lleva lastre (sección 3): el tonelaje se calcula solo con
+  // el peso corporal — un registro antiguo puede conservar un lastre en el
+  // dato, pero ya no se enseña aquí.
   let refHtml = refs.length ?
-    (() => { const la = parseFloat(refs[0].lastre) || 0;
-      return `<div class="ex-lbl">Última vez · ${fmtDate(refs[0].date)}</div><div class="ref-val">${refs[0].emomReps || "—"} reps/min · ${refs[0].emomMins || "—"} min · ${refs[0].emomTotal || "—"} total</div><div class="ref-val" style="font-size:11px;color:var(--text-3);margin-top:2px">${la>0?la+" kg lastre":"sin lastre"}</div>`;
-    })() :
+    `<div class="ex-lbl">Última vez · ${fmtDate(refs[0].date)}</div><div class="ref-val">${refs[0].emomReps || "—"} reps/min · ${refs[0].emomMins || "—"} min · ${refs[0].emomTotal || "—"} total</div>` :
     `<div class="ex-lbl">Referencia</div><div class="ref-val empty">Sin datos previos</div>`;
   const total = (parseInt(st.emomReps) || 0) * (parseInt(st.emomMins) || 0);
   const id = safeId(ex);
@@ -4003,7 +4145,7 @@ function buildEMOMCard(ex) {
   card.id = id;
   card.dataset.ex = ex; card.dataset.kind = "emom";
   observeReveal(card);
-  card.innerHTML = `<div class="emom-hdr"><span class="ex-name" style="color:var(--amber)">EMOM</span><span class="emom-badge">DOMINADAS</span></div><div class="emom-body"><div class="emom-note">Los lunes, dominadas se mide como EMOM: cuántas repeticiones haces cada minuto y durante cuántos minutos seguidos las mantienes.</div><div style="margin-bottom:12px">${refHtml}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px"><div><div class="emom-lbl">Reps por minuto</div><input class="ex-input" type="number" inputmode="numeric" value="${st.emomReps||""}" ${st.done?"disabled":""} oninput="updateEmom('${ex}','emomReps',this.value)"></div><div><div class="emom-lbl">Minutos completados</div><input class="ex-input" type="number" inputmode="numeric" value="${st.emomMins||""}" ${st.done?"disabled":""} oninput="updateEmom('${ex}','emomMins',this.value)"></div></div><div style="margin-bottom:10px"><div class="emom-lbl">Lastre (kg, opcional)</div><input class="ex-input" type="number" inputmode="decimal" value="${st.lastre||""}" ${st.done?"disabled":""} oninput="updateEmom('${ex}','lastre',this.value)"></div><div class="emom-total-bar"><span style="font-size:11px;color:var(--text-2);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">Total reps</span><span class="emom-total-val" id="emom-tot-${id}">${total||"—"}</span></div><button class="emom-action" onclick="toggleEmomDone('${ex}')">${st.done?"Reabrir":"Marcar completado"}</button></div>`;
+  card.innerHTML = `<div class="emom-hdr"><span class="ex-name" style="color:var(--amber)">EMOM</span><span class="emom-badge">DOMINADAS</span></div><div class="emom-body"><div style="margin-bottom:12px">${refHtml}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px"><div><div class="emom-lbl">Reps por minuto</div><input class="ex-input" type="number" inputmode="numeric" value="${st.emomReps||""}" ${st.done?"disabled":""} oninput="updateEmom('${ex}','emomReps',this.value)"></div><div><div class="emom-lbl">Minutos</div><input class="ex-input" type="number" inputmode="numeric" value="${st.emomMins||""}" ${st.done?"disabled":""} oninput="updateEmom('${ex}','emomMins',this.value)"></div></div><div class="emom-total-bar"><span style="font-size:11px;color:var(--text-2);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">Total reps</span><span class="emom-total-val" id="emom-tot-${id}">${total||"—"}</span></div><button class="emom-action" onclick="toggleEmomDone('${ex}')">${st.done?"Reabrir":"Marcar completado"}</button></div>`;
   return card;
 }
 
@@ -4026,7 +4168,7 @@ function buildTestCard(ex) {
   card.id = id;
   card.dataset.ex = ex; card.dataset.kind = "test";
   observeReveal(card);
-  card.innerHTML = `<div class="emom-hdr"><span class="ex-name" style="color:var(--amber)">TEST</span><span class="emom-badge">DOMINADAS · OBJ. ${DOM_GOAL}</span></div><div class="emom-body"><div class="emom-note">El primer viernes del mes, dominadas se mide como test: tu máximo de repeticiones en una sola serie, para seguir tu progreso hacia el objetivo.</div><div style="margin-bottom:12px">${refHtml}</div><div class="emom-lbl" style="margin-bottom:5px">Reps máximas (un tirón)</div><input class="ex-input${testProg.cls}"${testProg.style} type="number" inputmode="numeric" value="${st.testReps||""}" data-last-val="${lastTestReps || ""}" ${st.done?"disabled":""} oninput="updateTest('${ex}',this.value,this)"><div class="test-goal-bar" id="tgb-${id}"><span style="font-size:11px;color:var(--text-2);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">Objetivo ${DOM_GOAL} reps</span><span class="test-pct" style="color:${pctColor}">${pct?pct+"%":"—"}</span></div><button class="emom-action" onclick="toggleTestDone('${ex}')">${st.done?"Reabrir":"Guardar test"}</button></div>`;
+  card.innerHTML = `<div class="emom-hdr"><span class="ex-name" style="color:var(--amber)">TEST</span><span class="emom-badge">DOMINADAS · OBJ. ${DOM_GOAL}</span></div><div class="emom-body"><div style="margin-bottom:12px">${refHtml}</div><div class="emom-lbl" style="margin-bottom:5px">Reps máximas (un tirón)</div><input class="ex-input${testProg.cls}"${testProg.style} type="number" inputmode="numeric" value="${st.testReps||""}" data-last-val="${lastTestReps || ""}" ${st.done?"disabled":""} oninput="updateTest('${ex}',this.value,this)"><div class="test-goal-bar" id="tgb-${id}"><span style="font-size:11px;color:var(--text-2);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">Objetivo ${DOM_GOAL} reps</span><span class="test-pct" style="color:${pctColor}">${pct?pct+"%":"—"}</span></div><button class="emom-action" onclick="toggleTestDone('${ex}')">${st.done?"Reabrir":"Guardar test"}</button></div>`;
   return card;
 }
 
@@ -4145,6 +4287,7 @@ function updateSt(inp) {
     sState[ex].lastre[parseInt(inp.dataset.idx) || 0] = inp.value;
     paintProgresion(inp, inp.value, inp.dataset.lastVal);
   } else sState[ex][f] = inp.value;
+  if (ex !== "DOMINADAS" && (f === "peso" || f === "series")) refreshTechoAviso(ex);
   persistDraft();
 }
 function toggleProg(ex) {
@@ -4529,7 +4672,9 @@ function domTotalDayBreakdown(ds) {
     const e = sess.exercises.find(x => x.name === "DOMINADAS");
     if (e) {
       if (sess.day === "lunes" && (e.emomReps || e.emomMins || e.emomTotal)) {
-        const w = (e.pesoCorporal || 0) + (parseFloat(e.lastre) || 0);
+        // El EMOM nunca lleva lastre (sección 3): el tonelaje es solo peso
+        // corporal, aunque un registro antiguo conserve un lastre en el dato.
+        const w = e.pesoCorporal || 0;
         const reps = e.emomTotal || 0;
         sources.push({ lbl: "EMOM lunes", reps, ton: reps * w });
       } else if (sess.day === "viernes" && e.series && !e.testReps) {
@@ -6222,16 +6367,16 @@ async function exportInformePDF() {
 
 // ─── EXPORT / IMPORT ───────────────────────────────────────────
 function exportJSON() {
-  // Nombre de archivo fijo a propósito: así reemplaza al backup anterior en
-  // vez de acumular un archivo nuevo por cada exportación (la fecha ya vive
-  // dentro del JSON, en exportedAt, que es donde sirve de algo). El import
-  // sigue aceptando archivos antiguos con fecha en el nombre — lo que vale
-  // es el contenido, no cómo se llame.
+  // Nombre de archivo fijo a propósito: así el iPhone reemplaza el backup
+  // anterior en vez de acumular un archivo nuevo por cada exportación (la
+  // fecha ya vive dentro del JSON, en exportedAt, que es donde sirve de
+  // algo). El import sigue aceptando archivos antiguos con otro nombre —
+  // lo que vale es el contenido, no cómo se llame.
   const payload = { app: "gym-tracker", appVersion: APP_VERSION, exportedAt: new Date().toISOString(), data: snapshotAllLocalStorage() };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "gym-tracker-backup.json";
+  a.download = "gymtracker.json";
   a.click();
   localStorage.setItem("gt_last_export_ts", String(Date.now()));
   showToast("Backup exportado", "ok");
@@ -6261,13 +6406,6 @@ function handleImport(e) {
     } catch { showToast("Error al importar: archivo inválido"); }
   };
   reader.readAsText(file); e.target.value = "";
-}
-function exportCSV() {
-  const rows = [["Fecha","Día","Ejercicio","Peso (kg)","Series","Completado"]];
-  getData().forEach(s => s.exercises.forEach(e => rows.push([s.date, s.day, e.name, e.peso || "", e.series || "", e.done ? "Sí" : "No"])));
-  const blob = new Blob([rows.map(r => r.map(v => `"${v}"`).join(",")).join("\n")], { type: "text/csv" });
-  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "gym-tracker.csv"; a.click();
-  showToast("CSV exportado", "ok");
 }
 function clearAll() {
   if (!confirm("¿Seguro? Se borrarán TODOS los datos.")) return;
