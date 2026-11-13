@@ -6800,7 +6800,7 @@ if (luEl) luEl.textContent = `Actualizado · ${APP_UPDATED_AT}`;
 if ("serviceWorker" in navigator) {
   let hadController = !!navigator.serviceWorker.controller;
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js").catch(() => {});
+    navigator.serviceWorker.register("sw.js?v=" + APP_VERSION).catch(() => {});
   });
   navigator.serviceWorker.addEventListener("controllerchange", () => {
     if (!hadController) { hadController = true; return; }
