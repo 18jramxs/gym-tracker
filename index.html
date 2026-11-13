@@ -579,6 +579,10 @@ body::after {
    ninguna del mismo día — se enseña igual para no dejar al usuario sin
    referencia, pero marcada para que no se lea como comparable. */
 .ref-otro-dia { font-size: 10px; color: var(--text-3); margin-top: -2px; }
+/* Aviso cuando no hay NINGÚN registro del día actual (sección 3): en ámbar,
+   arriba del todo del panel — no es una nota al pie, es lo primero que hay
+   que leer para no confundir la única referencia con una progresión real. */
+.ref-otro-dia-hdr { color: var(--amber); }
 /* Aviso de techo de repeticiones (sección 2.2): una sola línea en ámbar,
    sin icono de alerta ni vibración — solo informa, no cambia nada. */
 .techo-aviso { font-size: 12px; color: var(--amber); line-height: 1.3; }
@@ -594,15 +598,18 @@ body::after {
    el rectángulo de .ex-in-grp (que ya tiene su alto fijado por los campos
    reales, en flujo normal) sin añadir ni un píxel a la altura de la
    tarjeta. Entra/sale con un fundido corto — nada se desplaza.
-   Fondo casi opaco (sección 2): lo de debajo (Peso/Series) no se tiene que
-   leer en absoluto — la versión translúcida de antes dejaba "Técnica
-   anterior · 90 kg" mezclado encima de los campos, ilegible. */
+   Fondo totalmente opaco, sin canal alfa (sección 2): lo de debajo
+   (Peso/Series) no se tiene que leer en absoluto — la versión translúcida
+   de antes dejaba "Técnica anterior · 90 kg" mezclado encima de los
+   campos, ilegible, y en el Safari de iPhone el backdrop-filter no
+   siempre se aplicaba dentro del carrusel. El blur se queda solo como
+   adorno sobre un fondo que ya tapa del todo por sí mismo. */
 .ex-ref-overlay {
   position: absolute; inset: 0;
   display: flex; flex-direction: column; justify-content: center; gap: 8px;
   padding: 18px;
   border-radius: var(--r-xs);
-  background: rgba(14,14,16,0.92);
+  background: var(--bg-card-solid);
   backdrop-filter: blur(18px) saturate(115%); -webkit-backdrop-filter: blur(18px) saturate(115%);
   border: 1px solid var(--border-2);
   opacity: 0; pointer-events: none;
@@ -680,24 +687,6 @@ body::after {
 /* Resplandor al superar la última vez (sección 3.1) — mismo tipo de brillo
    suave que el botón de guardar, aquí en verde, detrás de la cifra. */
 .ex-input.prog-glow { box-shadow: 0 0 0 1px rgba(182,255,46,0.4), 0 0 14px rgba(182,255,46,0.45); }
-
-/* —— SAVE BTN ————————————————————————————————— */
-.save-btn {
-  width: 100%;
-  background: #fff;
-  color: #000;
-  border: none;
-  border-radius: var(--r);
-  padding: 17px;
-  font-family: var(--font-disp);
-  font-size: 19px; font-weight: 400;
-  letter-spacing: 1.2px;
-  cursor: pointer; margin-top: 16px;
-  box-shadow: 0 12px 30px rgba(255,255,255,0.12);
-  transition: transform 0.18s, box-shadow 0.18s;
-  text-transform: uppercase;
-}
-.save-btn:active { transform: scale(0.985); box-shadow: 0 6px 14px rgba(255,255,255,0.08); }
 
 /* —— EMOM / TEST ——————————————————————————————— */
 .emom-card {
@@ -1136,6 +1125,24 @@ body::after {
 .sys-banner-text { flex: 1; min-width: 0; }
 .sys-banner-btn { background: var(--green); color: #141418; border: none; border-radius: var(--r-xs); padding: 7px 12px; font-size: 11.5px; font-weight: 800; cursor: pointer; flex-shrink: 0; font-family: inherit; }
 .sys-banner-close { background: none; border: none; color: var(--text-3); font-size: 15px; cursor: pointer; padding: 2px 4px; flex-shrink: 0; line-height: 1; }
+
+/* Entreno sin guardar de otra fecha (borrador huérfano): en flujo normal,
+   no flotante — no debe tapar ni bloquear nada de la pantalla de Entreno. */
+.draft-orphan-banner {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  background: var(--amber-bg); border: 1px solid rgba(255,214,10,0.3);
+  border-radius: var(--r-sm); padding: 11px 14px; margin-bottom: 14px;
+  font-size: 12.5px; font-weight: 600; color: var(--text-2);
+}
+.draft-orphan-text { flex: 1 1 100%; }
+.draft-orphan-actions { display: flex; gap: 8px; margin-left: auto; }
+.draft-orphan-btn {
+  border: none; border-radius: 100px; padding: 7px 14px;
+  font-size: 11px; font-weight: 800; letter-spacing: 0.3px;
+  text-transform: uppercase; cursor: pointer; font-family: inherit;
+}
+.draft-orphan-btn.recuperar { background: var(--green); color: #141418; }
+.draft-orphan-btn.descartar { background: rgba(255,255,255,0.08); color: var(--text-2); }
 
 .sys-modal-bg {
   display: none; position: fixed; inset: 0; background: rgba(4,6,10,0.72); z-index: 1000;
@@ -1578,8 +1585,8 @@ button:not(:disabled):active, .open-informe:active, .day-btn:active, .day-chip:a
 }
 
 /* — Save CTA: idle breathing glow — */
-.cta-save, #save-session-btn, .save-btn, .btn-primary, .f-btn,
-button[onclick*="saveSession"], button[onclick*="savePeso"], button[onclick*="saveMedidas"], button[onclick*="saveCal"] {
+.cta-save, #save-session-btn, .btn-primary, .f-btn,
+button[onclick*="savePeso"], button[onclick*="saveMedidas"], button[onclick*="saveCal"] {
   position: relative;
   background: linear-gradient(180deg, #ffe066 0%, var(--amber) 50%, #f2b705 100%);
   color: #1a1400;
@@ -1589,8 +1596,8 @@ button[onclick*="saveSession"], button[onclick*="savePeso"], button[onclick*="sa
     inset 0 -1px 0 rgba(0,0,0,0.15);
   transition: transform 0.18s var(--ease-pop), box-shadow 0.28s ease, filter 0.28s ease;
 }
-.cta-save:not(:disabled):hover, .save-btn:not(:disabled):hover { filter: brightness(1.05); }
-.cta-save:active, .save-btn:active { transform: scale(0.985); box-shadow: 0 3px 10px rgba(41,121,255,0.45), inset 0 1px 0 rgba(255,255,255,0.4); }
+.cta-save:not(:disabled):hover { filter: brightness(1.05); }
+.cta-save:active { transform: scale(0.985); box-shadow: 0 3px 10px rgba(41,121,255,0.45), inset 0 1px 0 rgba(255,255,255,0.4); }
 
 /* — Inputs: focus halo — */
 input, select, textarea {
@@ -1985,6 +1992,15 @@ input:focus, select:focus, textarea:focus {
 
 <!-- ───── ENTRENO ───── -->
 <div id="screen-entreno" class="screen active">
+  <!-- Entreno sin guardar de otro día/fecha (ver findOrphanDraft): no bloquea
+       nada, solo ofrece recuperarlo o descartarlo explícitamente. -->
+  <div class="draft-orphan-banner" id="draft-orphan-banner" style="display:none">
+    <span class="draft-orphan-text" id="draft-orphan-text"></span>
+    <div class="draft-orphan-actions">
+      <button type="button" class="draft-orphan-btn recuperar" onclick="recoverOrphanDraft()">RECUPERAR</button>
+      <button type="button" class="draft-orphan-btn descartar" onclick="discardOrphanDraft()">DESCARTAR</button>
+    </div>
+  </div>
   <!-- Hero "TODAY" card with Nike-style oversized backdrop type -->
   <div class="today-hero" id="today-hero">
     <div class="hero-escudo" aria-hidden="true"></div>
@@ -2029,7 +2045,7 @@ input:focus, select:focus, textarea:focus {
         <label class="sr-only" for="dom-extra-input">Repeticiones de dominadas</label>
         <input type="number" inputmode="numeric" class="f-input" id="dom-extra-input" placeholder="Reps" min="0">
         <button class="sign-btn pos" onclick="domExtraIncrement()" aria-label="Sumar una repetición">+</button>
-        <button class="f-btn" onclick="saveDomExtra()">Guardar</button>
+        <button class="f-btn" onclick="saveDomExtra()">Añadir</button>
       </div>
       <div class="semana-card" id="dom-extra-week"></div>
     </div>
@@ -2044,7 +2060,6 @@ input:focus, select:focus, textarea:focus {
     <div class="ex-carousel-track" id="ex-carousel-track" onscroll="onExCarouselScroll()"></div>
   </div>
   <div class="exercise-list" id="ex-list"></div>
-  <button class="save-btn" id="save-btn" onclick="saveSession()" style="display:none">GUARDAR SESIÓN</button>
 </div>
 
 
@@ -2579,11 +2594,11 @@ input:focus, select:focus, textarea:focus {
    ============================================================ */
 
 // ─── VERSIÓN Y BACKUPS ───────────────────────────────────────────
-const APP_VERSION = 7;
+const APP_VERSION = 8;
 // Fecha/hora de la última actualización visible en Ajustes (sin número de
 // versión) — se actualiza a mano con cada cambio, leyendo la hora real
 // (TZ=Europe/Madrid date "+%d %b %Y %H:%M"), nunca a ojo.
-const APP_UPDATED_AT = "09 nov 2026 22:25";
+const APP_UPDATED_AT = "13 nov 2026 08:37";
 
 const IDB_NAME = "gymtracker_backups_db";
 const IDB_STORE = "snapshots";
@@ -2710,16 +2725,16 @@ function reloadForUpdate() { location.reload(); }
 
 // ─── ROUTINE / SERIES / DOM CONSTS ──────────────────────────────
 const ROUTINE = {
-  lunes:["DOMINADAS","REMO HAMMER UNILATERAL","JALÓN AL PECHO","PRESS MILITAR","PRESS INCLINADO","ELEVACIONES LATERALES","APERTURAS PAD","EXTENSIÓN POSTERIOR","JM PRESS","EXTENSIÓN TRÍCEPS UNILATERAL","CURL PREDICADOR","CURL MANCUERNA","CURL INVERTIDO"],
+  lunes:["DOMINADAS","REMO HAMMER UNILATERAL","JALÓN AL PECHO","PRESS MILITAR","PRESS INCLINADO","ELEVACIONES LATERALES","APERTURAS PAD","EXTENSIÓN POSTERIOR","JM PRESS","EXTENSIÓN TRÍCEPS UNILATERAL","CURL PREDICADOR","CURL INCLINADO","CURL INVERTIDO"],
   martes:["PÉNDULO","SLDL","EXTENSIÓN CUÁDRICEPS","HIP THRUST","EXTENSIÓN FEMORAL","GEMELO","ADUCTORES","ABS"],
-  jueves:["PRESS MILITAR","PRESS INCLINADO","ELEVACIONES LATERALES","APERTURAS PAD","EXTENSIÓN POSTERIOR","CURL PREDICADOR","CURL MANCUERNA"],
+  jueves:["PRESS MILITAR","PRESS INCLINADO","ELEVACIONES LATERALES","APERTURAS PAD","EXTENSIÓN POSTERIOR","CURL PREDICADOR","CURL INCLINADO"],
   viernes:["DOMINADAS","REMO HAMMER UNILATERAL","JALÓN AL PECHO","JM PRESS","EXTENSIÓN TRÍCEPS UNILATERAL","CURL INVERTIDO"],
   sabado:["PÉNDULO","SLDL","EXTENSIÓN CUÁDRICEPS","HIP THRUST","EXTENSIÓN FEMORAL","SÓLEO","ADUCTORES","ABS"]
 };
 const SERIES = {
   lunes:{default:2,DOMINADAS:4,"CURL INVERTIDO":3,"JALÓN AL PECHO":2},
   martes:{default:2,GEMELO:3,"HIP THRUST":4,ADUCTORES:3,ABS:3},
-  jueves:{"PRESS MILITAR":2,"PRESS INCLINADO":3,"ELEVACIONES LATERALES":2,"APERTURAS PAD":3,"EXTENSIÓN POSTERIOR":2,"CURL PREDICADOR":3,"CURL MANCUERNA":3},
+  jueves:{"PRESS MILITAR":2,"PRESS INCLINADO":3,"ELEVACIONES LATERALES":2,"APERTURAS PAD":3,"EXTENSIÓN POSTERIOR":2,"CURL PREDICADOR":3,"CURL INCLINADO":3},
   viernes:{DOMINADAS:4,"REMO HAMMER UNILATERAL":4,"JALÓN AL PECHO":2,"JM PRESS":3,"EXTENSIÓN TRÍCEPS UNILATERAL":3,"CURL INVERTIDO":3},
   sabado:{default:2,SÓLEO:3,"HIP THRUST":4,ADUCTORES:3,ABS:3}
 };
@@ -2730,7 +2745,7 @@ const SERIES = {
 const PESO_STEP = {
   "PÉNDULO": 2.5, "SÓLEO": 2.5, "PRESS INCLINADO": 2.5, "SLDL": 2.5, "JM PRESS": 2.5,
   "CURL PREDICADOR": 2.5, "CURL INVERTIDO": 2.5, "HIP THRUST": 2.5, "REMO HAMMER UNILATERAL": 2.5,
-  "PRESS MILITAR": 2.5, "CURL MANCUERNA": 2.5, "DOMINADAS": 2.5,
+  "PRESS MILITAR": 2.5, "CURL MANCUERNA": 2.5, "CURL INCLINADO": 2.5, "DOMINADAS": 2.5,
   "JALÓN AL PECHO": 5, "APERTURAS PAD": 5, "APERTURAS": 5, "EXTENSIÓN POSTERIOR": 5,
   "EXTENSIÓN TRÍCEPS UNILATERAL": 5, "EXTENSIÓN TRÍCEPS": 5, "EXTENSIÓN CUÁDRICEPS": 5,
   "EXTENSIÓN FEMORAL": 5, "ELEVACIONES LATERALES": 5, "GEMELO": 5, "ADUCTORES": 5, "ABS": 5
@@ -2867,6 +2882,10 @@ function getSeries(day, ex) { const s = SERIES[day]; if (!s) return 3; return s[
 function getAge() { const t = new Date(); let a = t.getFullYear() - DOB.getFullYear(); const m = t.getMonth() - DOB.getMonth(); if (m < 0 || (m === 0 && t.getDate() < DOB.getDate())) a--; return a; }
 
 let currentDay = null, currentDate = todayStr(), sState = {}, sChecks = {}, draftTimer = null, dayCompleteFlashed = false;
+// Ejercicios ya comprobados para récord en esta sesión (sección "récords"):
+// se reinicia en selectDay/onDateChange, para que marcar/desmarcar la
+// última serie del mismo ejercicio no dispare el aviso dos veces.
+let prCheckedExs = new Set();
 let histFilter = "all", histView = "gym", progChart = null, pesoChart = null, calChart = null, medChart = null;
 let fisicoPeriod = "mes", progPeriod = "mes", metric = "peso";
 let calSign = -1, etapaOpt = null;
@@ -3096,6 +3115,8 @@ function migrateExerciseData() {
   migrateOct2026();
   migrateCurlInvertido20kg();
   migrateAperturasPad();
+  migrateCurlInclinado();
+  migrateCurlInclinado1211();
   migratePesoStepCleanup();
   migrateFechaAjustePressInclinado();
   migrateRemoHammerUnilateral();
@@ -3252,6 +3273,31 @@ function migrateAperturasPad() {
   sust.push({ idAntiguo: "APERTURAS", nombreAntiguo: "APERTURAS", idNuevo: "APERTURAS PAD", nombreNuevo: "APERTURAS PAD", fecha: "2026-10-15" });
   saveSustituciones(sust);
 }
+// CURL MANCUERNA → CURL INCLINADO (12/11/2026): de pie con mancuerna a
+// sentado en banco inclinado a 45°, espalda apoyada y codos por detrás del
+// torso — otro ejercicio, no otro nombre, sustitución real (mismo patrón
+// que APERTURAS → APERTURAS PAD).
+function migrateCurlInclinado() {
+  const sust = getSustituciones();
+  if (sust.some(x => x.idAntiguo === "CURL MANCUERNA")) return;
+  sust.push({ idAntiguo: "CURL MANCUERNA", nombreAntiguo: "CURL MANCUERNA", idNuevo: "CURL INCLINADO", nombreNuevo: "CURL INCLINADO", fecha: "2026-11-12" });
+  saveSustituciones(sust);
+}
+// La sesión del jueves 12/11/2026 ya se hizo con el ejercicio nuevo pero se
+// registró bajo el nombre viejo porque el cambio aún no existía en la app
+// (mismo fallo que con APERTURAS PAD) — se renombra solo esa entrada, no
+// las anteriores, para que la próxima vez encuentre su referencia del mismo
+// día en vez de ir a buscar el lunes.
+function migrateCurlInclinado1211() {
+  if (localStorage.getItem("gt_migration_curl_inclinado_1211")) return;
+  const data = getData();
+  const s = data.find(x => x.date === "2026-11-12" && x.day === "jueves");
+  if (s) {
+    const e = s.exercises.find(x => x.name === "CURL MANCUERNA");
+    if (e) { e.name = "CURL INCLINADO"; saveData(data); }
+  }
+  localStorage.setItem("gt_migration_curl_inclinado_1211", "1");
+}
 // Aviso de histórico corregido (CURL INVERTIDO) — se enseña una sola vez;
 // la guarda de migrateCurlInvertido20kg() ya impide que se recalculen
 // correcciones en una segunda pasada, y aquí se borra el pendiente al
@@ -3283,19 +3329,99 @@ function migrateMedidasVariantes() {
   if (changed) { f.medidas = medidas; saveFisico(f); }
 }
 
-// ─── DRAFT AUTOSAVE ─────────────────────────────────────────────
-// A home-screen PWA can be evicted by iOS mid-workout; sState/sChecks only
-// lived in memory until the explicit save tap. Debounce-persist them so an
-// evicted/reopened session doesn't lose logged sets.
+// ─── AUTOGUARDADO ───────────────────────────────────────────────
+// La sesión entra en el histórico (ver saveSession) desde el primer dato
+// escrito, con el mismo debounce de 400ms que antes solo alimentaba el
+// borrador — ya no hace falta pulsar GUARDAR SESIÓN (ese botón no existe).
+// gt_draft_<fecha> sigue existiendo como red de seguridad: se escribe en
+// cada ciclo y solo se borra cuando el guardado real (saveSession) ha ido
+// bien, así que si éste falla (p.ej. localStorage lleno) el draft de esa
+// fecha sobrevive y permite recuperar el entreno (ver "borrador huérfano"
+// más abajo). Una clave por fecha, no una sola que se pisa, para que un
+// entreno sin guardar de un día concreto no desaparezca al abrir otro.
+function draftKey(date) { return "gt_draft_" + date; }
 function persistDraft() {
   clearTimeout(draftTimer);
   draftTimer = setTimeout(() => {
     if (!currentDay) return;
-    try { localStorage.setItem("gt_draft", JSON.stringify({ day: currentDay, date: currentDate, sState, sChecks })); } catch {}
+    try { localStorage.setItem(draftKey(currentDate), JSON.stringify({ day: currentDay, date: currentDate, sState, sChecks, ts: Date.now() })); } catch {}
+    try { saveSession(); } catch {}
   }, 400);
 }
-function clearDraft() { localStorage.removeItem("gt_draft"); }
-function loadDraft() { try { return JSON.parse(localStorage.getItem("gt_draft") || "null"); } catch { return null; } }
+function clearDraftFor(date) { localStorage.removeItem(draftKey(date)); }
+function loadDraftFor(date) { try { return JSON.parse(localStorage.getItem(draftKey(date)) || "null"); } catch { return null; } }
+function allDraftDates() {
+  const dates = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.indexOf("gt_draft_") === 0) dates.push(k.slice("gt_draft_".length));
+  }
+  return dates;
+}
+function clearAllDrafts() { allDraftDates().forEach(clearDraftFor); localStorage.removeItem("gt_draft"); }
+// Un "gt_draft" (clave única, sin fecha) de antes de este cambio: se migra a
+// la clave por fecha que le toque para no perder un entreno a medias que ya
+// estuviera ahí cuando se actualizó la app.
+function migrateLegacyDraft() {
+  const legacy = localStorage.getItem("gt_draft");
+  if (!legacy) return;
+  try {
+    const d = JSON.parse(legacy);
+    if (d && d.date) localStorage.setItem(draftKey(d.date), JSON.stringify(Object.assign({ ts: Date.now() }, d)));
+  } catch {}
+  localStorage.removeItem("gt_draft");
+}
+// Borradores de más de 14 días: si no se han recuperado ni descartado en
+// ese tiempo, ya no tiene sentido seguir ofreciéndolos.
+function pruneOldDrafts() {
+  const cutoff = Date.now() - 14 * 86400000;
+  allDraftDates().forEach(date => {
+    const d = loadDraftFor(date);
+    if (!d || !d.ts || d.ts < cutoff) clearDraftFor(date);
+  });
+}
+// Borrador de otra fecha que no esté ya en el histórico (sección "borrador
+// huérfano"): la fecha de la sesión actual no cuenta, esa es la que está en
+// curso y su propio draft se limpia solo en cuanto el autoguardado entra.
+let orphanDraftDate = null;
+function findOrphanDraft() {
+  const dates = allDraftDates().filter(d => d !== currentDate).sort().reverse();
+  for (const date of dates) {
+    const d = loadDraftFor(date);
+    if (!d || !d.day) continue;
+    const inHistory = getData().some(s => s.date === date && s.day === d.day);
+    if (!inHistory) return { date, draft: d };
+  }
+  return null;
+}
+function checkOrphanDraft() {
+  const banner = document.getElementById("draft-orphan-banner");
+  if (!banner) return;
+  const found = findOrphanDraft();
+  if (!found) { banner.style.display = "none"; orphanDraftDate = null; return; }
+  orphanDraftDate = found.date;
+  const dayNum = parseInt(found.date.split("-")[2], 10);
+  document.getElementById("draft-orphan-text").textContent = `Entreno sin guardar del ${found.draft.day} ${dayNum}`;
+  banner.style.display = "flex";
+}
+function recoverOrphanDraft() {
+  if (!orphanDraftDate) return;
+  const d = loadDraftFor(orphanDraftDate);
+  if (!d) { checkOrphanDraft(); return; }
+  const prev = { day: currentDay, date: currentDate, sState, sChecks };
+  currentDay = d.day; currentDate = d.date; sState = d.sState || {}; sChecks = d.sChecks || {};
+  saveSession();
+  clearDraftFor(orphanDraftDate);
+  currentDay = prev.day; currentDate = prev.date; sState = prev.sState; sChecks = prev.sChecks;
+  checkOrphanDraft();
+  showToast("Entreno recuperado", "ok");
+}
+function discardOrphanDraft() {
+  if (!orphanDraftDate) return;
+  clearDraftFor(orphanDraftDate);
+  checkOrphanDraft();
+  showToast("Borrador descartado");
+}
 
 function todayStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
 // Fecha del día de rutina seleccionado dentro de la semana en curso (lunes-domingo,
@@ -3367,7 +3493,7 @@ function calc1RM(peso, ser) { if (!peso || !ser) return null; const w = parseFlo
 // ─── VOLUMEN POR GRUPO MUSCULAR ─────────────────────────────────
 const MUSCLE = {
   "DOMINADAS":"Espalda", "REMO HAMMER UNILATERAL":"Espalda", "JALÓN AL PECHO":"Espalda",
-  "CURL PREDICADOR":"Bíceps", "CURL MANCUERNA":"Bíceps",
+  "CURL PREDICADOR":"Bíceps", "CURL MANCUERNA":"Bíceps", "CURL INCLINADO":"Bíceps",
   "CURL INVERTIDO":"Antebrazo",
   "PRESS MILITAR":"Hombro", "ELEVACIONES LATERALES":"Hombro", "EXTENSIÓN POSTERIOR":"Hombro",
   "PRESS INCLINADO":"Pecho", "APERTURAS":"Pecho", "APERTURAS PAD":"Pecho",
@@ -3578,9 +3704,11 @@ function seriesIgualesTodosLosDias(exName) {
 }
 // Recorre `list` (ya ordenada de más reciente a más antigua) buscando hasta
 // n coincidencias. Si filtrarPorDia está activo, prioriza las del mismo día
-// (day) — si no hay suficientes, cae a las de cualquier otro día dentro de
-// esa misma lista, marcándolas con otroDia para que el llamador las
-// etiquete como no comparables del todo (mismo patrón que tecnicaAnterior).
+// (day) — si no hay NINGUNA del mismo día, cae a UNA sola de otro día (no
+// n): dos referencias no comparables no informan, parecen una progresión
+// que no es tal. Si ya hay al menos una del mismo día, sí se completa hasta
+// n con otras (siguen marcadas con otroDia, para que el llamador las
+// etiquete como no comparables del todo, mismo patrón que tecnicaAnterior).
 function pickRefs(list, exName, matchesEntry, filtrarPorDia, day, n, tag) {
   const results = [];
   if (filtrarPorDia) {
@@ -3592,12 +3720,13 @@ function pickRefs(list, exName, matchesEntry, filtrarPorDia, day, n, tag) {
       if (results.length >= n) return results;
     }
   }
+  const cap = (filtrarPorDia && results.length === 0) ? 1 : n;
   for (const s of list) {
     if (filtrarPorDia && s.day === day) continue; // ya contadas arriba
     const e = s.exercises.find(x => x.name === exName);
     if (!e || !matchesEntry(e)) continue;
     results.push(tag({...e, date: s.date, day: s.day}, filtrarPorDia));
-    if (results.length >= n) break;
+    if (results.length >= cap) break;
   }
   return results;
 }
@@ -3719,21 +3848,20 @@ function updateTodayHero() {
 
 // ─── DAY SELECT ─────────────────────────────────────────────────
 function selectDay(day) {
-  currentDay = day; sState = {}; sChecks = {}; dayCompleteFlashed = false; exCarouselIndex = 0; openRefPanel = null;
+  currentDay = day; sState = {}; sChecks = {}; dayCompleteFlashed = false; prCheckedExs = new Set(); exCarouselIndex = 0; openRefPanel = null;
   currentDate = weekDateForDay(day);
   document.getElementById("session-date").value = currentDate;
   document.querySelectorAll(".day-btn").forEach((b, i) =>
     b.classList.toggle("selected", ["lunes","martes","jueves","viernes","sabado"][i] === day)
   );
-  document.getElementById("save-btn").style.display = "block";
   document.getElementById("ex-eyebrow").style.display = "flex";
-  loadSession(); renderExercises(); updateTodayHero(); renderDomExtraCard();
+  loadSession(); renderExercises(); updateTodayHero(); renderDomExtraCard(); checkOrphanDraft();
 }
 function onDateChange() {
   currentDate = document.getElementById("session-date").value || todayStr();
   renderDomExtraCard();
-  if (!currentDay) { updateTodayHero(); return; }
-  sState = {}; sChecks = {}; dayCompleteFlashed = false; exCarouselIndex = 0; openRefPanel = null; loadSession(); renderExercises(); updateTodayHero();
+  if (!currentDay) { updateTodayHero(); checkOrphanDraft(); return; }
+  sState = {}; sChecks = {}; dayCompleteFlashed = false; prCheckedExs = new Set(); exCarouselIndex = 0; openRefPanel = null; loadSession(); renderExercises(); updateTodayHero(); checkOrphanDraft();
 }
 function loadSession() {
   const ex = getData().find(s => s.date === currentDate && s.day === currentDay);
@@ -3746,8 +3874,10 @@ function loadSession() {
       else { sState[e.name] = { peso: e.peso || "", pesoRaw: e.pesoRaw !== undefined ? e.pesoRaw : (e.peso || ""), pesoUnidad: e.pesoUnidad || "kg", series: e.series || "", done: e.done || false, prog: e.prog || null }; sChecks[e.name] = e.done ? getSeries(currentDay, e.name) : (e.seriesDone || 0); }
     });
   }
-  const draft = loadDraft();
-  if (draft && draft.day === currentDay && draft.date === currentDate) {
+  // Red de seguridad: solo debería quedar algo aquí si el autoguardado de
+  // esta misma fecha falló antes de completarse (ver persistDraft).
+  const draft = loadDraftFor(currentDate);
+  if (draft && draft.day === currentDay) {
     sState = Object.assign({}, sState, draft.sState || {});
     sChecks = Object.assign({}, sChecks, draft.sChecks || {});
     showToast("Borrador restaurado", "ok");
@@ -3851,6 +3981,14 @@ function buildNormalExerciseCard(ex) {
     refHtml = `<div class="ex-lbl">Técnica nueva desde el ${fmtDate(ajusteVigente.fecha)}</div><div class="ref-val empty">Sin registros todavía</div>`;
   } else if (!refs.length) {
     refHtml = `<div class="ex-lbl">Referencia</div><div class="ref-val empty">Sin datos previos</div>`;
+  } else if (refs[0].otroDia) {
+    // Sin ningún registro del día actual (sección 3): pickRefs ya ha
+    // limitado esto a una sola referencia — dos de otro día no comparables
+    // parecerían una progresión que no es tal. Aviso claro arriba, no una
+    // nota pequeña debajo.
+    const r = refs[0];
+    const val = r.peso ? fmtWeightRecord(r) + (r.series ? " · " + r.series : "") : r.series || "";
+    refHtml = `<div class="ex-lbl ref-otro-dia-hdr">Sin registros de ${currentDay}</div><div class="ex-lbl">Último ${r.day} · ${fmtDate(r.date)}</div><div class="ref-val">${val}</div>`;
   } else {
     refHtml = refs.map((r, i) => {
       const val = r.peso ? fmtWeightRecord(r) + (r.series ? " · " + r.series : "") : r.series || "";
@@ -4252,6 +4390,13 @@ function tickDot(ex, idx) {
     restStop();
     haptic([14, 50, 14]); // ejercicio completo: vibración doble, más marcada que el tick normal
     updateProg();
+    // Récord al completar el ejercicio (su última serie), no al guardar la
+    // sesión — una sola vez por ejercicio y sesión (ver prCheckedExs).
+    if (ex !== "DOMINADAS" && !prCheckedExs.has(ex)) {
+      prCheckedExs.add(ex);
+      const pesoOut = String(pegarAlStep(sState[ex].peso || "", ex));
+      checkPR({ date: currentDate, exercises: [{ name: ex, peso: pesoOut, series: sState[ex].series || "" }] });
+    }
     setTimeout(() => {
       card.classList.add("completing");
       setTimeout(() => { card.classList.remove("completing"); card.classList.add("done"); card.querySelectorAll(".ex-input").forEach(i => i.disabled = true); }, 580);
@@ -4364,8 +4509,15 @@ function updateProg() {
   const done = exs.filter(e => sState[e]?.done).length;
   const pct = exs.length ? (done / exs.length * 100) : 0;
   renderExIndexBar(exs, done);
-  if (pct >= 100 && exs.length && !dayCompleteFlashed) { dayCompleteFlashed = true; flashDayComplete(exs); }
-  else if (pct < 100) dayCompleteFlashed = false;
+  // Resumen + celebración al marcar la última serie del último ejercicio
+  // pendiente del día — dayCompleteFlashed ya no se reinicia al bajar del
+  // 100% (solo en selectDay/onDateChange), así que desmarcar y volver a
+  // marcar algo no repite ninguna de las dos en la misma sesión.
+  if (pct >= 100 && exs.length && !dayCompleteFlashed) {
+    dayCompleteFlashed = true;
+    flashDayComplete(exs);
+    celebrateSessionComplete();
+  }
 }
 function renderExIndexBar(exs, done) {
   const bar = document.getElementById("ex-index-bar");
@@ -4415,8 +4567,33 @@ function flashDayComplete(exs) {
   const vol = calcVol(sessionExercises);
   showToast(`Entreno completo · ${totalSeries} series${vol > 0 ? " · " + vol.toLocaleString() + " kg" : ""}`, "ok");
 }
+// Si ningún ejercicio tiene ni un dato (sin peso, sin series, ni un solo
+// punto marcado), no hay nada que guardar — entrar en el día y salir sin
+// tocar nada no debe dejar una sesión vacía en el histórico.
+function sessionHasData() {
+  if (!currentDay) return false;
+  return ROUTINE[currentDay].some(ex => {
+    if ((sChecks[ex] || 0) > 0) return true;
+    const st = sState[ex];
+    if (!st) return false;
+    if (st.done) return true;
+    if (ex === "DOMINADAS") {
+      const mode = getDomMode(currentDay, currentDate);
+      if (mode === "emom") return !!(st.emomReps || st.emomMins);
+      if (mode === "test") return !!st.testReps;
+      return !!st.series || (Array.isArray(st.lastre) && st.lastre.some(v => v !== "" && v != null));
+    }
+    return !!st.peso || !!st.series;
+  });
+}
+// El guardado real: entra en el histórico desde el primer dato (ver
+// persistDraft), no solo al pulsar un botón — ya no existe GUARDAR SESIÓN.
+// Récord (checkPR) y resumen/celebración se disparan aparte, al completar
+// el ejercicio y al llegar al 100% del día (ver tickDot/updateProg), que es
+// cuando de verdad tiene sentido verlos, no cuando se escribe cualquier tecla.
 function saveSession() {
-  if (!currentDay) return; captureInputs();
+  if (!currentDay || !sessionHasData()) return;
+  captureInputs();
   const session = { date: currentDate, day: currentDay, exercises: ROUTINE[currentDay].map(ex => {
     const st = sState[ex] || {}; const mode = ex === "DOMINADAS" ? getDomMode(currentDay, currentDate) : "normal";
     if (mode === "emom") return { name: ex, emomReps: st.emomReps || "", emomMins: st.emomMins || "", emomTotal: st.emomTotal || 0, lastre: st.lastre || "", pesoCorporal: getPesoCorporalAt(currentDate), done: st.done || false };
@@ -4439,14 +4616,9 @@ function saveSession() {
   const idx = data.findIndex(s => s.date === session.date && s.day === session.day);
   if (idx >= 0) data[idx] = session; else data.push(session);
   saveData(data);
-  clearDraft();
-  checkPR(session);
-  flashSuccess(document.getElementById("save-btn"));
-  const exs = ROUTINE[currentDay] || [];
-  const allDone = exs.length > 0 && exs.every(ex => sState[ex]?.done);
-  if (allDone) { celebrateSessionComplete(); showToast("Sesión completa — todo hecho", "ok"); }
-  else showToast("Sesión guardada", "ok");
+  clearDraftFor(session.date);
   populateProgSel(); updateHeaderStage();
+  return session;
 }
 // Momento de cierre al guardar una sesión con todos los ejercicios hechos —
 // un pulso radial en lima, más contundente que el toast normal de guardado.
@@ -6415,7 +6587,7 @@ function clearAll() {
   localStorage.removeItem("gymtracker_v2"); localStorage.removeItem("gymtracker_fisico");
   localStorage.removeItem("gymtracker_dominadas_extra");
   localStorage.removeItem("gt_act_ov"); localStorage.removeItem("gt_rest_dur"); localStorage.removeItem("gt_rest_on");
-  localStorage.removeItem("gymtracker_sustituidos"); localStorage.removeItem("gt_draft");
+  localStorage.removeItem("gymtracker_sustituidos"); clearAllDrafts();
   // Marca explícita para no ofrecer restaurar el backup justo después de un borrado intencional.
   localStorage.setItem("gt_cleared_at", String(Date.now()));
   actOverrides = {}; REST_DUR = 90; REST_ENABLED = true;
@@ -6423,11 +6595,11 @@ function clearAll() {
   sState = {}; sChecks = {}; currentDay = null; exCarouselIndex = 0; openRefPanel = null;
   document.getElementById("ex-list").innerHTML = "";
   document.getElementById("ex-carousel-track").innerHTML = "";
-  document.getElementById("save-btn").style.display = "none";
   document.querySelectorAll(".day-btn").forEach(b => b.classList.remove("selected"));
   document.getElementById("ex-eyebrow").style.display = "none";
   document.getElementById("ex-index-bar").style.display = "none";
   document.getElementById("ex-carousel").style.display = "none";
+  checkOrphanDraft();
   updateTodayHero(); renderDomExtraCard();
   showToast("Datos borrados");
 }
@@ -6598,6 +6770,15 @@ function refreshCurrentScreen() {
 
 // ─── INIT ─────────────────────────────────────────────────────
 checkBackupRestoreOffer();
+// Copia explícita antes de las migraciones de esta actualización (borrador
+// por fecha + CURL INCLINADO, que renombra una entrada real del histórico)
+// — una sola vez, no en cada carga.
+if (!localStorage.getItem("gt_backup_antes_autoguardado")) {
+  writeBackupSnapshot("antes-de-autoguardado");
+  localStorage.setItem("gt_backup_antes_autoguardado", "1");
+}
+migrateLegacyDraft();
+pruneOldDrafts();
 migrateExerciseData();
 migrateMedidasVariantes();
 showHistFixModalIfPending();
@@ -6637,7 +6818,7 @@ if (td) {
     b.classList.toggle("today", ["lunes","martes","jueves","viernes","sabado"][i] === td)
   );
 }
-if (td) selectDay(td); else { updateTodayHero(); renderDomExtraCard(); }
+if (td) selectDay(td); else { updateTodayHero(); renderDomExtraCard(); checkOrphanDraft(); }
 
 </script>
 </body>
