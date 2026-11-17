@@ -344,16 +344,16 @@ body::after {
 }
 /* —— DAY GRID ————————————————————————————————— */
 .day-grid {
-  display: grid; grid-template-columns: repeat(5,1fr); gap: 6px; margin-bottom: 12px;
+  display: grid; grid-template-columns: repeat(6,1fr); gap: 5px; margin-bottom: 12px;
 }
 .day-btn {
   background: rgba(255,255,255,0.04);
   border: 1px solid var(--border);
   color: var(--text-2);
-  padding: 14px 2px;
+  padding: 14px 1px;
   border-radius: var(--r-sm);
   font-family: var(--font-disp);
-  font-size: 19px; font-weight: 400;
+  font-size: 17px; font-weight: 400;
   letter-spacing: 0.5px;
   cursor: pointer; text-align: center;
   transition: background 0.22s ease, border-color 0.22s ease, color 0.22s ease, transform 0.18s cubic-bezier(0.16,1,0.3,1);
@@ -2022,6 +2022,7 @@ input:focus, select:focus, textarea:focus {
   <div class="day-grid">
     <button class="day-btn" onclick="selectDay('lunes')">LUN</button>
     <button class="day-btn" onclick="selectDay('martes')">MAR</button>
+    <button class="day-btn" onclick="selectDay('miercoles')">MIÉ</button>
     <button class="day-btn" onclick="selectDay('jueves')">JUE</button>
     <button class="day-btn" onclick="selectDay('viernes')">VIE</button>
     <button class="day-btn" onclick="selectDay('sabado')">SAB</button>
@@ -2598,7 +2599,7 @@ const APP_VERSION = 8;
 // Fecha/hora de la última actualización visible en Ajustes (sin número de
 // versión) — se actualiza a mano con cada cambio, leyendo la hora real
 // (TZ=Europe/Madrid date "+%d %b %Y %H:%M"), nunca a ojo.
-const APP_UPDATED_AT = "13 nov 2026 08:37";
+const APP_UPDATED_AT = "17 nov 2026 08:20";
 
 const IDB_NAME = "gymtracker_backups_db";
 const IDB_STORE = "snapshots";
@@ -2725,15 +2726,19 @@ function reloadForUpdate() { location.reload(); }
 
 // ─── ROUTINE / SERIES / DOM CONSTS ──────────────────────────────
 const ROUTINE = {
-  lunes:["DOMINADAS","REMO HAMMER UNILATERAL","JALÓN AL PECHO","PRESS MILITAR","PRESS INCLINADO","ELEVACIONES LATERALES","APERTURAS PAD","EXTENSIÓN POSTERIOR","JM PRESS","EXTENSIÓN TRÍCEPS UNILATERAL","CURL PREDICADOR","CURL INCLINADO","CURL INVERTIDO"],
-  martes:["PÉNDULO","SLDL","EXTENSIÓN CUÁDRICEPS","HIP THRUST","EXTENSIÓN FEMORAL","GEMELO","ADUCTORES","ABS"],
+  lunes:["REMO HAMMER UNILATERAL","JALÓN AL PECHO","PRESS MILITAR","PRESS INCLINADO","ELEVACIONES LATERALES","APERTURAS PAD","EXTENSIÓN POSTERIOR","JM PRESS","EXTENSIÓN TRÍCEPS UNILATERAL","CURL PREDICADOR","CURL INCLINADO","CURL INVERTIDO"],
+  martes:["PRENSA INCLINADA","SLDL","EXTENSIÓN CUÁDRICEPS","HIP THRUST","EXTENSIÓN FEMORAL","GEMELO","ADUCTORES","ABS"],
+  miercoles:["DOMINADAS"],
   jueves:["PRESS MILITAR","PRESS INCLINADO","ELEVACIONES LATERALES","APERTURAS PAD","EXTENSIÓN POSTERIOR","CURL PREDICADOR","CURL INCLINADO"],
   viernes:["DOMINADAS","REMO HAMMER UNILATERAL","JALÓN AL PECHO","JM PRESS","EXTENSIÓN TRÍCEPS UNILATERAL","CURL INVERTIDO"],
-  sabado:["PÉNDULO","SLDL","EXTENSIÓN CUÁDRICEPS","HIP THRUST","EXTENSIÓN FEMORAL","SÓLEO","ADUCTORES","ABS"]
+  sabado:["PRENSA INCLINADA","SLDL","EXTENSIÓN CUÁDRICEPS","HIP THRUST","EXTENSIÓN FEMORAL","SÓLEO","ADUCTORES","ABS"]
 };
 const SERIES = {
-  lunes:{default:2,DOMINADAS:4,"CURL INVERTIDO":3,"JALÓN AL PECHO":2},
+  lunes:{default:2,"CURL INVERTIDO":3,"JALÓN AL PECHO":2,"REMO HAMMER UNILATERAL":3},
   martes:{default:2,GEMELO:3,"HIP THRUST":4,ADUCTORES:3,ABS:3},
+  // El EMOM no va por series — 1 es solo el valor que hace que la tarjeta y el
+  // resumen de "entreno completo" tengan un número coherente (ver exSets).
+  miercoles:{DOMINADAS:1},
   jueves:{"PRESS MILITAR":2,"PRESS INCLINADO":3,"ELEVACIONES LATERALES":2,"APERTURAS PAD":3,"EXTENSIÓN POSTERIOR":2,"CURL PREDICADOR":3,"CURL INCLINADO":3},
   viernes:{DOMINADAS:4,"REMO HAMMER UNILATERAL":4,"JALÓN AL PECHO":2,"JM PRESS":3,"EXTENSIÓN TRÍCEPS UNILATERAL":3,"CURL INVERTIDO":3},
   sabado:{default:2,SÓLEO:3,"HIP THRUST":4,ADUCTORES:3,ABS:3}
@@ -2748,7 +2753,8 @@ const PESO_STEP = {
   "PRESS MILITAR": 2.5, "CURL MANCUERNA": 2.5, "CURL INCLINADO": 2.5, "DOMINADAS": 2.5,
   "JALÓN AL PECHO": 5, "APERTURAS PAD": 5, "APERTURAS": 5, "EXTENSIÓN POSTERIOR": 5,
   "EXTENSIÓN TRÍCEPS UNILATERAL": 5, "EXTENSIÓN TRÍCEPS": 5, "EXTENSIÓN CUÁDRICEPS": 5,
-  "EXTENSIÓN FEMORAL": 5, "ELEVACIONES LATERALES": 5, "GEMELO": 5, "ADUCTORES": 5, "ABS": 5
+  "EXTENSIÓN FEMORAL": 5, "ELEVACIONES LATERALES": 5, "GEMELO": 5, "ADUCTORES": 5, "ABS": 5,
+  "PRENSA INCLINADA": 5
 };
 const PESO_STEP_DEFAULT = 2.5;
 function getPesoStepOverrides() { try { return JSON.parse(localStorage.getItem("gymtracker_peso_step") || "{}"); } catch { return {}; } }
@@ -2864,9 +2870,9 @@ function refreshTechoAviso(ex) {
 // el nombre viejo se retira de la rutina pero su histórico se deja intacto
 // bajo su propio nombre, consultable desde EJERCICIOS SUSTITUIDOS
 // (ver migrateAperturasPad() / gymtracker_sustituidos).
-const DAY_TITLE = { lunes:"TORSO", martes:"PIERNA", jueves:"TORSO", viernes:"TORSO", sabado:"PIERNA" };
-const DAY_BG    = { lunes:"PUSH PULL", martes:"LEG DAY", jueves:"PUSH PULL", viernes:"PUSH PULL", sabado:"LEG DAY" };
-const DAY_IDX   = { lunes:1, martes:2, jueves:4, viernes:5, sabado:6 };
+const DAY_TITLE = { lunes:"TORSO", martes:"PIERNA", miercoles:"ESPALDA", jueves:"TORSO", viernes:"TORSO", sabado:"PIERNA" };
+const DAY_BG    = { lunes:"PUSH PULL", martes:"LEG DAY", miercoles:"EN CASA", jueves:"PUSH PULL", viernes:"PUSH PULL", sabado:"LEG DAY" };
+const DAY_IDX   = { lunes:1, martes:2, miercoles:3, jueves:4, viernes:5, sabado:6 };
 const PIERNA = ["martes","sabado"];
 const SINGLE_REF = ["ABS"];
 const MED_FIELDS = ["cintura","cadera","pecho","brazo","muslo","cuello"];
@@ -3112,6 +3118,7 @@ function quickDeleteAjusteTecnico(id) {
 // en localStorage para no aplicarse dos veces ni pisar ediciones manuales
 // futuras del usuario sobre esos mismos ejercicios/fechas.
 function migrateExerciseData() {
+  backupAntesDeMiercoles();
   migrateOct2026();
   migrateCurlInvertido20kg();
   migrateAperturasPad();
@@ -3121,6 +3128,16 @@ function migrateExerciseData() {
   migrateFechaAjustePressInclinado();
   migrateRemoHammerUnilateral();
   migrateAjustesTecnicosSeed();
+  migratePrensaInclinada();
+  migratePrensaInclinada1411();
+}
+// Backup de seguridad previo a la migración del miércoles (EMOM de lunes a
+// miércoles, remo hammer a 3 series el lunes y PÉNDULO→PRENSA INCLINADA) —
+// una sola vez, antes de que cualquiera de las tres toque la forma de los datos.
+function backupAntesDeMiercoles() {
+  if (localStorage.getItem("gt_backup_antes_de_miercoles")) return;
+  writeBackupSnapshot("antes-de-miercoles");
+  localStorage.setItem("gt_backup_antes_de_miercoles", "1");
 }
 // REMO HAMMER pasa a unilateral (09/11/2026): mismo movimiento con otro
 // agarre, ajuste técnico, no sustitución — se renombra también el histórico
@@ -3297,6 +3314,30 @@ function migrateCurlInclinado1211() {
     if (e) { e.name = "CURL INCLINADO"; saveData(data); }
   }
   localStorage.setItem("gt_migration_curl_inclinado_1211", "1");
+}
+// PÉNDULO → PRENSA INCLINADA (14/11/2026): otra máquina de cuádriceps, no otro
+// nombre del mismo movimiento — sustitución real (mismo patrón que
+// APERTURAS → APERTURAS PAD / CURL MANCUERNA → CURL INCLINADO). El histórico
+// de PÉNDULO se queda intacto bajo su propio nombre.
+function migratePrensaInclinada() {
+  const sust = getSustituciones();
+  if (sust.some(x => x.idAntiguo === "PÉNDULO")) return;
+  sust.push({ idAntiguo: "PÉNDULO", nombreAntiguo: "PÉNDULO", idNuevo: "PRENSA INCLINADA", nombreNuevo: "PRENSA INCLINADA", fecha: "2026-11-14" });
+  saveSustituciones(sust);
+}
+// La sesión del sábado 14/11/2026 ya se hizo en la prensa (170 kg, 2x12) pero
+// se registró bajo PÉNDULO porque el cambio aún no existía en la app (mismo
+// fallo que con CURL INCLINADO) — se renombra solo esa entrada, no las
+// anteriores, para que la próxima vez encuentre su referencia del mismo día.
+function migratePrensaInclinada1411() {
+  if (localStorage.getItem("gt_migration_prensa_inclinada_1411")) return;
+  const data = getData();
+  const s = data.find(x => x.date === "2026-11-14" && x.day === "sabado");
+  if (s) {
+    const e = s.exercises.find(x => x.name === "PÉNDULO");
+    if (e) { e.name = "PRENSA INCLINADA"; saveData(data); }
+  }
+  localStorage.setItem("gt_migration_prensa_inclinada_1411", "1");
 }
 // Aviso de histórico corregido (CURL INVERTIDO) — se enseña una sola vez;
 // la guarda de migrateCurlInvertido20kg() ya impide que se recalculen
@@ -3498,7 +3539,7 @@ const MUSCLE = {
   "PRESS MILITAR":"Hombro", "ELEVACIONES LATERALES":"Hombro", "EXTENSIÓN POSTERIOR":"Hombro",
   "PRESS INCLINADO":"Pecho", "APERTURAS":"Pecho", "APERTURAS PAD":"Pecho",
   "JM PRESS":"Tríceps", "EXTENSIÓN TRÍCEPS":"Tríceps", "EXTENSIÓN TRÍCEPS UNILATERAL":"Tríceps",
-  "PÉNDULO":"Cuádriceps", "EXTENSIÓN CUÁDRICEPS":"Cuádriceps",
+  "PÉNDULO":"Cuádriceps", "PRENSA INCLINADA":"Cuádriceps", "EXTENSIÓN CUÁDRICEPS":"Cuádriceps",
   "SLDL":"Femoral", "EXTENSIÓN FEMORAL":"Femoral",
   "HIP THRUST":"Glúteo",
   "GEMELO":"Gemelo", "SÓLEO":"Gemelo",
@@ -3582,9 +3623,9 @@ function computeFixedWeekly() {
   const map = {};
   Object.keys(ROUTINE).forEach(day => {
     ROUTINE[day].forEach(ex => {
-      // El EMOM de dominadas del lunes es trabajo submáximo, no series de
+      // El EMOM de dominadas del miércoles es trabajo submáximo, no series de
       // hipertrofia — no hay equivalencia honesta, así que no cuenta como volumen.
-      if (day === "lunes" && ex === "DOMINADAS") return;
+      if (day === "miercoles" && ex === "DOMINADAS") return;
       const g = MUSCLE[ex];
       if (!g) return;
       const series = getSeries(day, ex);
@@ -3611,9 +3652,10 @@ function renderFixedWeekly(el) {
   }).join("") +
   `<div class="mv-foot">${groups.length} grupos · ${totS} series / semana</div>`;
 }
-// Último EMOM de dominadas registrado (cualquier lunes, el más reciente).
+// Último EMOM de dominadas registrado (cualquier día, el más reciente —
+// incluye los antiguos registrados en lunes antes del cambio a miércoles).
 function getLastEmom() {
-  const sessions = getData().filter(s => s.day === "lunes").sort((a, b) => b.date.localeCompare(a.date));
+  const sessions = getData().sort((a, b) => b.date.localeCompare(a.date));
   for (const s of sessions) {
     const e = s.exercises.find(x => x.name === "DOMINADAS" && (x.emomReps || x.emomMins));
     if (e) return e;
@@ -3686,11 +3728,11 @@ function getStartDate(p, etapaStart) { const d = new Date(todayStr() + "T12:00:0
 
 // ─── DOMINADAS MODE ─────────────────────────────────────────────
 function isFirstFriday(ds) { const d = new Date(ds + "T12:00:00"); return d.getDay() === 5 && d.getDate() <= 7; }
-function getDomMode(day, ds) { if (day === "lunes") return "emom"; if (day === "viernes" && isFirstFriday(ds)) return "test"; return "normal"; }
+function getDomMode(day, ds) { if (day === "miercoles") return "emom"; if (day === "viernes" && isFirstFriday(ds)) return "test"; return "normal"; }
 
 // ─── LAST N ─────────────────────────────────────────────────────
 // mode picks which data shape counts as "a real entry" for this exercise —
-// DOMINADAS can be logged as emom (lunes), test (1er viernes del mes) or
+// DOMINADAS can be logged as emom (miércoles), test (1er viernes del mes) or
 // normal (peso/series). Without this, the most recent entry of ANY shape
 // (eg. last Monday's EMOM) would shadow the real reference for a different
 // mode (eg. the monthly test), showing blank/"—" values instead.
@@ -3852,7 +3894,7 @@ function selectDay(day) {
   currentDate = weekDateForDay(day);
   document.getElementById("session-date").value = currentDate;
   document.querySelectorAll(".day-btn").forEach((b, i) =>
-    b.classList.toggle("selected", ["lunes","martes","jueves","viernes","sabado"][i] === day)
+    b.classList.toggle("selected", ["lunes","martes","miercoles","jueves","viernes","sabado"][i] === day)
   );
   document.getElementById("ex-eyebrow").style.display = "flex";
   loadSession(); renderExercises(); updateTodayHero(); renderDomExtraCard(); checkOrphanDraft();
@@ -4286,7 +4328,7 @@ function buildEMOMCard(ex) {
   card.id = id;
   card.dataset.ex = ex; card.dataset.kind = "emom";
   observeReveal(card);
-  card.innerHTML = `<div class="emom-hdr"><span class="ex-name" style="color:var(--amber)">EMOM</span><span class="emom-badge">DOMINADAS</span></div><div class="emom-body"><div style="margin-bottom:12px">${refHtml}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px"><div><div class="emom-lbl">Reps por minuto</div><input class="ex-input" type="number" inputmode="numeric" value="${st.emomReps||""}" ${st.done?"disabled":""} oninput="updateEmom('${ex}','emomReps',this.value)"></div><div><div class="emom-lbl">Minutos</div><input class="ex-input" type="number" inputmode="numeric" value="${st.emomMins||""}" ${st.done?"disabled":""} oninput="updateEmom('${ex}','emomMins',this.value)"></div></div><div class="emom-total-bar"><span style="font-size:11px;color:var(--text-2);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">Total reps</span><span class="emom-total-val" id="emom-tot-${id}">${total||"—"}</span></div><button class="emom-action" onclick="toggleEmomDone('${ex}')">${st.done?"Reabrir":"Marcar completado"}</button></div>`;
+  card.innerHTML = `<div class="emom-hdr"><span class="ex-name" style="color:var(--amber)">EMOM</span><span class="emom-badge">DOMINADAS</span></div><div class="emom-body"><div class="emom-note">en casa</div><div style="margin-bottom:12px">${refHtml}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px"><div><div class="emom-lbl">Reps por minuto</div><input class="ex-input" type="number" inputmode="numeric" value="${st.emomReps||""}" ${st.done?"disabled":""} oninput="updateEmom('${ex}','emomReps',this.value)"></div><div><div class="emom-lbl">Minutos</div><input class="ex-input" type="number" inputmode="numeric" value="${st.emomMins||""}" ${st.done?"disabled":""} oninput="updateEmom('${ex}','emomMins',this.value)"></div></div><div class="emom-total-bar"><span style="font-size:11px;color:var(--text-2);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">Total reps</span><span class="emom-total-val" id="emom-tot-${id}">${total||"—"}</span></div><button class="emom-action" onclick="toggleEmomDone('${ex}')">${st.done?"Reabrir":"Marcar completado"}</button></div>`;
   return card;
 }
 
@@ -4742,7 +4784,7 @@ function toggleCarouselMode() {
 const HIST_DOW_LBL = { lunes:"LUN", martes:"MAR", miercoles:"MIÉ", jueves:"JUE", viernes:"VIE", sabado:"SAB", domingo:"DOM", all:"TODOS" };
 const DOW_KEYS = ["domingo","lunes","martes","miercoles","jueves","viernes","sabado"];
 function dayKeyOf(ds) { const [y,m,d] = ds.split("-").map(Number); return DOW_KEYS[new Date(y, m - 1, d).getDay()]; }
-function histDayCycle() { return histView === "gym" ? ["lunes","martes","jueves","viernes","sabado","all"] : ["lunes","martes","miercoles","jueves","viernes","sabado","domingo","all"]; }
+function histDayCycle() { return histView === "gym" ? ["lunes","martes","miercoles","jueves","viernes","sabado","all"] : ["lunes","martes","miercoles","jueves","viernes","sabado","domingo","all"]; }
 const HIST_VIEW_CYCLE = ["gym", "dominadas", "dominadas_total"];
 const HIST_VIEW_LBL = { gym: "GYM", dominadas: "DOMINADAS", dominadas_total: "DOMINADAS TOTAL" };
 function cycleHistView() {
@@ -4837,7 +4879,7 @@ function renderHistDominadas() {
   }).join("");
 }
 // Desglose de un día para la vista DOMINADAS TOTAL: hasta 3 fuentes posibles
-// — EMOM del lunes, las 4 series normales del viernes y las dominadas sueltas
+// — EMOM del miércoles, las 4 series normales del viernes y las dominadas sueltas
 // — cada una con sus propias reps y su propio tonelaje (peso corporal+lastre
 // por rep), para sumarlas y mostrarlas desglosadas debajo del total del día.
 function domTotalDayBreakdown(ds) {
@@ -4846,12 +4888,12 @@ function domTotalDayBreakdown(ds) {
   if (sess) {
     const e = sess.exercises.find(x => x.name === "DOMINADAS");
     if (e) {
-      if (sess.day === "lunes" && (e.emomReps || e.emomMins || e.emomTotal)) {
+      if (sess.day === "miercoles" && (e.emomReps || e.emomMins || e.emomTotal)) {
         // El EMOM nunca lleva lastre (sección 3): el tonelaje es solo peso
         // corporal, aunque un registro antiguo conserve un lastre en el dato.
         const w = e.pesoCorporal || 0;
         const reps = e.emomTotal || 0;
-        sources.push({ lbl: "EMOM lunes", reps, ton: reps * w });
+        sources.push({ lbl: "EMOM miércoles", reps, ton: reps * w });
       } else if (sess.day === "viernes" && e.series && !e.testReps) {
         const total = seriesCount(e.series) || (Array.isArray(e.lastre) ? e.lastre.length : 0);
         const la = lastreArr(e, total);
@@ -4873,7 +4915,7 @@ function domTotalDayBreakdown(ds) {
 // semana igual que la vista DOMINADAS, con el desglose de cada fuente debajo.
 function renderHistDominadasTotal() {
   const list = document.getElementById("hist-list");
-  const gymDates = getData().filter(s => (s.day === "lunes" || s.day === "viernes") && s.exercises.some(e => e.name === "DOMINADAS")).map(s => s.date);
+  const gymDates = getData().filter(s => (s.day === "miercoles" || s.day === "viernes") && s.exercises.some(e => e.name === "DOMINADAS")).map(s => s.date);
   const dates = [...new Set([...gymDates, ...Object.keys(getDomExtra())])]
     .filter(ds => domTotalDayBreakdown(ds).length)
     .filter(ds => histFilter === "all" || dayKeyOf(ds) === histFilter)
@@ -5114,7 +5156,7 @@ function toggleActDay(ds) {
 }
 
 // ─── DOMINADAS PROGRESS ────────────────────────────────────────
-// Entradas de DOMINADAS de las sesiones de gym (EMOM lunes, test y series
+// Entradas de DOMINADAS de las sesiones de gym (EMOM miércoles, test y series
 // normales de viernes) — no incluye el cuadro nuevo, que vive aparte en
 // gymtracker_dominadas_extra.
 function getGymDominadasEntries() {
@@ -5172,7 +5214,7 @@ function renderDomProgress() {
       <div class="dom-goal-sub">${bestTest ? fmtDate(bestTest.date) + (bestTest.pesoCorporal != null ? " · " + bestTest.pesoCorporal + " kg pc" : "") : "Sin datos"}</div></div>
     </div>
     <div class="chart-wrap"><div class="chart-lbl">Evolución del test (reps)</div><canvas id="dom-test-chart" height="160"></canvas></div>
-    <div class="chart-wrap"><div class="chart-lbl">EMOM lunes — reps/min × minutos</div><canvas id="dom-emom-chart" height="160"></canvas></div>
+    <div class="chart-wrap"><div class="chart-lbl">EMOM miércoles — reps/min × minutos</div><canvas id="dom-emom-chart" height="160"></canvas></div>
     <div class="chart-wrap"><div class="chart-lbl">Repeticiones totales por semana</div><canvas id="dom-weekly-chart" height="180"></canvas><div class="mv-foot" id="dom-weekly-foot"></div></div>
     <div class="chart-wrap"><div class="chart-lbl">Volumen semanal vs test</div><canvas id="dom-voltest-chart" height="180"></canvas></div>
     <div class="chart-wrap"><div class="chart-lbl" id="dom-lastre-lbl">Peso corporal y lastre</div><canvas id="dom-lastre-chart" height="180"></canvas></div>
@@ -6808,14 +6850,14 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-const dm = { 1: "lunes", 2: "martes", 4: "jueves", 5: "viernes", 6: "sabado" };
+const dm = { 1: "lunes", 2: "martes", 3: "miercoles", 4: "jueves", 5: "viernes", 6: "sabado" };
 const td = dm[new Date().getDay()];
-// Marca de "hoy" en el selector LUN/MAR/JUE/VIE/SAB (F4) — independiente de
+// Marca de "hoy" en el selector LUN/MAR/MIÉ/JUE/VIE/SAB (F4) — independiente de
 // la marca de día seleccionado, así se ve de un vistazo si estás viendo hoy
 // o un día pasado aunque hayas navegado a otra fecha.
 if (td) {
   document.querySelectorAll(".day-btn").forEach((b, i) =>
-    b.classList.toggle("today", ["lunes","martes","jueves","viernes","sabado"][i] === td)
+    b.classList.toggle("today", ["lunes","martes","miercoles","jueves","viernes","sabado"][i] === td)
   );
 }
 if (td) selectDay(td); else { updateTodayHero(); renderDomExtraCard(); checkOrphanDraft(); }
