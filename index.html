@@ -2595,11 +2595,11 @@ input:focus, select:focus, textarea:focus {
    ============================================================ */
 
 // ─── VERSIÓN Y BACKUPS ───────────────────────────────────────────
-const APP_VERSION = 8;
+const APP_VERSION = 9;
 // Fecha/hora de la última actualización visible en Ajustes (sin número de
 // versión) — se actualiza a mano con cada cambio, leyendo la hora real
 // (TZ=Europe/Madrid date "+%d %b %Y %H:%M"), nunca a ojo.
-const APP_UPDATED_AT = "17 nov 2026 08:20";
+const APP_UPDATED_AT = "17 nov 2026 22:26";
 
 const IDB_NAME = "gymtracker_backups_db";
 const IDB_STORE = "snapshots";
@@ -2727,21 +2727,21 @@ function reloadForUpdate() { location.reload(); }
 // ─── ROUTINE / SERIES / DOM CONSTS ──────────────────────────────
 const ROUTINE = {
   lunes:["REMO HAMMER UNILATERAL","JALÓN AL PECHO","PRESS MILITAR","PRESS INCLINADO","ELEVACIONES LATERALES","APERTURAS PAD","EXTENSIÓN POSTERIOR","JM PRESS","EXTENSIÓN TRÍCEPS UNILATERAL","CURL PREDICADOR","CURL INCLINADO","CURL INVERTIDO"],
-  martes:["PRENSA INCLINADA","SLDL","EXTENSIÓN CUÁDRICEPS","HIP THRUST","EXTENSIÓN FEMORAL","GEMELO","ADUCTORES","ABS"],
+  martes:["PRENSA HORIZONTAL","SLDL","EXTENSIÓN CUÁDRICEPS","HIP THRUST","EXTENSIÓN FEMORAL","GEMELO","SÓLEO","ABDUCTORES","ADUCTORES","ABS"],
   miercoles:["DOMINADAS"],
   jueves:["PRESS MILITAR","PRESS INCLINADO","ELEVACIONES LATERALES","APERTURAS PAD","EXTENSIÓN POSTERIOR","CURL PREDICADOR","CURL INCLINADO"],
   viernes:["DOMINADAS","REMO HAMMER UNILATERAL","JALÓN AL PECHO","JM PRESS","EXTENSIÓN TRÍCEPS UNILATERAL","CURL INVERTIDO"],
-  sabado:["PRENSA INCLINADA","SLDL","EXTENSIÓN CUÁDRICEPS","HIP THRUST","EXTENSIÓN FEMORAL","SÓLEO","ADUCTORES","ABS"]
+  sabado:["PRENSA HORIZONTAL","SLDL","EXTENSIÓN CUÁDRICEPS","HIP THRUST","EXTENSIÓN FEMORAL","GEMELO","SÓLEO","ABDUCTORES","ADUCTORES","ABS"]
 };
 const SERIES = {
   lunes:{default:2,"CURL INVERTIDO":3,"JALÓN AL PECHO":2,"REMO HAMMER UNILATERAL":3},
-  martes:{default:2,GEMELO:3,"HIP THRUST":4,ADUCTORES:3,ABS:3},
+  martes:{default:2,"HIP THRUST":4,ABS:3},
   // El EMOM no va por series — 1 es solo el valor que hace que la tarjeta y el
   // resumen de "entreno completo" tengan un número coherente (ver exSets).
   miercoles:{DOMINADAS:1},
   jueves:{"PRESS MILITAR":2,"PRESS INCLINADO":3,"ELEVACIONES LATERALES":2,"APERTURAS PAD":3,"EXTENSIÓN POSTERIOR":2,"CURL PREDICADOR":3,"CURL INCLINADO":3},
   viernes:{DOMINADAS:4,"REMO HAMMER UNILATERAL":4,"JALÓN AL PECHO":2,"JM PRESS":3,"EXTENSIÓN TRÍCEPS UNILATERAL":3,"CURL INVERTIDO":3},
-  sabado:{default:2,SÓLEO:3,"HIP THRUST":4,ADUCTORES:3,ABS:3}
+  sabado:{default:2,"HIP THRUST":4,ABS:3}
 };
 // Incremento mínimo real de cada ejercicio, en kg (disco y mancuerna → 2,5 ·
 // polea y pincho → 5). Para DOMINADAS se aplica al lastre, no al peso
@@ -2754,7 +2754,7 @@ const PESO_STEP = {
   "JALÓN AL PECHO": 5, "APERTURAS PAD": 5, "APERTURAS": 5, "EXTENSIÓN POSTERIOR": 5,
   "EXTENSIÓN TRÍCEPS UNILATERAL": 5, "EXTENSIÓN TRÍCEPS": 5, "EXTENSIÓN CUÁDRICEPS": 5,
   "EXTENSIÓN FEMORAL": 5, "ELEVACIONES LATERALES": 5, "GEMELO": 5, "ADUCTORES": 5, "ABS": 5,
-  "PRENSA INCLINADA": 5
+  "PRENSA HORIZONTAL": 5, "ABDUCTORES": 5
 };
 const PESO_STEP_DEFAULT = 2.5;
 function getPesoStepOverrides() { try { return JSON.parse(localStorage.getItem("gymtracker_peso_step") || "{}"); } catch { return {}; } }
@@ -3130,6 +3130,19 @@ function migrateExerciseData() {
   migrateAjustesTecnicosSeed();
   migratePrensaInclinada();
   migratePrensaInclinada1411();
+  backupAntesDePierna1117();
+  migratePrensaHorizontal();
+  migratePrensaInclinada1411Revert();
+  migrateRegistrosDiaPierna1711();
+  migrateTechoAbductores();
+}
+// Backup de seguridad previo a deshacer la prensa inclinada y a los cambios
+// de reparto de gemelo/sóleo/abductores (17/11/2026) — antes de que
+// cualquiera de las migraciones de abajo toque la forma de los datos.
+function backupAntesDePierna1117() {
+  if (localStorage.getItem("gt_backup_antes_de_pierna_nov17")) return;
+  writeBackupSnapshot("antes-de-pierna-nov17");
+  localStorage.setItem("gt_backup_antes_de_pierna_nov17", "1");
 }
 // Backup de seguridad previo a la migración del miércoles (EMOM de lunes a
 // miércoles, remo hammer a 3 series el lunes y PÉNDULO→PRENSA INCLINADA) —
@@ -3339,6 +3352,81 @@ function migratePrensaInclinada1411() {
   }
   localStorage.setItem("gt_migration_prensa_inclinada_1411", "1");
 }
+// PÉNDULO → PRENSA HORIZONTAL (17/11/2026): la prensa inclinada de 45° de
+// arriba pinzaba la cadera, se descartó tras un solo día y nunca fue la
+// sustitución real — se deshace esa entrada y PÉNDULO pasa directo a la
+// prensa horizontal (Technogym, sentado, raíles), que es la que se queda.
+function migratePrensaHorizontal() {
+  if (localStorage.getItem("gt_migration_prensa_horizontal")) return;
+  const sust = getSustituciones().filter(x => !(x.idAntiguo === "PÉNDULO" && x.idNuevo === "PRENSA INCLINADA"));
+  if (!sust.some(x => x.idAntiguo === "PÉNDULO" && x.idNuevo === "PRENSA HORIZONTAL")) {
+    sust.push({ idAntiguo: "PÉNDULO", nombreAntiguo: "PÉNDULO", idNuevo: "PRENSA HORIZONTAL", nombreNuevo: "PRENSA HORIZONTAL", fecha: "2026-11-17" });
+  }
+  saveSustituciones(sust);
+  localStorage.setItem("gt_migration_prensa_horizontal", "1");
+}
+// La prueba de la prensa inclinada del sábado 14/11/2026 (170 kg) fue de un
+// solo día con una escala que no se repite y ensucia la serie de PÉNDULO sin
+// aportar nada — vuelve a ser PÉNDULO y recupera el peso/series/repeticiones
+// del último registro real de PÉNDULO anterior a esa fecha, tal cual están
+// en el histórico (no se inventan números).
+function migratePrensaInclinada1411Revert() {
+  if (localStorage.getItem("gt_migration_prensa_inclinada_1411_revert")) return;
+  const data = getData();
+  const s = data.find(x => x.date === "2026-11-14" && x.day === "sabado");
+  if (s) {
+    const e = s.exercises.find(x => x.name === "PRENSA INCLINADA");
+    if (e) {
+      e.name = "PÉNDULO";
+      const anteriores = data
+        .filter(x => x.date < "2026-11-14" && x.exercises.some(y => y.name === "PÉNDULO"))
+        .sort((a, b) => b.date.localeCompare(a.date));
+      const prev = anteriores.length ? anteriores[0].exercises.find(y => y.name === "PÉNDULO") : null;
+      if (prev) {
+        e.peso = prev.peso; e.pesoRaw = prev.pesoRaw; e.pesoUnidad = prev.pesoUnidad;
+        e.series = prev.series; e.seriesDone = prev.seriesDone;
+      }
+      saveData(data);
+    }
+  }
+  localStorage.setItem("gt_migration_prensa_inclinada_1411_revert", "1");
+}
+// Registros del martes 17/11/2026, guardados con el reparto y los nombres
+// antiguos (antes de este cambio): la prensa ya era la horizontal de verdad
+// (130 kg, 2x12); sóleo y abductores aún no existían ese día en el martes,
+// así que se crean directamente con los valores reales de esa sesión; el
+// gemelo sí estaba pero con 3 series — se deja en 2.
+function migrateRegistrosDiaPierna1711() {
+  if (localStorage.getItem("gt_migration_dia_pierna_1711")) return;
+  const data = getData();
+  const s = data.find(x => x.date === "2026-11-17" && x.day === "martes");
+  if (s) {
+    const prensa = s.exercises.find(x => x.name === "PRENSA INCLINADA");
+    if (prensa) prensa.name = "PRENSA HORIZONTAL";
+    const gemelo = s.exercises.find(x => x.name === "GEMELO");
+    if (gemelo) {
+      gemelo.series = trimSeriesToSets(gemelo.series, 2);
+      if (gemelo.seriesDone > 2) gemelo.seriesDone = 2;
+    }
+    if (!s.exercises.some(x => x.name === "SÓLEO")) {
+      s.exercises.push({ name: "SÓLEO", peso: "60", pesoRaw: "60", pesoUnidad: "kg", series: "2x12", done: true, seriesDone: 2, prog: null });
+    }
+    if (!s.exercises.some(x => x.name === "ABDUCTORES")) {
+      s.exercises.push({ name: "ABDUCTORES", peso: "60", pesoRaw: "60", pesoUnidad: "kg", series: "2x12", done: true, seriesDone: 2, prog: null });
+    }
+    saveData(data);
+  }
+  localStorage.setItem("gt_migration_dia_pierna_1711", "1");
+}
+// Techo de repeticiones de ABDUCTORES fijado a 15, como el resto de
+// aislados de placas (ver techoRepsAuto) — el cálculo automático daría 10
+// para su peso real (60 kg con step 5), así que se fuerza a mano una vez;
+// editable después desde Ajustes como cualquier otro techo.
+function migrateTechoAbductores() {
+  if (localStorage.getItem("gt_migration_techo_abductores")) return;
+  setTechoReps("ABDUCTORES", 15);
+  localStorage.setItem("gt_migration_techo_abductores", "1");
+}
 // Aviso de histórico corregido (CURL INVERTIDO) — se enseña una sola vez;
 // la guarda de migrateCurlInvertido20kg() ya impide que se recalculen
 // correcciones en una segunda pasada, y aquí se borra el pendiente al
@@ -3509,6 +3597,21 @@ function calcVol(exArr) {
 function parseSeries(str) { if (!str) return []; return str.trim().split(/[\s,]+/).reduce((a,p) => { const m = p.match(/^(\d+)x(\d+)$/i); if (m) a.push({ series: parseInt(m[1]), reps: parseInt(m[2]) }); return a; }, []); }
 // Número total de series que describe la notación (p.ej. "2x8 2x6" → 4).
 function seriesCount(str) { return parseSeries(str).reduce((a, p) => a + p.series, 0); }
+// Recorta una notación de series a como máximo `max` series totales (p.ej.
+// "3x12" con max=2 → "2x12") — usado cuando un cambio de reparto deja una
+// sesión ya guardada con más series de las que ahora cuentan.
+function trimSeriesToSets(str, max) {
+  const groups = parseSeries(str);
+  if (!groups.length) return str;
+  let left = max, out = [];
+  for (const g of groups) {
+    if (left <= 0) break;
+    const take = Math.min(g.series, left);
+    if (take > 0) out.push(take + "x" + g.reps);
+    left -= take;
+  }
+  return out.join(" ");
+}
 // Expande la notación a un array de reps, una entrada por serie
 // ("4x8" → [8,8,8,8], "2x8 2x6" → [8,8,6,6]); si no llega a `total`, las que
 // faltan se quedan a 0 (notación incompleta respecto al número real de series).
@@ -3539,9 +3642,9 @@ const MUSCLE = {
   "PRESS MILITAR":"Hombro", "ELEVACIONES LATERALES":"Hombro", "EXTENSIÓN POSTERIOR":"Hombro",
   "PRESS INCLINADO":"Pecho", "APERTURAS":"Pecho", "APERTURAS PAD":"Pecho",
   "JM PRESS":"Tríceps", "EXTENSIÓN TRÍCEPS":"Tríceps", "EXTENSIÓN TRÍCEPS UNILATERAL":"Tríceps",
-  "PÉNDULO":"Cuádriceps", "PRENSA INCLINADA":"Cuádriceps", "EXTENSIÓN CUÁDRICEPS":"Cuádriceps",
+  "PÉNDULO":"Cuádriceps", "PRENSA HORIZONTAL":"Cuádriceps", "EXTENSIÓN CUÁDRICEPS":"Cuádriceps",
   "SLDL":"Femoral", "EXTENSIÓN FEMORAL":"Femoral",
-  "HIP THRUST":"Glúteo",
+  "HIP THRUST":"Glúteo", "ABDUCTORES":"Glúteo",
   "GEMELO":"Gemelo", "SÓLEO":"Gemelo",
   "ADUCTORES":"Aductor",
   "ABS":"Abdomen"
